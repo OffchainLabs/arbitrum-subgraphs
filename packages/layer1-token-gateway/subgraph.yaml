@@ -1,0 +1,35 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: L1GatewayRouter
+    network: mainnet
+    source:
+      address: "0x72Ce9c846789fdB6fC1f34aC4AD25Dd9ef7031ef"
+      abi: L1GatewayRouter
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - DefaultGatewayUpdated
+        - GatewaySet
+        - TransferRouted
+        - TxToL2
+        - WhitelistSourceUpdated
+      abis:
+        - name: L1GatewayRouter
+          file: ./abis/L1GatewayRouter.json
+      eventHandlers:
+        - event: DefaultGatewayUpdated(address)
+          handler: handleDefaultGatewayUpdated
+        - event: GatewaySet(indexed address,indexed address)
+          handler: handleGatewaySet
+        - event: TransferRouted(indexed address,indexed address,indexed address,address)
+          handler: handleTransferRouted
+        - event: TxToL2(indexed address,indexed address,indexed uint256,bytes)
+          handler: handleTxToL2
+        - event: WhitelistSourceUpdated(address)
+          handler: handleWhitelistSourceUpdated
+      file: ./src/mapping.ts

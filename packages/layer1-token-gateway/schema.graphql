@@ -1,0 +1,31 @@
+type DefaultGatewayUpdated @entity {
+  id: ID!
+  newDefaultGateway: Bytes! # address
+}
+
+type GatewaySet @entity {
+  id: ID!
+  l1Token: Bytes! # address
+  gateway: Bytes! # address
+}
+
+type TransferRouted @entity {
+  id: ID!
+  token: Bytes! # address
+  _userFrom: Bytes! # address
+  _userTo: Bytes! # address
+  gateway: Bytes! # address
+}
+
+type TxToL2 @entity {
+  id: ID!
+  _from: Bytes! # address
+  _to: Bytes! # address
+  _seqNum: BigInt! # uint256
+  _data: Bytes! # bytes
+}
+
+type WhitelistSourceUpdated @entity {
+  id: ID!
+  newSource: Bytes! # address
+}

@@ -1,0 +1,32 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: L2GatewayRouter
+    network: arbitrum-one
+    source:
+      address: "0x5288c571Fd7aD117beA99bF60FE0846C4E84F933"
+      abi: L2GatewayRouter
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - DefaultGatewayUpdated
+        - GatewaySet
+        - TransferRouted
+        - TxToL1
+      abis:
+        - name: L2GatewayRouter
+          file: ./abis/L2GatewayRouter.json
+      eventHandlers:
+        - event: DefaultGatewayUpdated(address)
+          handler: handleDefaultGatewayUpdated
+        - event: GatewaySet(indexed address,indexed address)
+          handler: handleGatewaySet
+        - event: TransferRouted(indexed address,indexed address,indexed address,address)
+          handler: handleTransferRouted
+        - event: TxToL1(indexed address,indexed address,indexed uint256,bytes)
+          handler: handleTxToL1
+      file: ./src/mapping.ts

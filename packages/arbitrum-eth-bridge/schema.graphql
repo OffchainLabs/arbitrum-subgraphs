@@ -1,0 +1,15 @@
+type OutBoxTransactionExecuted @entity {
+  id: ID!
+  destAddr: Bytes! # address
+  l2Sender: Bytes! # address
+  outboxEntryIndex: BigInt! # uint256
+  transactionIndex: BigInt! # uint256
+}
+
+type OutboxEntryCreated @entity {
+  id: ID!
+  batchNum: BigInt! # uint256
+  outboxEntryIndex: BigInt! # uint256
+  outputRoot: Bytes! # bytes32
+  numInBatch: BigInt! # uint256
+}

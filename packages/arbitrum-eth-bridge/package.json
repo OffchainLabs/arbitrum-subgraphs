@@ -1,0 +1,17 @@
+{
+  "name": "arbitrum-eth-bridge",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ offchainlabs/arbitrum-eth-bridge",
+    "create-local": "graph create --node http://localhost:8020/ offchainlabs/arbitrum-eth-bridge",
+    "remove-local": "graph remove --node http://localhost:8020/ offchainlabs/arbitrum-eth-bridge",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 offchainlabs/arbitrum-eth-bridge"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.22.0-alpha.2",
+    "@graphprotocol/graph-ts": "0.22.0-alpha.2"
+  }
+}

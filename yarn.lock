@@ -23,7 +23,7 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@graphprotocol/graph-cli@v0.22.0-alpha.2":
+"@graphprotocol/graph-cli@0.22.0-alpha.2", "@graphprotocol/graph-cli@v0.22.0-alpha.2":
   version "0.22.0-alpha.2"
   resolved "https://registry.yarnpkg.com/@graphprotocol/graph-cli/-/graph-cli-0.22.0-alpha.2.tgz#55aa020c0d318aebaccb047fd893151285250eec"
   integrity sha512-qmlgtj+I7tJVwY8Z0i09r9RaLqB2sngF091aI+rtO4Z9g7PxxGe0lUNzZABgi8DXDhvpFljtln2rqUCQ8YlkZQ==
@@ -51,7 +51,7 @@
     which "2.0.2"
     yaml "^1.5.1"
 
-"@graphprotocol/graph-ts@v0.22.0-alpha.2":
+"@graphprotocol/graph-ts@0.22.0-alpha.2", "@graphprotocol/graph-ts@v0.22.0-alpha.2":
   version "0.22.0-alpha.2"
   resolved "https://registry.yarnpkg.com/@graphprotocol/graph-ts/-/graph-ts-0.22.0-alpha.2.tgz#df2200a20bb8ceaeb835ba905430cf75b37a4874"
   integrity sha512-UeoNfZLz7S4OAby/2K0zt3lGfcLqa8viujH6D5gjhDjFWTd6TiLb60OToFv7963YBHHdyjeEfIlmm2IuXSQeLA==
