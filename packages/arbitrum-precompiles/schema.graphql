@@ -1,0 +1,13 @@
+type L2ToL1Transaction @entity {
+  id: ID!
+  caller: Bytes! # address
+  destination: Bytes! # address
+  uniqueId: BigInt! # uint256
+  batchNumber: BigInt! # uint256
+  indexInBatch: BigInt! # uint256
+  arbBlockNum: BigInt! # uint256
+  ethBlockNum: BigInt! # uint256
+  timestamp: BigInt! # uint256
+  callvalue: BigInt! # uint256
+  data: Bytes! # bytes
+}
