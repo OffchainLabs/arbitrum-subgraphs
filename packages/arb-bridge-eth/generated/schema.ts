@@ -12,37 +12,114 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class OutBoxTransactionExecuted extends Entity {
+export class OutboxEntry extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("outboxEntryIndex", Value.fromBigInt(BigInt.zero()));
+    this.set("outputRoot", Value.fromBytes(Bytes.empty()));
+    this.set("numInBatch", Value.fromBigInt(BigInt.zero()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save OutboxEntry entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save OutboxEntry entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("OutboxEntry", id.toString(), this);
+    }
+  }
+
+  static load(id: string): OutboxEntry | null {
+    return changetype<OutboxEntry | null>(store.get("OutboxEntry", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get outboxEntryIndex(): BigInt {
+    let value = this.get("outboxEntryIndex");
+    return value!.toBigInt();
+  }
+
+  set outboxEntryIndex(value: BigInt) {
+    this.set("outboxEntryIndex", Value.fromBigInt(value));
+  }
+
+  get outputRoot(): Bytes {
+    let value = this.get("outputRoot");
+    return value!.toBytes();
+  }
+
+  set outputRoot(value: Bytes) {
+    this.set("outputRoot", Value.fromBytes(value));
+  }
+
+  get numInBatch(): BigInt {
+    let value = this.get("numInBatch");
+    return value!.toBigInt();
+  }
+
+  set numInBatch(value: BigInt) {
+    this.set("numInBatch", Value.fromBigInt(value));
+  }
+
+  get spentOutput(): Array<string> | null {
+    let value = this.get("spentOutput");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set spentOutput(value: Array<string> | null) {
+    if (!value) {
+      this.unset("spentOutput");
+    } else {
+      this.set("spentOutput", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+}
+
+export class OutboxOutput extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
     this.set("destAddr", Value.fromBytes(Bytes.empty()));
     this.set("l2Sender", Value.fromBytes(Bytes.empty()));
-    this.set("outboxEntryIndex", Value.fromBigInt(BigInt.zero()));
     this.set("transactionIndex", Value.fromBigInt(BigInt.zero()));
+    this.set("outboxEntry", Value.fromString(""));
+    this.set("spent", Value.fromBoolean(false));
   }
 
   save(): void {
     let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save OutBoxTransactionExecuted entity without an ID"
-    );
+    assert(id != null, "Cannot save OutboxOutput entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save OutBoxTransactionExecuted entity with non-string ID. " +
+        "Cannot save OutboxOutput entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("OutBoxTransactionExecuted", id.toString(), this);
+      store.set("OutboxOutput", id.toString(), this);
     }
   }
 
-  static load(id: string): OutBoxTransactionExecuted | null {
-    return changetype<OutBoxTransactionExecuted | null>(
-      store.get("OutBoxTransactionExecuted", id)
-    );
+  static load(id: string): OutboxOutput | null {
+    return changetype<OutboxOutput | null>(store.get("OutboxOutput", id));
   }
 
   get id(): string {
@@ -72,15 +149,6 @@ export class OutBoxTransactionExecuted extends Entity {
     this.set("l2Sender", Value.fromBytes(value));
   }
 
-  get outboxEntryIndex(): BigInt {
-    let value = this.get("outboxEntryIndex");
-    return value!.toBigInt();
-  }
-
-  set outboxEntryIndex(value: BigInt) {
-    this.set("outboxEntryIndex", Value.fromBigInt(value));
-  }
-
   get transactionIndex(): BigInt {
     let value = this.get("transactionIndex");
     return value!.toBigInt();
@@ -89,80 +157,22 @@ export class OutBoxTransactionExecuted extends Entity {
   set transactionIndex(value: BigInt) {
     this.set("transactionIndex", Value.fromBigInt(value));
   }
-}
 
-export class OutboxEntryCreated extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("batchNum", Value.fromBigInt(BigInt.zero()));
-    this.set("outboxEntryIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("outputRoot", Value.fromBytes(Bytes.empty()));
-    this.set("numInBatch", Value.fromBigInt(BigInt.zero()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save OutboxEntryCreated entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save OutboxEntryCreated entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("OutboxEntryCreated", id.toString(), this);
-    }
-  }
-
-  static load(id: string): OutboxEntryCreated | null {
-    return changetype<OutboxEntryCreated | null>(
-      store.get("OutboxEntryCreated", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
+  get outboxEntry(): string {
+    let value = this.get("outboxEntry");
     return value!.toString();
   }
 
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
+  set outboxEntry(value: string) {
+    this.set("outboxEntry", Value.fromString(value));
   }
 
-  get batchNum(): BigInt {
-    let value = this.get("batchNum");
-    return value!.toBigInt();
+  get spent(): boolean {
+    let value = this.get("spent");
+    return value!.toBoolean();
   }
 
-  set batchNum(value: BigInt) {
-    this.set("batchNum", Value.fromBigInt(value));
-  }
-
-  get outboxEntryIndex(): BigInt {
-    let value = this.get("outboxEntryIndex");
-    return value!.toBigInt();
-  }
-
-  set outboxEntryIndex(value: BigInt) {
-    this.set("outboxEntryIndex", Value.fromBigInt(value));
-  }
-
-  get outputRoot(): Bytes {
-    let value = this.get("outputRoot");
-    return value!.toBytes();
-  }
-
-  set outputRoot(value: Bytes) {
-    this.set("outputRoot", Value.fromBytes(value));
-  }
-
-  get numInBatch(): BigInt {
-    let value = this.get("numInBatch");
-    return value!.toBigInt();
-  }
-
-  set numInBatch(value: BigInt) {
-    this.set("numInBatch", Value.fromBigInt(value));
+  set spent(value: boolean) {
+    this.set("spent", Value.fromBoolean(value));
   }
 }

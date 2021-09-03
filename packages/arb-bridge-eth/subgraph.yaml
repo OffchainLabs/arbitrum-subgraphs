@@ -1,13 +1,20 @@
 specVersion: 0.0.2
+description: Subgraph that indexes Arbitrum eth-bridge contracts
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: Outbox
-    network: mainnet
+    # network: mainnet
+    # source:
+    #   address: "0x760723CD2e632826c38Fef8CD438A4CC7E7E1A40"
+    #   abi: Outbox
+    #   startBlock: 13124585
+    network: rinkeby
     source:
-      address: "0x760723CD2e632826c38Fef8CD438A4CC7E7E1A40"
+      address: "0x2360A33905dc1c72b12d975d975F42BaBdcef9F3"
       abi: Outbox
+      startBlock: 9203449
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5

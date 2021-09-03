@@ -1,15 +1,19 @@
-type OutBoxTransactionExecuted @entity {
+type OutboxEntry @entity {
+  "batchNum hexstring which is the unique identifier and primary key of the entity"
   id: ID!
-  destAddr: Bytes! # address
-  l2Sender: Bytes! # address
-  outboxEntryIndex: BigInt! # uint256
-  transactionIndex: BigInt! # uint256
-}
-
-type OutboxEntryCreated @entity {
-  id: ID!
-  batchNum: BigInt! # uint256
   outboxEntryIndex: BigInt! # uint256
   outputRoot: Bytes! # bytes32
   numInBatch: BigInt! # uint256
+  spentOutput: [OutboxOutput!] @derivedFrom(field: "outboxEntry")
+}
+
+type OutboxOutput @entity {
+  "this ID is not the same as the outputId used on chain"
+  id: ID!
+  destAddr: Bytes! # address
+  l2Sender: Bytes! # address
+  transactionIndex: BigInt! # uint256
+  outboxEntry: OutboxEntry!
+  "if OutboxOutput exists, it means it has been spent"
+  spent: Boolean!
 }
