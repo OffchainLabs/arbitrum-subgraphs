@@ -176,3 +176,67 @@ export class OutboxOutput extends Entity {
     this.set("spent", Value.fromBoolean(value));
   }
 }
+
+export class InboxMessage extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("kind", Value.fromString(""));
+    this.set("value", Value.fromBigInt(BigInt.zero()));
+    this.set("destAddr", Value.fromBytes(Bytes.empty()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save InboxMessage entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save InboxMessage entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("InboxMessage", id.toString(), this);
+    }
+  }
+
+  static load(id: string): InboxMessage | null {
+    return changetype<InboxMessage | null>(store.get("InboxMessage", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get kind(): string {
+    let value = this.get("kind");
+    return value!.toString();
+  }
+
+  set kind(value: string) {
+    this.set("kind", Value.fromString(value));
+  }
+
+  get value(): BigInt {
+    let value = this.get("value");
+    return value!.toBigInt();
+  }
+
+  set value(value: BigInt) {
+    this.set("value", Value.fromBigInt(value));
+  }
+
+  get destAddr(): Bytes {
+    let value = this.get("destAddr");
+    return value!.toBytes();
+  }
+
+  set destAddr(value: Bytes) {
+    this.set("destAddr", Value.fromBytes(value));
+  }
+}

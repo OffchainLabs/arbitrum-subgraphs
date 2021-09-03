@@ -17,3 +17,20 @@ type OutboxOutput @entity {
   "if OutboxOutput exists, it means it has been spent"
   spent: Boolean!
 }
+
+enum MessageKind {
+  EthDeposit
+  Retryable
+}
+
+type InboxMessage @entity {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "is this inbox message a regular eth deposit or a retryable"
+  kind: MessageKind!
+  "value sent with message"
+  value: BigInt!
+  destAddr: Bytes!
+}
+
+

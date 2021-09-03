@@ -31,3 +31,23 @@ dataSources:
         - event: OutboxEntryCreated(indexed uint256,uint256,bytes32,uint256)
           handler: handleOutboxEntryCreated
       file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: Inbox
+    network: rinkeby
+    source:
+      address: "0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e"
+      abi: Inbox
+      startBlock: 8700589
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - InboxMessageDelivered
+      abis:
+        - name: Inbox
+          file: ./abis/Inbox.json
+      eventHandlers:
+        - event: InboxMessageDelivered(indexed uint256,bytes)
+          handler: handleInboxMessageDelivered
+      file: ./src/mapping.ts
