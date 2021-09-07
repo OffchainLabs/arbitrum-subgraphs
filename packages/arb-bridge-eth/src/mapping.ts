@@ -47,16 +47,6 @@ const bigIntToAddress = (input: BigInt): Address => {
   return Address.fromString(addressString)
 }
 
-enum MessageType {
-  RetryableWithData,
-  RetryableNoData
-}
-
-const decoders = new Map<MessageType,string>()
-decoders.set(MessageType.RetryableNoData, "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)")
-decoders.set(MessageType.RetryableWithData, "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)")
-
-
 class RetryableTx {
   private constructor(
     public destAddress: Address,
@@ -71,29 +61,58 @@ class RetryableTx {
   ) {}
 
   static parseRetryable(data: Bytes): RetryableTx | null {
-    const decoderKeys = decoders.keys()
-    for (let i = 0; i < decoderKeys.length; i++) {
-      const key: MessageType = decoderKeys[i]
-      const decoder = decoders.get(key)
-
-      const parsed = ethereum.decode(decoder, data)
-
-      if(parsed) {
-        const parsedArray = parsed.toTuple()
+    {
+      const parsedWithData = ethereum.decode(
+        "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)",
+        data
+      )
+      if(parsedWithData) {
+        const parsedArray = parsedWithData.toTuple()
   
         return new RetryableTx(
-          bigIntToAddress(parsedArray[0].toBigInt()),
+          bigIntToAddress(
+            parsedArray[0].toBigInt()
+          ),
           parsedArray[1].toBigInt(),
           parsedArray[2].toBigInt(),
           parsedArray[3].toBigInt(),
-          bigIntToAddress(parsedArray[4].toBigInt()),
-          bigIntToAddress(parsedArray[5].toBigInt()),
+          bigIntToAddress(
+            parsedArray[4].toBigInt()
+          ),
+          bigIntToAddress(
+            parsedArray[5].toBigInt()
+          ),
           parsedArray[6].toBigInt(),
           parsedArray[7].toBigInt(),
-          key == MessageType.RetryableWithData
-            ? parsedArray[9].toBytes()
-            : Bytes.empty()
-        );
+          parsedArray[9].toBytes()
+        )
+      }
+    }
+    {
+      const parsedWithoutData = ethereum.decode(
+        "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+        data
+      )
+      if(parsedWithoutData) {
+        const parsedArray = parsedWithoutData.toTuple()
+  
+        return new RetryableTx(
+          bigIntToAddress(
+            parsedArray[0].toBigInt()
+          ),
+          parsedArray[1].toBigInt(),
+          parsedArray[2].toBigInt(),
+          parsedArray[3].toBigInt(),
+          bigIntToAddress(
+            parsedArray[4].toBigInt()
+          ),
+          bigIntToAddress(
+            parsedArray[5].toBigInt()
+          ),
+          parsedArray[6].toBigInt(),
+          parsedArray[7].toBigInt(),
+          Bytes.fromHexString("0x") as Bytes
+        )
       }
     }
     return null;
