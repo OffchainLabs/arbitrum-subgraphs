@@ -12,7 +12,7 @@ type OutboxOutput @entity {
   id: ID!
   destAddr: Bytes! # address
   l2Sender: Bytes! # address
-  transactionIndex: BigInt! # uint256
+  path: BigInt! # uint256
   outboxEntry: OutboxEntry!
   "if OutboxOutput exists, it means it has been spent"
   spent: Boolean!
@@ -21,6 +21,7 @@ type OutboxOutput @entity {
 enum MessageKind {
   EthDeposit
   Retryable
+  NotSupported
 }
 
 type InboxMessage @entity {
@@ -30,7 +31,8 @@ type InboxMessage @entity {
   kind: MessageKind!
   "value sent with message"
   value: BigInt!
-  destAddr: Bytes!
+  "optional field that indicates the L2 address"
+  destAddr: Bytes
 }
 
 

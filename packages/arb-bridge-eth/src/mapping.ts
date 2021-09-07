@@ -23,7 +23,7 @@ export function handleOutBoxTransactionExecuted(
   entity.destAddr = event.params.destAddr
   entity.l2Sender = event.params.l2Sender
   entity.outboxEntry = bigIntToId(event.params.outboxEntryIndex)
-  entity.transactionIndex = event.params.transactionIndex
+  entity.path = event.params.transactionIndex
   // if OutBoxTransactionExecuted was emitted then the OutboxOutput was spent
   entity.spent = true;
   entity.save()
@@ -35,6 +35,16 @@ export function handleOutboxEntryCreated(event: OutboxEntryCreatedEvent): void {
   entity.outputRoot = event.params.outputRoot
   entity.numInBatch = event.params.numInBatch
   entity.save()
+}
+
+const bigIntToAddress = (input: BigInt): Address => {
+  // remove the prepended 0x
+  const hexString = input.toHexString().substr(2)
+  // add missing padding so address is 20 bytes long
+  const missingZeroes = "0".repeat(40 - hexString.length);
+  // build hexstring again
+  const addressString = "0x" + missingZeroes + hexString
+  return Address.fromString(addressString)
 }
 
 class RetryableTx {
@@ -51,25 +61,59 @@ class RetryableTx {
   ) {}
 
   static parseRetryable(data: Bytes): RetryableTx | null {
-    const parsed = ethereum.decode(
-      "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)",
-      data
-    )
-
-    if(parsed) {
-      const parsedArray = parsed.toTuple()
-
-      return new RetryableTx(
-        parsedArray[0].toAddress(),
-        parsedArray[1].toBigInt(),
-        parsedArray[2].toBigInt(),
-        parsedArray[3].toBigInt(),
-        parsedArray[4].toAddress(),
-        parsedArray[5].toAddress(),
-        parsedArray[6].toBigInt(),
-        parsedArray[7].toBigInt(),
-        parsedArray[9].toBytes()
+    {
+      const parsedWithData = ethereum.decode(
+        "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)",
+        data
       )
+      if(parsedWithData) {
+        const parsedArray = parsedWithData.toTuple()
+  
+        return new RetryableTx(
+          bigIntToAddress(
+            parsedArray[0].toBigInt()
+          ),
+          parsedArray[1].toBigInt(),
+          parsedArray[2].toBigInt(),
+          parsedArray[3].toBigInt(),
+          bigIntToAddress(
+            parsedArray[4].toBigInt()
+          ),
+          bigIntToAddress(
+            parsedArray[5].toBigInt()
+          ),
+          parsedArray[6].toBigInt(),
+          parsedArray[7].toBigInt(),
+          parsedArray[9].toBytes()
+        )
+      }
+    }
+    {
+      const parsedWithoutData = ethereum.decode(
+        "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+        data
+      )
+      if(parsedWithoutData) {
+        const parsedArray = parsedWithoutData.toTuple()
+  
+        return new RetryableTx(
+          bigIntToAddress(
+            parsedArray[0].toBigInt()
+          ),
+          parsedArray[1].toBigInt(),
+          parsedArray[2].toBigInt(),
+          parsedArray[3].toBigInt(),
+          bigIntToAddress(
+            parsedArray[4].toBigInt()
+          ),
+          bigIntToAddress(
+            parsedArray[5].toBigInt()
+          ),
+          parsedArray[6].toBigInt(),
+          parsedArray[7].toBigInt(),
+          Bytes.fromHexString("0x") as Bytes
+        )
+      }
     }
     return null;
   }
@@ -79,11 +123,14 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
   const retryable = RetryableTx.parseRetryable(event.params.data)
 
+  let entity = new InboxMessage(bigIntToId(event.params.messageNum))
+  entity.value = event.transaction.value
   if(retryable) {
-    let entity = new InboxMessage(bigIntToId(event.params.messageNum))
     entity.kind = retryable.data.length > 0 ? "Retryable" : "EthDeposit"
     entity.destAddr = retryable.destAddress
-    entity.value = event.transaction.value
-    entity.save();
+  } else {
+    entity.kind = "NotSupported"
+    entity.destAddr = null
   }
+  entity.save();
 }

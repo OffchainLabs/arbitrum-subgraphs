@@ -100,7 +100,7 @@ export class OutboxOutput extends Entity {
 
     this.set("destAddr", Value.fromBytes(Bytes.empty()));
     this.set("l2Sender", Value.fromBytes(Bytes.empty()));
-    this.set("transactionIndex", Value.fromBigInt(BigInt.zero()));
+    this.set("path", Value.fromBigInt(BigInt.zero()));
     this.set("outboxEntry", Value.fromString(""));
     this.set("spent", Value.fromBoolean(false));
   }
@@ -149,13 +149,13 @@ export class OutboxOutput extends Entity {
     this.set("l2Sender", Value.fromBytes(value));
   }
 
-  get transactionIndex(): BigInt {
-    let value = this.get("transactionIndex");
+  get path(): BigInt {
+    let value = this.get("path");
     return value!.toBigInt();
   }
 
-  set transactionIndex(value: BigInt) {
-    this.set("transactionIndex", Value.fromBigInt(value));
+  set path(value: BigInt) {
+    this.set("path", Value.fromBigInt(value));
   }
 
   get outboxEntry(): string {
@@ -184,7 +184,6 @@ export class InboxMessage extends Entity {
 
     this.set("kind", Value.fromString(""));
     this.set("value", Value.fromBigInt(BigInt.zero()));
-    this.set("destAddr", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
@@ -231,12 +230,20 @@ export class InboxMessage extends Entity {
     this.set("value", Value.fromBigInt(value));
   }
 
-  get destAddr(): Bytes {
+  get destAddr(): Bytes | null {
     let value = this.get("destAddr");
-    return value!.toBytes();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
   }
 
-  set destAddr(value: Bytes) {
-    this.set("destAddr", Value.fromBytes(value));
+  set destAddr(value: Bytes | null) {
+    if (!value) {
+      this.unset("destAddr");
+    } else {
+      this.set("destAddr", Value.fromBytes(<Bytes>value));
+    }
   }
 }
