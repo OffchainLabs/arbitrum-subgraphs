@@ -27,6 +27,8 @@ enum MessageKind {
 type InboxMessage @entity {
   "the inbox sequence number of the current message"
   id: ID!
+  "a inbox message goes through multiple indexing steps, this indicates if all are done"
+  isProcessed: Boolean!
   "is this inbox message a regular eth deposit or a retryable"
   kind: MessageKind!
   "value sent with message"
@@ -34,5 +36,3 @@ type InboxMessage @entity {
   "optional field that indicates the L2 address"
   destAddr: Bytes
 }
-
-

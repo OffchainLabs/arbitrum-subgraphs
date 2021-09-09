@@ -51,3 +51,23 @@ dataSources:
         - event: InboxMessageDelivered(indexed uint256,bytes)
           handler: handleInboxMessageDelivered
       file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: Bridge
+    network: rinkeby
+    source:
+      address: "0x9a28e783c47bbeb813f32b861a431d0776681e95"
+      abi: Bridge
+      startBlock: 8700589
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - MessageDelivered
+      abis:
+        - name: Bridge
+          file: ./abis/Bridge.json
+      eventHandlers:
+        - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32)
+          handler: handleMessageDelivered
+      file: ./src/mapping.ts

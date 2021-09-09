@@ -182,6 +182,7 @@ export class InboxMessage extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
+    this.set("isProcessed", Value.fromBoolean(false));
     this.set("kind", Value.fromString(""));
     this.set("value", Value.fromBigInt(BigInt.zero()));
   }
@@ -210,6 +211,15 @@ export class InboxMessage extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get isProcessed(): boolean {
+    let value = this.get("isProcessed");
+    return value!.toBoolean();
+  }
+
+  set isProcessed(value: boolean) {
+    this.set("isProcessed", Value.fromBoolean(value));
   }
 
   get kind(): string {
