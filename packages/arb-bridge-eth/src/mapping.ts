@@ -56,48 +56,46 @@ class RetryableTx {
   ) {}
 
   static parseRetryable(data: Bytes): RetryableTx | null {
-    {
-      const parsedWithData = ethereum.decode(
-        "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)",
-        data
-      );
-      if (parsedWithData) {
-        const parsedArray = parsedWithData.toTuple();
+    const parsedWithData = ethereum.decode(
+      "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)",
+      data
+    );
+    if (parsedWithData) {
+      const parsedArray = parsedWithData.toTuple();
 
-        return new RetryableTx(
-          bigIntToAddress(parsedArray[0].toBigInt()),
-          parsedArray[1].toBigInt(),
-          parsedArray[2].toBigInt(),
-          parsedArray[3].toBigInt(),
-          bigIntToAddress(parsedArray[4].toBigInt()),
-          bigIntToAddress(parsedArray[5].toBigInt()),
-          parsedArray[6].toBigInt(),
-          parsedArray[7].toBigInt(),
-          parsedArray[9].toBytes()
-        );
-      }
-    }
-    {
-      const parsedWithoutData = ethereum.decode(
-        "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
-        data
+      return new RetryableTx(
+        bigIntToAddress(parsedArray[0].toBigInt()),
+        parsedArray[1].toBigInt(),
+        parsedArray[2].toBigInt(),
+        parsedArray[3].toBigInt(),
+        bigIntToAddress(parsedArray[4].toBigInt()),
+        bigIntToAddress(parsedArray[5].toBigInt()),
+        parsedArray[6].toBigInt(),
+        parsedArray[7].toBigInt(),
+        parsedArray[9].toBytes()
       );
-      if (parsedWithoutData) {
-        const parsedArray = parsedWithoutData.toTuple();
-
-        return new RetryableTx(
-          bigIntToAddress(parsedArray[0].toBigInt()),
-          parsedArray[1].toBigInt(),
-          parsedArray[2].toBigInt(),
-          parsedArray[3].toBigInt(),
-          bigIntToAddress(parsedArray[4].toBigInt()),
-          bigIntToAddress(parsedArray[5].toBigInt()),
-          parsedArray[6].toBigInt(),
-          parsedArray[7].toBigInt(),
-          Bytes.empty()
-        );
-      }
     }
+
+    const parsedWithoutData = ethereum.decode(
+      "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+      data
+    );
+    if (parsedWithoutData) {
+      const parsedArray = parsedWithoutData.toTuple();
+
+      return new RetryableTx(
+        bigIntToAddress(parsedArray[0].toBigInt()),
+        parsedArray[1].toBigInt(),
+        parsedArray[2].toBigInt(),
+        parsedArray[3].toBigInt(),
+        bigIntToAddress(parsedArray[4].toBigInt()),
+        bigIntToAddress(parsedArray[5].toBigInt()),
+        parsedArray[6].toBigInt(),
+        parsedArray[7].toBigInt(),
+        Bytes.empty()
+      );
+    }
+
     return null;
   }
 }
@@ -106,6 +104,7 @@ export function handleInboxMessageDelivered(
   event: InboxMessageDeliveredEvent
 ): void {
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
+  // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
   let entity = InboxMessage.load(bigIntToId(event.params.messageNum));
 
   if (!entity) {
