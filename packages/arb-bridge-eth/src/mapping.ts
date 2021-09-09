@@ -65,54 +65,42 @@ class RetryableTx {
       const parsedWithData = ethereum.decode(
         "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)",
         data
-      )
-      if(parsedWithData) {
-        const parsedArray = parsedWithData.toTuple()
-  
+      );
+      if (parsedWithData) {
+        const parsedArray = parsedWithData.toTuple();
+        
         return new RetryableTx(
-          bigIntToAddress(
-            parsedArray[0].toBigInt()
-          ),
+          bigIntToAddress(parsedArray[0].toBigInt()),
           parsedArray[1].toBigInt(),
           parsedArray[2].toBigInt(),
           parsedArray[3].toBigInt(),
-          bigIntToAddress(
-            parsedArray[4].toBigInt()
-          ),
-          bigIntToAddress(
-            parsedArray[5].toBigInt()
-          ),
+          bigIntToAddress(parsedArray[4].toBigInt()),
+          bigIntToAddress(parsedArray[5].toBigInt()),
           parsedArray[6].toBigInt(),
           parsedArray[7].toBigInt(),
           parsedArray[9].toBytes()
-        )
+        );
       }
     }
     {
       const parsedWithoutData = ethereum.decode(
         "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
         data
-      )
-      if(parsedWithoutData) {
-        const parsedArray = parsedWithoutData.toTuple()
-  
+      );
+      if (parsedWithoutData) {
+        const parsedArray = parsedWithoutData.toTuple();
+
         return new RetryableTx(
-          bigIntToAddress(
-            parsedArray[0].toBigInt()
-          ),
+          bigIntToAddress(parsedArray[0].toBigInt()),
           parsedArray[1].toBigInt(),
           parsedArray[2].toBigInt(),
           parsedArray[3].toBigInt(),
-          bigIntToAddress(
-            parsedArray[4].toBigInt()
-          ),
-          bigIntToAddress(
-            parsedArray[5].toBigInt()
-          ),
+          bigIntToAddress(parsedArray[4].toBigInt()),
+          bigIntToAddress(parsedArray[5].toBigInt()),
           parsedArray[6].toBigInt(),
           parsedArray[7].toBigInt(),
-          Bytes.fromHexString("0x") as Bytes
-        )
+          Bytes.empty()
+        );
       }
     }
     return null;
@@ -126,11 +114,11 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
   let entity = new InboxMessage(bigIntToId(event.params.messageNum))
   entity.value = event.transaction.value
   if(retryable) {
-    entity.kind = retryable.data.length > 0 ? "Retryable" : "EthDeposit"
+    entity.kind = retryable.data.byteLength > 0 ? "Retryable" : "EthDeposit"
     entity.destAddr = retryable.destAddress
   } else {
     entity.kind = "NotSupported"
-    entity.destAddr = null
+    // entity.destAddr = null
   }
   entity.save();
 }
