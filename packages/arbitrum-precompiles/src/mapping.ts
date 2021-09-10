@@ -15,5 +15,11 @@ export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
   entity.timestamp = event.params.timestamp
   entity.callvalue = event.params.callvalue
   entity.data = event.params.data
+
+  // TODO: query for L2 to L1 tx proof
+  // TODO: don't make this an archive query
+  // this will either be the proof or null
+  // if not null, backfill previous ones that were null
+
   entity.save()
 }

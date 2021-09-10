@@ -104,9 +104,9 @@ export function handleInboxMessageDelivered(
   event: InboxMessageDeliveredEvent
 ): void {
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
-  // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
   let entity = InboxMessage.load(bigIntToId(event.params.messageNum));
 
+  // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
   if (!entity) {
     log.critical("Wrong order in entity!!", []);
     throw new Error("Oh damn no entity wrong order");
@@ -116,6 +116,7 @@ export function handleInboxMessageDelivered(
   const retryable = RetryableTx.parseRetryable(event.params.data);
   entity.value = event.transaction.value;
   if (retryable) {
+    // TODO: everything is currently a retryable, why??
     entity.kind = retryable.data.byteLength > 0 ? "Retryable" : "EthDeposit";
     entity.destAddr = retryable.destAddress;
     entity.isProcessed = true;
