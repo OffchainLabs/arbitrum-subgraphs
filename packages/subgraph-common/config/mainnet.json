@@ -1,4 +1,10 @@
 {
     "l1Network": "mainnet",
-    "l2Network": "arbitrum-one"
+    "l2Network": "arbitrum-one",
+    "outboxDeploymentBlock": 13124585,
+    "outboxAddress": "0x760723CD2e632826c38Fef8CD438A4CC7E7E1A40",
+    "inboxDeploymentBlock": 12525700,
+    "inboxAddress": "0x4dbd4fc535ac27206064b68ffcf827b0a60bab3f",
+    "bridgeDeploymentBlock": 12525700,
+    "bridgeAddress": "0x011b6e24ffb0b5f5fcc564cf4183c5bbbc96d515"
 }
