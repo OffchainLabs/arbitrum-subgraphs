@@ -10,8 +10,8 @@
     "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
 
-    "deploy:rinkeby": "yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby",
-    "deploy:mainnet": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth"
+    "deploy:mainnet": "yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth",
+    "deploy:rinkeby": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.22.0-alpha.2",

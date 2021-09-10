@@ -7,7 +7,7 @@ dataSources:
     name: Outbox
     network: {{ l1Network }}
     source:
-      address: {{ outboxAddress }}
+      address: '{{ outboxAddress }}'
       abi: Outbox
       startBlock: {{ outboxDeploymentBlock }}
     mapping:
@@ -30,7 +30,7 @@ dataSources:
     name: Inbox
     network: {{ l1Network }}
     source:
-      address: {{ inboxAddress }}
+      address: '{{ inboxAddress }}'
       abi: Inbox
       startBlock: {{ inboxDeploymentBlock }}
     mapping:
@@ -50,7 +50,7 @@ dataSources:
     name: Bridge
     network: {{ l1Network }}
     source:
-      address: {{ bridgeAddress }}
+      address: '{{ bridgeAddress }}'
       abi: Bridge
       startBlock: {{ bridgeDeploymentBlock }}
     mapping:
