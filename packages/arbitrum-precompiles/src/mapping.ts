@@ -78,8 +78,11 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
   );
 
   // we can calculate the Redemption Txn ahead of time with keccak256(zeroPad(retryable-ticket-id), 0)
-  entity.userTx = crypto.keccak256(
-    encodePadded(event.params.ticketId as ByteArray, Bytes.fromI32(0))
-  ) as Bytes;
+  entity.userTx = Bytes.fromByteArray(
+    crypto.keccak256(
+      encodePadded(event.params.ticketId as ByteArray, Bytes.fromI32(0))
+    )
+  );
+  entity.status = "Created";
   entity.save();
 }
