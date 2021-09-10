@@ -256,4 +256,21 @@ export class InboxMessage extends Entity {
       this.set("destAddr", Value.fromBytes(<Bytes>value));
     }
   }
+
+  get retryableTicketID(): Bytes | null {
+    let value = this.get("retryableTicketID");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set retryableTicketID(value: Bytes | null) {
+    if (!value) {
+      this.unset("retryableTicketID");
+    } else {
+      this.set("retryableTicketID", Value.fromBytes(<Bytes>value));
+    }
+  }
 }

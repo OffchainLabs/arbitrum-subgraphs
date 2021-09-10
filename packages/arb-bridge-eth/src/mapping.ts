@@ -5,7 +5,62 @@ import {
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
 import { MessageDelivered as MessageDeliveredEvent } from "../generated/Bridge/Bridge";
 import { OutboxEntry, OutboxOutput, InboxMessage } from "../generated/schema";
-import { Bytes, BigInt, ethereum, Address, log } from "@graphprotocol/graph-ts";
+import {
+  Bytes,
+  BigInt,
+  ethereum,
+  Address,
+  log,
+  dataSource,
+  crypto,
+} from "@graphprotocol/graph-ts";
+import { encodePadded, padBytes } from "subgraph-common/src/helpers";
+
+const getL2ChainId = (): Bytes => {
+  const network = dataSource.network();
+  if (network == "mainnet")
+    return Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
+  if (network == "rinkeby")
+    return Bytes.fromByteArray(Bytes.fromHexString("0x066EEB"));
+
+  log.critical("No chain id recognised", []);
+  throw new Error("No chain id found");
+};
+
+const bitFlip = (input: BigInt): Bytes => {
+  // base hex string is all zeroes, with the highest bit set. equivalent to 1 << 255
+  const base = Bytes.fromHexString(
+    "0x8000000000000000000000000000000000000000000000000000000000000000"
+  );
+  const bytes = padBytes(Bytes.fromBigInt(input), 32);
+
+  for (let i: i32 = 0; i < base.byteLength; i++) {
+    base[i] = base[i] | bytes[i];
+  }
+
+  return Bytes.fromByteArray(base);
+};
+
+const getL2RetryableTicketId = (inboxSequenceNumber: BigInt): Bytes => {
+  // keccak256(zeroPad(l2ChainId), zeroPad(bitFlipedinboxSequenceNumber))
+  const l2ChainId = getL2ChainId();
+  const flipped = bitFlip(inboxSequenceNumber);
+  const encoded = encodePadded(l2ChainId, flipped);
+  const res = Bytes.fromByteArray(crypto.keccak256(encoded));
+
+  // log.info(
+  //   "Getting Retryable ticket Id. l2Chain id {} . inboxSeq {} . flipped {} . encoded {} . retTicketId {}",
+  //   [
+  //     l2ChainId.toHexString(),
+  //     inboxSequenceNumber.toHexString(),
+  //     flipped.toHexString(),
+  //     encoded.toHexString(),
+  //     res.toHexString(),
+  //   ]
+  // );
+
+  return res;
+};
 
 const bigIntToId = (input: BigInt): string => input.toHexString();
 
@@ -118,8 +173,7 @@ export function handleInboxMessageDelivered(
   if (retryable) {
     // TODO: everything is currently a retryable, why??
     entity.kind = retryable.data.byteLength > 0 ? "Retryable" : "EthDeposit";
-    // TODO: ticket id of retryable in L2. Bytes! # bytes32"
-    // we can calculate the ticket id with `keccak256(zeroPad(l2ChainId), zeroPad(bitFlipedinboxSequenceNumber))`
+    entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
     entity.destAddr = retryable.destAddress;
     entity.isProcessed = true;
   } else {
