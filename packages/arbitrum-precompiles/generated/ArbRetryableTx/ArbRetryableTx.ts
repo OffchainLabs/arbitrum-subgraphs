@@ -23,7 +23,7 @@ export class Canceled__Params {
     this._event = event;
   }
 
-  get ticketId(): Bytes {
+  get userTxHash(): Bytes {
     return this._event.parameters[0].value.toBytes();
   }
 }
@@ -41,7 +41,7 @@ export class LifetimeExtended__Params {
     this._event = event;
   }
 
-  get ticketId(): Bytes {
+  get userTxHash(): Bytes {
     return this._event.parameters[0].value.toBytes();
   }
 
@@ -63,7 +63,7 @@ export class Redeemed__Params {
     this._event = event;
   }
 
-  get ticketId(): Bytes {
+  get userTxHash(): Bytes {
     return this._event.parameters[0].value.toBytes();
   }
 }
@@ -81,7 +81,7 @@ export class TicketCreated__Params {
     this._event = event;
   }
 
-  get ticketId(): Bytes {
+  get userTxHash(): Bytes {
     return this._event.parameters[0].value.toBytes();
   }
 }
@@ -125,21 +125,21 @@ export class ArbRetryableTx extends ethereum.SmartContract {
     return new ArbRetryableTx("ArbRetryableTx", address);
   }
 
-  getBeneficiary(ticketId: Bytes): Address {
+  getBeneficiary(userTxHash: Bytes): Address {
     let result = super.call(
       "getBeneficiary",
       "getBeneficiary(bytes32):(address)",
-      [ethereum.Value.fromFixedBytes(ticketId)]
+      [ethereum.Value.fromFixedBytes(userTxHash)]
     );
 
     return result[0].toAddress();
   }
 
-  try_getBeneficiary(ticketId: Bytes): ethereum.CallResult<Address> {
+  try_getBeneficiary(userTxHash: Bytes): ethereum.CallResult<Address> {
     let result = super.tryCall(
       "getBeneficiary",
       "getBeneficiary(bytes32):(address)",
-      [ethereum.Value.fromFixedBytes(ticketId)]
+      [ethereum.Value.fromFixedBytes(userTxHash)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -148,11 +148,13 @@ export class ArbRetryableTx extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  getKeepalivePrice(ticketId: Bytes): ArbRetryableTx__getKeepalivePriceResult {
+  getKeepalivePrice(
+    userTxHash: Bytes
+  ): ArbRetryableTx__getKeepalivePriceResult {
     let result = super.call(
       "getKeepalivePrice",
       "getKeepalivePrice(bytes32):(uint256,uint256)",
-      [ethereum.Value.fromFixedBytes(ticketId)]
+      [ethereum.Value.fromFixedBytes(userTxHash)]
     );
 
     return new ArbRetryableTx__getKeepalivePriceResult(
@@ -162,12 +164,12 @@ export class ArbRetryableTx extends ethereum.SmartContract {
   }
 
   try_getKeepalivePrice(
-    ticketId: Bytes
+    userTxHash: Bytes
   ): ethereum.CallResult<ArbRetryableTx__getKeepalivePriceResult> {
     let result = super.tryCall(
       "getKeepalivePrice",
       "getKeepalivePrice(bytes32):(uint256,uint256)",
-      [ethereum.Value.fromFixedBytes(ticketId)]
+      [ethereum.Value.fromFixedBytes(userTxHash)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -231,17 +233,17 @@ export class ArbRetryableTx extends ethereum.SmartContract {
     );
   }
 
-  getTimeout(ticketId: Bytes): BigInt {
+  getTimeout(userTxHash: Bytes): BigInt {
     let result = super.call("getTimeout", "getTimeout(bytes32):(uint256)", [
-      ethereum.Value.fromFixedBytes(ticketId)
+      ethereum.Value.fromFixedBytes(userTxHash)
     ]);
 
     return result[0].toBigInt();
   }
 
-  try_getTimeout(ticketId: Bytes): ethereum.CallResult<BigInt> {
+  try_getTimeout(userTxHash: Bytes): ethereum.CallResult<BigInt> {
     let result = super.tryCall("getTimeout", "getTimeout(bytes32):(uint256)", [
-      ethereum.Value.fromFixedBytes(ticketId)
+      ethereum.Value.fromFixedBytes(userTxHash)
     ]);
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -268,7 +270,7 @@ export class CancelCall__Inputs {
     this._call = call;
   }
 
-  get ticketId(): Bytes {
+  get userTxHash(): Bytes {
     return this._call.inputValues[0].value.toBytes();
   }
 }
@@ -298,7 +300,7 @@ export class KeepaliveCall__Inputs {
     this._call = call;
   }
 
-  get ticketId(): Bytes {
+  get userTxHash(): Bytes {
     return this._call.inputValues[0].value.toBytes();
   }
 }
@@ -332,7 +334,7 @@ export class RedeemCall__Inputs {
     this._call = call;
   }
 
-  get txId(): Bytes {
+  get userTxHash(): Bytes {
     return this._call.inputValues[0].value.toBytes();
   }
 }

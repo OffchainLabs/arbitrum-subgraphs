@@ -153,9 +153,9 @@ export class Retryable extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
+    this.set("retryableTicketID", Value.fromBytes(Bytes.empty()));
     this.set("timeoutTimestamp", Value.fromBigInt(BigInt.zero()));
     this.set("status", Value.fromString(""));
-    this.set("userTx", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
@@ -184,6 +184,32 @@ export class Retryable extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get retryableTicketID(): Bytes {
+    let value = this.get("retryableTicketID");
+    return value!.toBytes();
+  }
+
+  set retryableTicketID(value: Bytes) {
+    this.set("retryableTicketID", Value.fromBytes(value));
+  }
+
+  get redeemTxId(): Bytes | null {
+    let value = this.get("redeemTxId");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set redeemTxId(value: Bytes | null) {
+    if (!value) {
+      this.unset("redeemTxId");
+    } else {
+      this.set("redeemTxId", Value.fromBytes(<Bytes>value));
+    }
+  }
+
   get timeoutTimestamp(): BigInt {
     let value = this.get("timeoutTimestamp");
     return value!.toBigInt();
@@ -200,14 +226,5 @@ export class Retryable extends Entity {
 
   set status(value: string) {
     this.set("status", Value.fromString(value));
-  }
-
-  get userTx(): Bytes {
-    let value = this.get("userTx");
-    return value!.toBytes();
-  }
-
-  set userTx(value: Bytes) {
-    this.set("userTx", Value.fromBytes(value));
   }
 }

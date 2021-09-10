@@ -6,8 +6,8 @@ import {
   Redeemed as RedeemedEvent,
   TicketCreated as TicketCreatedEvent,
 } from "../generated/ArbRetryableTx/ArbRetryableTx";
-import { Bytes, BigInt, crypto, log, ByteArray } from "@graphprotocol/graph-ts";
-import { encodePadded } from "subgraph-common/src/helpers";
+import { log } from "@graphprotocol/graph-ts";
+import { RETRYABLE_LIFETIME_SECONDS } from "subgraph-common/src/helpers";
 
 export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
   // TODO: make the uniqueId the actual ID
@@ -33,10 +33,8 @@ export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
   entity.save();
 }
 
-const ticketIdToEntityId = (input: Bytes): string => input.toHexString();
-
 export function handleCanceled(event: CanceledEvent): void {
-  let entity = Retryable.load(ticketIdToEntityId(event.params.ticketId));
+  let entity = Retryable.load(event.params.userTxHash.toHexString());
   if (!entity) {
     log.critical("Missed a retryable ticket somewhere!", []);
     throw new Error("No retryable ticket");
@@ -46,7 +44,7 @@ export function handleCanceled(event: CanceledEvent): void {
 }
 
 export function handleLifetimeExtended(event: LifetimeExtendedEvent): void {
-  let entity = Retryable.load(ticketIdToEntityId(event.params.ticketId));
+  let entity = Retryable.load(event.params.userTxHash.toHexString());
   if (!entity) {
     log.critical("Missed a retryable ticket somewhere!", []);
     throw new Error("No retryable ticket");
@@ -58,31 +56,25 @@ export function handleLifetimeExtended(event: LifetimeExtendedEvent): void {
 }
 
 export function handleRedeemed(event: RedeemedEvent): void {
-  let entity = Retryable.load(ticketIdToEntityId(event.params.ticketId));
+  let entity = Retryable.load(event.params.userTxHash.toHexString());
   if (!entity) {
     log.critical("Missed a retryable ticket somewhere!", []);
     throw new Error("No retryable ticket");
   }
-  // TODO: we can use the tx hash to infer if this was an auto redeem or not
+  // TODO: we can compare hash(retryableTicketID, 1) to redeemTxId to infer if this was an auto redeem or not
+  entity.redeemTxId = event.transaction.hash
   entity.status = "Redeemed";
   entity.save();
 }
 
 export function handleTicketCreated(event: TicketCreatedEvent): void {
-  let entity = new Retryable(ticketIdToEntityId(event.params.ticketId));
+  let entity = new Retryable(event.params.userTxHash.toHexString());
 
   // could query the precompile at `getLifetime()` but we don't need the expensive archive query
-  const RETRYABLE_LIFETIME_SECONDS = BigInt.fromI32(604800);
   entity.timeoutTimestamp = event.block.timestamp.plus(
     RETRYABLE_LIFETIME_SECONDS
   );
-
-  // we can calculate the Redemption Txn ahead of time with keccak256(zeroPad(retryable-ticket-id), 0)
-  entity.userTx = Bytes.fromByteArray(
-    crypto.keccak256(
-      encodePadded(event.params.ticketId as ByteArray, Bytes.fromI32(0))
-    )
-  );
+  entity.retryableTicketID = event.transaction.hash;
   entity.status = "Created";
   entity.save();
 }

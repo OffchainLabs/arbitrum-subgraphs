@@ -5,7 +5,7 @@
       {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -18,7 +18,7 @@
       {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       },
       {
@@ -37,7 +37,7 @@
       {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -50,7 +50,7 @@
       {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -61,7 +61,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -74,7 +74,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -93,7 +93,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -154,7 +154,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -173,7 +173,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "ticketId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],
@@ -192,7 +192,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "txId",
+        "name": "userTxHash",
         "type": "bytes32"
       }
     ],

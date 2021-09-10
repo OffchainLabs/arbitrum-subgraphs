@@ -1,4 +1,4 @@
-import { ByteArray } from "@graphprotocol/graph-ts";
+import { ByteArray, BigInt } from "@graphprotocol/graph-ts";
 
 export const appendBytes = (a: ByteArray, b: ByteArray): ByteArray => {
   let result = new ByteArray(a.length + b.length);
@@ -24,3 +24,5 @@ export const padBytes = (_a: ByteArray, expectedLength: i32): ByteArray => {
 
 export const encodePadded = (_a: ByteArray, _b: ByteArray): ByteArray =>
   appendBytes(padBytes(_a, 32), padBytes(_b, 32));
+
+export const RETRYABLE_LIFETIME_SECONDS = BigInt.fromI32(604800);

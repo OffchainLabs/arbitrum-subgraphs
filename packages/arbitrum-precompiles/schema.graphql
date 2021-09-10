@@ -19,13 +19,18 @@ enum RetryableState {
 }
 
 type Retryable @entity {
-  "ticket id of retryable. Bytes! # bytes32"
+  "user tx hash that will be created by retryable. Bytes! # bytes32"
   id: ID!
+
+  "ticket id of retryable"
+  retryableTicketID: Bytes! # bytes32
+
+  "tx that redeemed the current retryable. this could have been an autoredeem"
+  redeemTxId: Bytes # bytes32
+
 
   "this value is the creation timestamp plus the lifetime, which can be extended"
   timeoutTimestamp: BigInt! # uint256
 
   status: RetryableState!
-
-  userTx: Bytes! # bytes32
 }
