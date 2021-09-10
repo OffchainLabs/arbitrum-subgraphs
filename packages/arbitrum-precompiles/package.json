@@ -5,10 +5,12 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ offchainlabs/arbitrum-precompiles",
-    "create-local": "graph create --node http://localhost:8020/ offchainlabs/arbitrum-precompiles",
-    "remove-local": "graph remove --node http://localhost:8020/ offchainlabs/arbitrum-precompiles",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 offchainlabs/arbitrum-precompiles"
+
+    "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+
+    "deploy:mainnet": "yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-builtins",
+    "deploy:rinkeby": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-builtins-rinkeby"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "v0.22.0-alpha.2",

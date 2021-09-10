@@ -5,16 +5,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Outbox
-    # network: mainnet
-    # source:
-    #   address: "0x760723CD2e632826c38Fef8CD438A4CC7E7E1A40"
-    #   abi: Outbox
-    #   startBlock: 13124585
-    network: rinkeby
+    network: {{ l1Network }}
     source:
-      address: "0x2360A33905dc1c72b12d975d975F42BaBdcef9F3"
+      address: {{ outboxAddress }}
       abi: Outbox
-      startBlock: 9203449
+      startBlock: {{ outboxDeploymentBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -33,11 +28,11 @@ dataSources:
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: Inbox
-    network: rinkeby
+    network: {{ l1Network }}
     source:
-      address: "0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e"
+      address: {{ inboxAddress }}
       abi: Inbox
-      startBlock: 8700589
+      startBlock: {{ inboxDeploymentBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -53,11 +48,11 @@ dataSources:
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: Bridge
-    network: rinkeby
+    network: {{ l1Network }}
     source:
-      address: "0x9a28e783c47bbeb813f32b861a431d0776681e95"
+      address: {{ bridgeAddress }}
       abi: Bridge
-      startBlock: 8700589
+      startBlock: {{ bridgeDeploymentBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
