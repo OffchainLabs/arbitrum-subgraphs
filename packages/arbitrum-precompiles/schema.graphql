@@ -11,3 +11,21 @@ type L2ToL1Transaction @entity {
   callvalue: BigInt! # uint256
   data: Bytes! # bytes
 }
+
+enum RetryableState {
+  Created
+  Canceled
+  Redeemed
+}
+
+type Retryable @entity {
+  "ticket id of retryable. Bytes! # bytes32"
+  id: ID!
+
+  "this value is the creation timestamp plus the lifetime, which can be extended"
+  timeoutTimestamp: BigInt! # uint256
+
+  status: RetryableState!
+
+  userTx: Bytes! # bytes32
+}

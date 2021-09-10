@@ -35,4 +35,5 @@ type InboxMessage @entity {
   value: BigInt!
   "optional field that indicates the L2 address"
   destAddr: Bytes
+  # TODO: "ticket id of retryable. Bytes! # bytes32"
 }

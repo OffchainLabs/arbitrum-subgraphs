@@ -147,3 +147,67 @@ export class L2ToL1Transaction extends Entity {
     this.set("data", Value.fromBytes(value));
   }
 }
+
+export class Retryable extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("timeoutTimestamp", Value.fromBigInt(BigInt.zero()));
+    this.set("status", Value.fromString(""));
+    this.set("userTx", Value.fromBytes(Bytes.empty()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Retryable entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Retryable entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Retryable", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Retryable | null {
+    return changetype<Retryable | null>(store.get("Retryable", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get timeoutTimestamp(): BigInt {
+    let value = this.get("timeoutTimestamp");
+    return value!.toBigInt();
+  }
+
+  set timeoutTimestamp(value: BigInt) {
+    this.set("timeoutTimestamp", Value.fromBigInt(value));
+  }
+
+  get status(): string {
+    let value = this.get("status");
+    return value!.toString();
+  }
+
+  set status(value: string) {
+    this.set("status", Value.fromString(value));
+  }
+
+  get userTx(): Bytes {
+    let value = this.get("userTx");
+    return value!.toBytes();
+  }
+
+  set userTx(value: Bytes) {
+    this.set("userTx", Value.fromBytes(value));
+  }
+}

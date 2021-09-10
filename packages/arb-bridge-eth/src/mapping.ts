@@ -118,6 +118,8 @@ export function handleInboxMessageDelivered(
   if (retryable) {
     // TODO: everything is currently a retryable, why??
     entity.kind = retryable.data.byteLength > 0 ? "Retryable" : "EthDeposit";
+    // TODO: ticket id of retryable in L2. Bytes! # bytes32"
+    // we can calculate the ticket id with `keccak256(zeroPad(l2ChainId), zeroPad(bitFlipedinboxSequenceNumber))`
     entity.destAddr = retryable.destAddress;
     entity.isProcessed = true;
   } else {
