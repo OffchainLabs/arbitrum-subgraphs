@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ArbSys
-    network: arbitrum-one
+    network: {{ l2Network }}
     source:
       address: "0x0000000000000000000000000000000000000064"
       abi: ArbSys
@@ -23,7 +23,7 @@ dataSources:
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: ArbRetryableTx
-    network: arbitrum-one
+    network: {{ l2Network }}
     source:
       address: "0x000000000000000000000000000000000000006E"
       abi: ArbRetryableTx

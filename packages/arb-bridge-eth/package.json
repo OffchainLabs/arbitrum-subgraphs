@@ -6,10 +6,12 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth",
-    "deploy:rinkeby": "graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby",
-    "create-local": "graph create --node http://localhost:8020/ offchainlabs/arb-bridge-eth",
-    "remove-local": "graph remove --node http://localhost:8020/ offchainlabs/arb-bridge-eth",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 offchainlabs/arb-bridge-eth"
+
+    "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml > subgraph.yaml",
+    "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml > subgraph.yaml",
+
+    "deploy:rinkeby": "yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby",
+    "deploy:mainnet": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.22.0-alpha.2",

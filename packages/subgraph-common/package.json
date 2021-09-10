@@ -1,9 +1,9 @@
 {
-    "name": "subgraph-common",
-    "version": "0.0.1",
-    "license": "Apache-2.0",
-    "dependencies": {
-      "@graphprotocol/graph-ts": "v0.22.0-alpha.2"
-    }
+  "name": "subgraph-common",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@graphprotocol/graph-ts": "v0.22.0-alpha.2",
+    "mustache": "^4.2.0"
   }
-  
+}
