@@ -4,7 +4,12 @@ import {
 } from "../generated/Outbox/Outbox";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
 import { MessageDelivered as MessageDeliveredEvent } from "../generated/Bridge/Bridge";
-import { OutboxEntry, OutboxOutput, InboxMessage } from "../generated/schema";
+import {
+  OutboxEntry,
+  OutboxOutput,
+  Retryable,
+  RawMessage,
+} from "../generated/schema";
 import {
   Bytes,
   BigInt,
@@ -13,6 +18,7 @@ import {
   log,
   dataSource,
   crypto,
+  store,
 } from "@graphprotocol/graph-ts";
 import { encodePadded, padBytes } from "subgraph-common/src/helpers";
 
@@ -159,33 +165,42 @@ export function handleInboxMessageDelivered(
   event: InboxMessageDeliveredEvent
 ): void {
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
-  let entity = InboxMessage.load(bigIntToId(event.params.messageNum));
+  const id = bigIntToId(event.params.messageNum);
+  let prevEntity = RawMessage.load(id);
 
   // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
-  if (!entity) {
+  if (!prevEntity) {
     log.critical("Wrong order in entity!!", []);
     throw new Error("Oh damn no entity wrong order");
   }
-  if (entity.kind != "Retryable") return;
+  if (prevEntity.kind != "Retryable") return;
 
   const retryable = RetryableTx.parseRetryable(event.params.data);
-  entity.value = event.transaction.value;
   if (retryable) {
+    let entity = new Retryable(id);
+    entity.value = event.transaction.value;
     // TODO: everything is currently a retryable, why??
-    entity.kind = retryable.data.byteLength > 0 ? "Retryable" : "EthDeposit";
+    entity.isEthDeposit =
+      retryable.data.toHexString() == "0x00000000" ||
+      retryable.data === Bytes.empty() ||
+      retryable.data.byteLength === 0;
+      
+    log.info("Data incoming: {} isEthDeposit? {}", [
+      retryable.data.toHexString(),
+      entity.isEthDeposit ? "true" : "false",
+    ]);
     entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
     entity.destAddr = retryable.destAddress;
-    entity.isProcessed = true;
+    entity.save();
+    // we delete the old raw message since now we saved the retryable
+    store.remove("RawMessage", id);
   } else {
-    entity.kind = "NotSupported";
-    entity.destAddr = null;
+    log.error("Not able to parse tx with id {}", [id.toString()]);
   }
-  entity.save();
 }
 
 export function handleMessageDelivered(event: MessageDeliveredEvent): void {
-  let entity = new InboxMessage(bigIntToId(event.params.messageIndex));
+  let entity = new RawMessage(bigIntToId(event.params.messageIndex));
   entity.kind = event.params.kind == 9 ? "Retryable" : "NotSupported";
-  entity.isProcessed = false;
   entity.save();
 }

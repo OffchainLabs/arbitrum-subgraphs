@@ -19,22 +19,26 @@ type OutboxOutput @entity {
 }
 
 enum MessageKind {
-  EthDeposit
   Retryable
   NotSupported
 }
 
-type InboxMessage @entity {
+type RawMessage @entity {
   "the inbox sequence number of the current message"
   id: ID!
-  "a inbox message goes through multiple indexing steps, this indicates if all are done"
-  isProcessed: Boolean!
   "is this inbox message a regular eth deposit or a retryable"
   kind: MessageKind!
+}
+
+type Retryable @entity {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "is the current retryable a deposit of eth"
+  isEthDeposit: Boolean!
   "value sent with message"
   value: BigInt!
-  "optional field that indicates the L2 address"
-  destAddr: Bytes
+  "indicates the L2 address destination"
+  destAddr: Bytes! # bytes32
   "ticket id of retryable"
-  retryableTicketID: Bytes # bytes32
+  retryableTicketID: Bytes! # bytes32
 }
