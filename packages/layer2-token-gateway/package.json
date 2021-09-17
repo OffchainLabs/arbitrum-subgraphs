@@ -3,12 +3,14 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen": "graph codegen",
-    "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ offchainlabs/layer2-token-gateway",
-    "create-local": "graph create --node http://localhost:8020/ offchainlabs/layer2-token-gateway",
-    "remove-local": "graph remove --node http://localhost:8020/ offchainlabs/layer2-token-gateway",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 offchainlabs/layer2-token-gateway"
+    "codegen": "yarn prepare:mainnet && graph codegen",
+    "build": "yarn prepare:mainnet && graph build",
+
+    "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+
+    "deploy:mainnet": "yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway",
+    "deploy:rinkeby": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-rinkeby"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.22.0-alpha.2",

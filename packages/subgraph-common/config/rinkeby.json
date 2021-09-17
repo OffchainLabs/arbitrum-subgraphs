@@ -6,5 +6,7 @@
     "inboxDeploymentBlock": 8700589,
     "inboxAddress": "0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e",
     "bridgeDeploymentBlock": 8700589,
-    "bridgeAddress": "0x9a28e783c47bbeb813f32b861a431d0776681e95"
+    "bridgeAddress": "0x9a28e783c47bbeb813f32b861a431d0776681e95",
+    "l2GatewayRouter": "0x9413AD42910c1eA60c737dB5f58d1C504498a3cD",
+    "l2GatewayRouterDeployBlock": 123
 }

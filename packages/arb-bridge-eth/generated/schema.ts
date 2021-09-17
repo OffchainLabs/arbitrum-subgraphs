@@ -177,31 +177,29 @@ export class OutboxOutput extends Entity {
   }
 }
 
-export class InboxMessage extends Entity {
+export class RawMessage extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("isProcessed", Value.fromBoolean(false));
     this.set("kind", Value.fromString(""));
-    this.set("value", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save InboxMessage entity without an ID");
+    assert(id != null, "Cannot save RawMessage entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save InboxMessage entity with non-string ID. " +
+        "Cannot save RawMessage entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("InboxMessage", id.toString(), this);
+      store.set("RawMessage", id.toString(), this);
     }
   }
 
-  static load(id: string): InboxMessage | null {
-    return changetype<InboxMessage | null>(store.get("InboxMessage", id));
+  static load(id: string): RawMessage | null {
+    return changetype<RawMessage | null>(store.get("RawMessage", id));
   }
 
   get id(): string {
@@ -213,15 +211,6 @@ export class InboxMessage extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get isProcessed(): boolean {
-    let value = this.get("isProcessed");
-    return value!.toBoolean();
-  }
-
-  set isProcessed(value: boolean) {
-    this.set("isProcessed", Value.fromBoolean(value));
-  }
-
   get kind(): string {
     let value = this.get("kind");
     return value!.toString();
@@ -229,6 +218,53 @@ export class InboxMessage extends Entity {
 
   set kind(value: string) {
     this.set("kind", Value.fromString(value));
+  }
+}
+
+export class Retryable extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("isEthDeposit", Value.fromBoolean(false));
+    this.set("value", Value.fromBigInt(BigInt.zero()));
+    this.set("destAddr", Value.fromBytes(Bytes.empty()));
+    this.set("retryableTicketID", Value.fromBytes(Bytes.empty()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Retryable entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Retryable entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Retryable", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Retryable | null {
+    return changetype<Retryable | null>(store.get("Retryable", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get isEthDeposit(): boolean {
+    let value = this.get("isEthDeposit");
+    return value!.toBoolean();
+  }
+
+  set isEthDeposit(value: boolean) {
+    this.set("isEthDeposit", Value.fromBoolean(value));
   }
 
   get value(): BigInt {
@@ -240,37 +276,21 @@ export class InboxMessage extends Entity {
     this.set("value", Value.fromBigInt(value));
   }
 
-  get destAddr(): Bytes | null {
+  get destAddr(): Bytes {
     let value = this.get("destAddr");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytes();
-    }
+    return value!.toBytes();
   }
 
-  set destAddr(value: Bytes | null) {
-    if (!value) {
-      this.unset("destAddr");
-    } else {
-      this.set("destAddr", Value.fromBytes(<Bytes>value));
-    }
+  set destAddr(value: Bytes) {
+    this.set("destAddr", Value.fromBytes(value));
   }
 
-  get retryableTicketID(): Bytes | null {
+  get retryableTicketID(): Bytes {
     let value = this.get("retryableTicketID");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytes();
-    }
+    return value!.toBytes();
   }
 
-  set retryableTicketID(value: Bytes | null) {
-    if (!value) {
-      this.unset("retryableTicketID");
-    } else {
-      this.set("retryableTicketID", Value.fromBytes(<Bytes>value));
-    }
+  set retryableTicketID(value: Bytes) {
+    this.set("retryableTicketID", Value.fromBytes(value));
   }
 }

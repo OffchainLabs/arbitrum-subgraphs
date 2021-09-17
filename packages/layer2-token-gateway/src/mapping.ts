@@ -1,53 +1,70 @@
-import {
-  DefaultGatewayUpdated as DefaultGatewayUpdatedEvent,
-  GatewaySet as GatewaySetEvent,
-  TransferRouted as TransferRoutedEvent,
-  TxToL1 as TxToL1Event
-} from "../generated/L2GatewayRouter/L2GatewayRouter"
-import {
-  DefaultGatewayUpdated,
-  GatewaySet,
-  TransferRouted,
-  TxToL1
-} from "../generated/schema"
+import { GatewaySet as GatewaySetEvent } from "../generated/L2GatewayRouter/L2GatewayRouter";
+import { L2ArbitrumGateway } from "../generated/templates"
+import { 
+  WithdrawalInitiated as WithdrawalInitiatedEvent,
+  DepositFinalized as DepositFinalizedEvent,
+} from "../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway"
+import { Gateway, Token, TokenGatewayJoinTable, Withdrawal } from "../generated/schema";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 
-export function handleDefaultGatewayUpdated(
-  event: DefaultGatewayUpdatedEvent
-): void {
-  let entity = new DefaultGatewayUpdated(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.newDefaultGateway = event.params.newDefaultGateway
-  entity.save()
-}
+const bigIntToId = (input: BigInt): string => input.toHexString()
+
+const addressToId = (input: Address): string =>
+  input.toHexString().toLowerCase();
+
+const getJoinId = (gatewayId: string, tokenId: string): string =>
+  gatewayId.concat(tokenId)
 
 export function handleGatewaySet(event: GatewaySetEvent): void {
-  let entity = new GatewaySet(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.l1Token = event.params.l1Token
-  entity.gateway = event.params.gateway
-  entity.save()
+  const gatewayId = addressToId(event.params.gateway);
+  const tokenId = addressToId(event.params.l1Token);
+  const joinId = getJoinId(gatewayId, tokenId)
+
+  if (event.params.gateway == Address.zero()) {
+    // TODO: handle gateways being deleted
+    return;
+  }
+
+  let gatewayEntity = Gateway.load(gatewayId);
+  if(gatewayEntity == null) {
+    gatewayEntity = new Gateway(gatewayId);
+    gatewayEntity.save();
+    // we want to track every new arbitrum gateway
+    // so we initialize a Data Source Template
+    L2ArbitrumGateway.create(event.params.gateway)
+  }
+
+  let tokenEntity = Token.load(tokenId);
+  if(tokenEntity == null) {
+    tokenEntity = new Token(tokenId);
+    // TODO: query gateway for L2 address
+    // tokenEntity.l2Address = null;
+    tokenEntity.save();
+  }
+
+  let joinEntity = new TokenGatewayJoinTable(joinId);
+  joinEntity.gateway = gatewayId;
+  joinEntity.token = tokenId;
+  joinEntity.save();
 }
 
-export function handleTransferRouted(event: TransferRoutedEvent): void {
-  let entity = new TransferRouted(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.token = event.params.token
-  entity._userFrom = event.params._userFrom
-  entity._userTo = event.params._userTo
-  entity.gateway = event.params.gateway
-  entity.save()
+export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
+  const withdrawalId = bigIntToId(event.params._l2ToL1Id)
+  const withdrawal = new Withdrawal(withdrawalId)
+
+  withdrawal.l2BlockNum = event.block.number
+  withdrawal.from = event.params._from
+  withdrawal.to = event.params._to
+  withdrawal.amount = event.params._amount
+  withdrawal.exitNum = event.params._exitNum
+
+  const gatewayId = addressToId(event.address)
+  const tokenId = addressToId(event.params.l1Token)
+  withdrawal.exitInfo = getJoinId(gatewayId, tokenId)
+
+  withdrawal.save()
 }
 
-export function handleTxToL1(event: TxToL1Event): void {
-  let entity = new TxToL1(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity._from = event.params._from
-  entity._to = event.params._to
-  entity._id = event.params._id
-  entity._data = event.params._data
-  entity.save()
+export function handleDeposit(event: DepositFinalizedEvent): void {
+  // TODO: add deposit support
 }
