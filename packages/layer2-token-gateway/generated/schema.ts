@@ -186,4 +186,115 @@ export class TokenGatewayJoinTable extends Entity {
   set token(value: string) {
     this.set("token", Value.fromString(value));
   }
+
+  get withdrawals(): Array<string> | null {
+    let value = this.get("withdrawals");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set withdrawals(value: Array<string> | null) {
+    if (!value) {
+      this.unset("withdrawals");
+    } else {
+      this.set("withdrawals", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+}
+
+export class Withdrawal extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("l2BlockNum", Value.fromBigInt(BigInt.zero()));
+    this.set("from", Value.fromBytes(Bytes.empty()));
+    this.set("to", Value.fromBytes(Bytes.empty()));
+    this.set("amount", Value.fromBigInt(BigInt.zero()));
+    this.set("exitNum", Value.fromBigInt(BigInt.zero()));
+    this.set("exitInfo", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Withdrawal entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Withdrawal entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Withdrawal", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Withdrawal | null {
+    return changetype<Withdrawal | null>(store.get("Withdrawal", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get l2BlockNum(): BigInt {
+    let value = this.get("l2BlockNum");
+    return value!.toBigInt();
+  }
+
+  set l2BlockNum(value: BigInt) {
+    this.set("l2BlockNum", Value.fromBigInt(value));
+  }
+
+  get from(): Bytes {
+    let value = this.get("from");
+    return value!.toBytes();
+  }
+
+  set from(value: Bytes) {
+    this.set("from", Value.fromBytes(value));
+  }
+
+  get to(): Bytes {
+    let value = this.get("to");
+    return value!.toBytes();
+  }
+
+  set to(value: Bytes) {
+    this.set("to", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
+  }
+
+  get exitNum(): BigInt {
+    let value = this.get("exitNum");
+    return value!.toBigInt();
+  }
+
+  set exitNum(value: BigInt) {
+    this.set("exitNum", Value.fromBigInt(value));
+  }
+
+  get exitInfo(): string {
+    let value = this.get("exitInfo");
+    return value!.toString();
+  }
+
+  set exitInfo(value: string) {
+    this.set("exitInfo", Value.fromString(value));
+  }
 }

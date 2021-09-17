@@ -22,3 +22,24 @@ dataSources:
         - event: GatewaySet(indexed address,indexed address)
           handler: handleGatewaySet
       file: ./src/mapping.ts
+templates:
+  - name: L2ArbitrumGateway
+    kind: ethereum/contract
+    network: {{ l2Network }}
+    source:
+      abi: L2ArbitrumGateway
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - L2ArbitrumGateway
+      abis:
+        - name: L2ArbitrumGateway
+          file: ./abis/L2ArbitrumGateway.json
+      eventHandlers:
+        - event: WithdrawalInitiated(address,indexed address,indexed address,indexed uint256,uint256,uint256)
+          handler: handleWithdrawal
+        - event: DepositFinalized(indexed address,indexed address,indexed address,uint256)
+          handler: handleDeposit

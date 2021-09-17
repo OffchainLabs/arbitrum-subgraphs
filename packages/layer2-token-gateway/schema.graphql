@@ -19,4 +19,17 @@ type TokenGatewayJoinTable @entity {
   id: ID!
   gateway: Gateway!
   token: Token!
+  withdrawals: [Withdrawal!] @derivedFrom(field: "exitInfo")
+}
+
+type Withdrawal @entity {
+  "this is the l2ToL1Id of the transaction as surfaced by arb-os"
+  id: ID!
+  "the L2 block number when this was triggered"
+  l2BlockNum: BigInt!
+  from: Bytes!
+  to: Bytes!
+  amount: BigInt!
+  exitNum: BigInt!
+  exitInfo: TokenGatewayJoinTable!
 }
