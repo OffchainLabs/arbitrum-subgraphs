@@ -2,52 +2,30 @@ import {
   DefaultGatewayUpdated as DefaultGatewayUpdatedEvent,
   GatewaySet as GatewaySetEvent,
   TransferRouted as TransferRoutedEvent,
-  TxToL1 as TxToL1Event
-} from "../generated/L2GatewayRouter/L2GatewayRouter"
-import {
-  DefaultGatewayUpdated,
-  GatewaySet,
-  TransferRouted,
-  TxToL1
-} from "../generated/schema"
+  TxToL1 as TxToL1Event,
+} from "../generated/L2GatewayRouter/L2GatewayRouter";
+import { Gateway, Token, TokenGatewayJoinTable } from "../generated/schema";
+import { Address } from "@graphprotocol/graph-ts";
 
-export function handleDefaultGatewayUpdated(
-  event: DefaultGatewayUpdatedEvent
-): void {
-  let entity = new DefaultGatewayUpdated(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.newDefaultGateway = event.params.newDefaultGateway
-  entity.save()
-}
+const addressToId = (input: Address): string =>
+  input.toHexString().toLowerCase();
 
 export function handleGatewaySet(event: GatewaySetEvent): void {
-  let entity = new GatewaySet(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.l1Token = event.params.l1Token
-  entity.gateway = event.params.gateway
-  entity.save()
-}
+  const gatewayId = addressToId(event.params.gateway);
+  // TODO: right now we create new gateway since its faster than loading
+  // if we do stateful stuff here in the future, this needs to instead load
+  let gatewayEntity = new Gateway(gatewayId);
+  gatewayEntity.save();
 
-export function handleTransferRouted(event: TransferRoutedEvent): void {
-  let entity = new TransferRouted(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.token = event.params.token
-  entity._userFrom = event.params._userFrom
-  entity._userTo = event.params._userTo
-  entity.gateway = event.params.gateway
-  entity.save()
-}
+  const tokenId = addressToId(event.params.gateway);
+  // TODO: same issue as gateway above. should load instead of create new
+  let tokenEntity = new Token(tokenId);
+  // TODO: query gateway for L2 address
+  tokenEntity.l2Address = null;
+  tokenEntity.save();
 
-export function handleTxToL1(event: TxToL1Event): void {
-  let entity = new TxToL1(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity._from = event.params._from
-  entity._to = event.params._to
-  entity._id = event.params._id
-  entity._data = event.params._data
-  entity.save()
+  let joinEntity = new TokenGatewayJoinTable(gatewayId.concat(tokenId));
+  joinEntity.gateway = gatewayId;
+  joinEntity.token = tokenId;
+  joinEntity.save();
 }

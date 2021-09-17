@@ -12,33 +12,151 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class DefaultGatewayUpdated extends Entity {
+export class Gateway extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Gateway entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Gateway entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Gateway", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Gateway | null {
+    return changetype<Gateway | null>(store.get("Gateway", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get tokens(): Array<string> | null {
+    let value = this.get("tokens");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set tokens(value: Array<string> | null) {
+    if (!value) {
+      this.unset("tokens");
+    } else {
+      this.set("tokens", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+}
+
+export class Token extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Token entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Token entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Token", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Token | null {
+    return changetype<Token | null>(store.get("Token", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get l2Address(): Bytes | null {
+    let value = this.get("l2Address");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set l2Address(value: Bytes | null) {
+    if (!value) {
+      this.unset("l2Address");
+    } else {
+      this.set("l2Address", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get gateway(): Array<string> | null {
+    let value = this.get("gateway");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set gateway(value: Array<string> | null) {
+    if (!value) {
+      this.unset("gateway");
+    } else {
+      this.set("gateway", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+}
+
+export class TokenGatewayJoinTable extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("newDefaultGateway", Value.fromBytes(Bytes.empty()));
+    this.set("gateway", Value.fromString(""));
+    this.set("token", Value.fromString(""));
   }
 
   save(): void {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save DefaultGatewayUpdated entity without an ID"
+      "Cannot save TokenGatewayJoinTable entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save DefaultGatewayUpdated entity with non-string ID. " +
+        "Cannot save TokenGatewayJoinTable entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("DefaultGatewayUpdated", id.toString(), this);
+      store.set("TokenGatewayJoinTable", id.toString(), this);
     }
   }
 
-  static load(id: string): DefaultGatewayUpdated | null {
-    return changetype<DefaultGatewayUpdated | null>(
-      store.get("DefaultGatewayUpdated", id)
+  static load(id: string): TokenGatewayJoinTable | null {
+    return changetype<TokenGatewayJoinTable | null>(
+      store.get("TokenGatewayJoinTable", id)
     );
   }
 
@@ -51,214 +169,21 @@ export class DefaultGatewayUpdated extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get newDefaultGateway(): Bytes {
-    let value = this.get("newDefaultGateway");
-    return value!.toBytes();
-  }
-
-  set newDefaultGateway(value: Bytes) {
-    this.set("newDefaultGateway", Value.fromBytes(value));
-  }
-}
-
-export class GatewaySet extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("l1Token", Value.fromBytes(Bytes.empty()));
-    this.set("gateway", Value.fromBytes(Bytes.empty()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save GatewaySet entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save GatewaySet entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("GatewaySet", id.toString(), this);
-    }
-  }
-
-  static load(id: string): GatewaySet | null {
-    return changetype<GatewaySet | null>(store.get("GatewaySet", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get l1Token(): Bytes {
-    let value = this.get("l1Token");
-    return value!.toBytes();
-  }
-
-  set l1Token(value: Bytes) {
-    this.set("l1Token", Value.fromBytes(value));
-  }
-
-  get gateway(): Bytes {
+  get gateway(): string {
     let value = this.get("gateway");
-    return value!.toBytes();
-  }
-
-  set gateway(value: Bytes) {
-    this.set("gateway", Value.fromBytes(value));
-  }
-}
-
-export class TransferRouted extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("token", Value.fromBytes(Bytes.empty()));
-    this.set("_userFrom", Value.fromBytes(Bytes.empty()));
-    this.set("_userTo", Value.fromBytes(Bytes.empty()));
-    this.set("gateway", Value.fromBytes(Bytes.empty()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save TransferRouted entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save TransferRouted entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("TransferRouted", id.toString(), this);
-    }
-  }
-
-  static load(id: string): TransferRouted | null {
-    return changetype<TransferRouted | null>(store.get("TransferRouted", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
     return value!.toString();
   }
 
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
+  set gateway(value: string) {
+    this.set("gateway", Value.fromString(value));
   }
 
-  get token(): Bytes {
+  get token(): string {
     let value = this.get("token");
-    return value!.toBytes();
-  }
-
-  set token(value: Bytes) {
-    this.set("token", Value.fromBytes(value));
-  }
-
-  get _userFrom(): Bytes {
-    let value = this.get("_userFrom");
-    return value!.toBytes();
-  }
-
-  set _userFrom(value: Bytes) {
-    this.set("_userFrom", Value.fromBytes(value));
-  }
-
-  get _userTo(): Bytes {
-    let value = this.get("_userTo");
-    return value!.toBytes();
-  }
-
-  set _userTo(value: Bytes) {
-    this.set("_userTo", Value.fromBytes(value));
-  }
-
-  get gateway(): Bytes {
-    let value = this.get("gateway");
-    return value!.toBytes();
-  }
-
-  set gateway(value: Bytes) {
-    this.set("gateway", Value.fromBytes(value));
-  }
-}
-
-export class TxToL1 extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("_from", Value.fromBytes(Bytes.empty()));
-    this.set("_to", Value.fromBytes(Bytes.empty()));
-    this.set("_id", Value.fromBigInt(BigInt.zero()));
-    this.set("_data", Value.fromBytes(Bytes.empty()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save TxToL1 entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save TxToL1 entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("TxToL1", id.toString(), this);
-    }
-  }
-
-  static load(id: string): TxToL1 | null {
-    return changetype<TxToL1 | null>(store.get("TxToL1", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
     return value!.toString();
   }
 
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get _from(): Bytes {
-    let value = this.get("_from");
-    return value!.toBytes();
-  }
-
-  set _from(value: Bytes) {
-    this.set("_from", Value.fromBytes(value));
-  }
-
-  get _to(): Bytes {
-    let value = this.get("_to");
-    return value!.toBytes();
-  }
-
-  set _to(value: Bytes) {
-    this.set("_to", Value.fromBytes(value));
-  }
-
-  get _id(): BigInt {
-    let value = this.get("_id");
-    return value!.toBigInt();
-  }
-
-  set _id(value: BigInt) {
-    this.set("_id", Value.fromBigInt(value));
-  }
-
-  get _data(): Bytes {
-    let value = this.get("_data");
-    return value!.toBytes();
-  }
-
-  set _data(value: Bytes) {
-    this.set("_data", Value.fromBytes(value));
+  set token(value: string) {
+    this.set("token", Value.fromString(value));
   }
 }

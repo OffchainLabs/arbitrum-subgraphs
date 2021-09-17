@@ -1,26 +1,22 @@
-type DefaultGatewayUpdated @entity {
+type Gateway @entity {
+  "gateway address hex string"
   id: ID!
-  newDefaultGateway: Bytes! # address
+  "tokens this gateway supports"
+  tokens: [TokenGatewayJoinTable!] @derivedFrom(field: "gateway")
 }
 
-type GatewaySet @entity {
+type Token @entity {
+  "l1 token address hex string"
   id: ID!
-  l1Token: Bytes! # address
-  gateway: Bytes! # address
+  "l2 token address hex string, optional"
+  l2Address: Bytes # address
+  "gateway that supports this token"
+  gateway: [TokenGatewayJoinTable!] @derivedFrom(field: "token")
 }
 
-type TransferRouted @entity {
+type TokenGatewayJoinTable @entity {
+  "Set to concat `gateway.id` and `token.id`"
   id: ID!
-  token: Bytes! # address
-  _userFrom: Bytes! # address
-  _userTo: Bytes! # address
-  gateway: Bytes! # address
-}
-
-type TxToL1 @entity {
-  id: ID!
-  _from: Bytes! # address
-  _to: Bytes! # address
-  _id: BigInt! # uint256
-  _data: Bytes! # bytes
+  gateway: Gateway!
+  token: Token!
 }
