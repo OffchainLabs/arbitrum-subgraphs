@@ -1,10 +1,11 @@
 import { GatewaySet as GatewaySetEvent } from "../generated/L2GatewayRouter/L2GatewayRouter";
+import { L2ToL1Transaction as L2ToL1TransactionEvent } from "../generated/ArbSys/ArbSys";
 import { L2ArbitrumGateway } from "../generated/templates"
 import { 
   WithdrawalInitiated as WithdrawalInitiatedEvent,
   DepositFinalized as DepositFinalizedEvent,
 } from "../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway"
-import { Gateway, Token, TokenGatewayJoinTable, Withdrawal } from "../generated/schema";
+import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, Withdrawal } from "../generated/schema";
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 const bigIntToId = (input: BigInt): string => input.toHexString()
@@ -61,10 +62,34 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
   const gatewayId = addressToId(event.address)
   const tokenId = addressToId(event.params.l1Token)
   withdrawal.exitInfo = getJoinId(gatewayId, tokenId)
+  withdrawal.l2ToL1Event = withdrawalId
 
   withdrawal.save()
 }
 
 export function handleDeposit(event: DepositFinalizedEvent): void {
   // TODO: add deposit support
+}
+
+export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
+  // TODO: delete L2 to L1 txs that arent a token withdrawal
+  const id = bigIntToId(event.params.uniqueId)
+  let entity = new L2ToL1Transaction(id);
+  entity.caller = event.params.caller;
+  entity.destination = event.params.destination;
+  entity.batchNumber = event.params.batchNumber;
+  entity.indexInBatch = event.params.indexInBatch;
+  entity.arbBlockNum = event.params.arbBlockNum;
+  entity.ethBlockNum = event.params.ethBlockNum;
+  entity.timestamp = event.params.timestamp;
+  entity.callvalue = event.params.callvalue;
+  entity.data = event.params.data;
+  entity.withdrawal = id
+
+  // TODO: query for L2 to L1 tx proof
+  // TODO: don't make this an archive query
+  // this will either be the proof or null
+  // if not null, backfill previous ones that were null
+
+  entity.save();
 }

@@ -32,4 +32,20 @@ type Withdrawal @entity {
   amount: BigInt!
   exitNum: BigInt!
   exitInfo: TokenGatewayJoinTable!
+  l2ToL1Event: L2ToL1Transaction
+}
+
+type L2ToL1Transaction @entity {
+  "BigInt! # uint256"
+  id: ID!
+  caller: Bytes! # address
+  destination: Bytes! # address
+  batchNumber: BigInt! # uint256
+  indexInBatch: BigInt! # uint256
+  arbBlockNum: BigInt! # uint256
+  ethBlockNum: BigInt! # uint256
+  timestamp: BigInt! # uint256
+  callvalue: BigInt! # uint256
+  data: Bytes! # bytes
+  withdrawal: Withdrawal
 }
