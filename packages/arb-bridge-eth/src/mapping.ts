@@ -21,7 +21,7 @@ import {
   store,
 } from "@graphprotocol/graph-ts";
 import { encodePadded, padBytes } from "subgraph-common/src/helpers";
-export { runTests } from "./test/mapping.test"
+export { runTests } from "./mapping.test"
 
 const getL2ChainId = (): Bytes => {
   const network = dataSource.network();

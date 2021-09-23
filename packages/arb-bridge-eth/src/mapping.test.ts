@@ -1,7 +1,7 @@
 import { Address, BigInt, Bytes, ethereum, store, Value } from "@graphprotocol/graph-ts";
-import { RawMessage } from "../../generated/schema";
-import { InboxMessageDelivered as InboxMessageDeliveredEvent} from "../../generated/Inbox/Inbox";
-import { handleInboxMessageDelivered } from "../mapping";
+import { RawMessage } from "../generated/schema";
+import { InboxMessageDelivered as InboxMessageDeliveredEvent} from "../generated/Inbox/Inbox";
+import { handleInboxMessageDelivered } from "./mapping";
 import { newMockEvent, test, assert, createMockedFunction } from "matchstick-as";
 
 
