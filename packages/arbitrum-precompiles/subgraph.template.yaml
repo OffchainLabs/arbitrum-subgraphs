@@ -1,4 +1,5 @@
 specVersion: 0.0.2
+description: Subgraph that indexes Arbitrum precompile contracts
 schema:
   file: ./schema.graphql
 dataSources:

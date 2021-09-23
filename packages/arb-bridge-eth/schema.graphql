@@ -41,4 +41,6 @@ type Retryable @entity {
   destAddr: Bytes! # bytes32
   "ticket id of retryable"
   retryableTicketID: Bytes! # bytes32
+  "calldata used in L2 call"
+  l2Calldata: Bytes!
 }

@@ -230,6 +230,7 @@ export class Retryable extends Entity {
     this.set("value", Value.fromBigInt(BigInt.zero()));
     this.set("destAddr", Value.fromBytes(Bytes.empty()));
     this.set("retryableTicketID", Value.fromBytes(Bytes.empty()));
+    this.set("l2Calldata", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
@@ -292,5 +293,14 @@ export class Retryable extends Entity {
 
   set retryableTicketID(value: Bytes) {
     this.set("retryableTicketID", Value.fromBytes(value));
+  }
+
+  get l2Calldata(): Bytes {
+    let value = this.get("l2Calldata");
+    return value!.toBytes();
+  }
+
+  set l2Calldata(value: Bytes) {
+    this.set("l2Calldata", Value.fromBytes(value));
   }
 }

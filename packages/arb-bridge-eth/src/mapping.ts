@@ -21,6 +21,7 @@ import {
   store,
 } from "@graphprotocol/graph-ts";
 import { encodePadded, padBytes } from "subgraph-common/src/helpers";
+export { runTests } from "./test/mapping.test"
 
 const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
@@ -113,36 +114,23 @@ class RetryableTx {
     public callValueRefundAddress: Address,
     public maxGas: BigInt,
     public gasPriceBid: BigInt,
+    public dataLength: BigInt,
     public data: Bytes
   ) {}
 
   static parseRetryable(data: Bytes): RetryableTx | null {
-    const parsedWithData = ethereum.decode(
-      "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes)",
-      data
-    );
-    if (parsedWithData) {
-      const parsedArray = parsedWithData.toTuple();
-
-      return new RetryableTx(
-        bigIntToAddress(parsedArray[0].toBigInt()),
-        parsedArray[1].toBigInt(),
-        parsedArray[2].toBigInt(),
-        parsedArray[3].toBigInt(),
-        bigIntToAddress(parsedArray[4].toBigInt()),
-        bigIntToAddress(parsedArray[5].toBigInt()),
-        parsedArray[6].toBigInt(),
-        parsedArray[7].toBigInt(),
-        parsedArray[9].toBytes()
-      );
-    }
-
     const parsedWithoutData = ethereum.decode(
       "(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
       data
     );
     if (parsedWithoutData) {
       const parsedArray = parsedWithoutData.toTuple();
+      const dataLength = parsedArray[8].toBigInt().toI32();
+      const l2Calldata = new Bytes(dataLength);
+
+      for(let i = 0; i < dataLength; i++) {
+        l2Calldata[dataLength-i-1] = data[data.length - i - 1]
+      }
 
       return new RetryableTx(
         bigIntToAddress(parsedArray[0].toBigInt()),
@@ -153,7 +141,8 @@ class RetryableTx {
         bigIntToAddress(parsedArray[5].toBigInt()),
         parsedArray[6].toBigInt(),
         parsedArray[7].toBigInt(),
-        Bytes.empty()
+        BigInt.fromI32(dataLength),
+        l2Calldata
       );
     }
 
@@ -173,24 +162,20 @@ export function handleInboxMessageDelivered(
     log.critical("Wrong order in entity!!", []);
     throw new Error("Oh damn no entity wrong order");
   }
-  if (prevEntity.kind != "Retryable") return;
-
+  if (prevEntity.kind != "Retryable") {
+    log.info("Prev entity not a retryable, skipping. messageNum: {}", [event.params.messageNum.toHexString()])
+    return;
+  }
+  log.info("Processing retryable before", [])
   const retryable = RetryableTx.parseRetryable(event.params.data);
+  log.info("Processing retryable after", [])
   if (retryable) {
     let entity = new Retryable(id);
     entity.value = event.transaction.value;
-    // TODO: everything is currently a retryable, why??
-    entity.isEthDeposit =
-      retryable.data.toHexString() == "0x00000000" ||
-      retryable.data === Bytes.empty() ||
-      retryable.data.byteLength === 0;
-      
-    log.info("Data incoming: {} isEthDeposit? {}", [
-      retryable.data.toHexString(),
-      entity.isEthDeposit ? "true" : "false",
-    ]);
+    entity.isEthDeposit = retryable.dataLength == BigInt.zero();
     entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
     entity.destAddr = retryable.destAddress;
+    entity.l2Calldata = retryable.data;
     entity.save();
     // we delete the old raw message since now we saved the retryable
     store.remove("RawMessage", id);
@@ -200,7 +185,9 @@ export function handleInboxMessageDelivered(
 }
 
 export function handleMessageDelivered(event: MessageDeliveredEvent): void {
+  log.info("Before Processing message delivered", [])
   let entity = new RawMessage(bigIntToId(event.params.messageIndex));
+  log.info("Processing message delivered", [])
   entity.kind = event.params.kind == 9 ? "Retryable" : "NotSupported";
   entity.save();
 }

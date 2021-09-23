@@ -13,7 +13,7 @@
     "deploy:rinkeby": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-rinkeby"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.22.0-alpha.2",
-    "@graphprotocol/graph-ts": "0.22.0-alpha.2"
+    "@graphprotocol/graph-cli": "0.22.0",
+    "@graphprotocol/graph-ts": "0.22.0"
   }
 }

@@ -5,15 +5,14 @@
   "scripts": {
     "codegen": "yarn prepare:mainnet && graph codegen",
     "build": "yarn prepare:mainnet && graph build",
-
     "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-
     "deploy:mainnet": "yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth",
     "deploy:rinkeby": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.22.0-alpha.2",
-    "@graphprotocol/graph-ts": "0.22.0-alpha.2"
+    "@graphprotocol/graph-cli": "0.22.0",
+    "@graphprotocol/graph-ts": "0.22.0",
+    "matchstick-as": "^0.0.53"
   }
 }
