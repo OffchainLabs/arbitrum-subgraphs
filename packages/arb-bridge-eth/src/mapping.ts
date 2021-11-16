@@ -19,9 +19,9 @@ import {
   dataSource,
   crypto,
   store,
+  ByteArray
 } from "@graphprotocol/graph-ts";
 import { encodePadded, padBytes } from "subgraph-common/src/helpers";
-export { runTests } from "./mapping.test"
 
 const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
@@ -52,7 +52,7 @@ const getL2RetryableTicketId = (inboxSequenceNumber: BigInt): Bytes => {
   // keccak256(zeroPad(l2ChainId), zeroPad(bitFlipedinboxSequenceNumber))
   const l2ChainId = getL2ChainId();
   const flipped = bitFlip(inboxSequenceNumber);
-  const encoded = encodePadded(l2ChainId, flipped);
+  const encoded: ByteArray = encodePadded(l2ChainId, flipped);
   const res = Bytes.fromByteArray(crypto.keccak256(encoded));
 
   // log.info(
