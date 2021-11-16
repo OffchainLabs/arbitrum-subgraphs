@@ -8,5 +8,7 @@
     "bridgeDeploymentBlock": 8700589,
     "bridgeAddress": "0x9a28e783c47bbeb813f32b861a431d0776681e95",
     "l2GatewayRouter": "0x9413AD42910c1eA60c737dB5f58d1C504498a3cD",
-    "l2GatewayRouterDeployBlock": 123
+    "l2GatewayRouterDeployBlock": 123,
+    "l2StandardGateway": "0x195C107F3F75c4C93Eba7d9a1312F19305d6375f",
+    "l2StandardGatewayDeployBlock": 122
 }

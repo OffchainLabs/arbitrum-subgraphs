@@ -42,6 +42,28 @@ dataSources:
         - event: L2ToL1Transaction(address,indexed address,indexed uint256,indexed uint256,uint256,uint256,uint256,uint256,uint256,bytes)
           handler: handleL2ToL1Transaction
       file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: L2StandardGateway
+    network: {{ l2Network }}
+    source:
+      address: "{{ l2StandardGateway }}"
+      abi: L2ArbitrumGateway
+      startBlock: {{ l2StandardGatewayDeployBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Token
+      abis:
+        - name: L2ArbitrumGateway
+          file: ./abis/L2ArbitrumGateway.json
+      eventHandlers:
+        - event: DepositFinalized(indexed address,indexed address,indexed address,uint256)
+          handler: handleDeposit
+        - event: WithdrawalInitiated(address,indexed address,indexed address,indexed uint256,uint256,uint256)
+          handler: handleWithdrawal
+      file: ./src/mapping.ts
 templates:
   - name: L2ArbitrumGateway
     kind: ethereum/contract
@@ -61,5 +83,3 @@ templates:
       eventHandlers:
         - event: WithdrawalInitiated(address,indexed address,indexed address,indexed uint256,uint256,uint256)
           handler: handleWithdrawal
-        - event: DepositFinalized(indexed address,indexed address,indexed address,uint256)
-          handler: handleDeposit

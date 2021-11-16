@@ -185,9 +185,8 @@ export function handleInboxMessageDelivered(
 }
 
 export function handleMessageDelivered(event: MessageDeliveredEvent): void {
-  log.info("Before Processing message delivered", [])
-  let entity = new RawMessage(bigIntToId(event.params.messageIndex));
-  log.info("Processing message delivered", [])
+  const id = bigIntToId(event.params.messageIndex);
+  let entity = new RawMessage(id);
   entity.kind = event.params.kind == 9 ? "Retryable" : "NotSupported";
   entity.save();
 }
