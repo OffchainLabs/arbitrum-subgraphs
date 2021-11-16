@@ -23,35 +23,6 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@graphprotocol/graph-cli@0.22.0", "@graphprotocol/graph-cli@v0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@graphprotocol/graph-cli/-/graph-cli-0.22.0.tgz#ce1dec89105814df5a283c307fc4c90197e0ca4d"
-  integrity sha512-SlB70KW3g7vC9wVwBp9BBO9qojxIp8JvOSiFv/Ql776J+mfvBurbp9Mz7WaSn453dL1jB2t8MpFyjiOgBH7/oQ==
-  dependencies:
-    assemblyscript "0.19.10"
-    binary-install-raw "0.0.13"
-    chalk "^3.0.0"
-    chokidar "^3.0.2"
-    debug "^4.1.1"
-    docker-compose "^0.23.2"
-    dockerode "^2.5.8"
-    fs-extra "^9.0.0"
-    glob "^7.1.2"
-    gluegun "^4.3.1"
-    graphql "^15.5.0"
-    immutable "^3.8.2"
-    ipfs-http-client "^34.0.0"
-    jayson "^3.0.2"
-    js-yaml "^3.13.1"
-    node-fetch "^2.3.0"
-    pkginfo "^0.4.1"
-    prettier "^1.13.5"
-    request "^2.88.0"
-    semver "7.3.5"
-    tmp-promise "^3.0.2"
-    which "2.0.2"
-    yaml "^1.5.1"
-
 "@graphprotocol/graph-cli@^0.23.2":
   version "0.23.2"
   resolved "https://registry.yarnpkg.com/@graphprotocol/graph-cli/-/graph-cli-0.23.2.tgz#cfb3787bd1b571b28fed05a748116579f01cda19"
@@ -81,7 +52,7 @@
     which "2.0.2"
     yaml "^1.5.1"
 
-"@graphprotocol/graph-ts@0.22.0", "@graphprotocol/graph-ts@v0.22.0":
+"@graphprotocol/graph-ts@0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@graphprotocol/graph-ts/-/graph-ts-0.22.0.tgz#5280513d1c8a162077f82ce7f9a492bb5783d6f4"
   integrity sha512-kJIBL73xBxj0+NJdRABukAtcrc3Mb8jt31s0tCLPe6c57rQXEf7KR9oYrFdzE1ZsJCP6j+MX+A2+sj1Pj3aJtQ==
@@ -92,13 +63,6 @@
   version "0.23.1"
   resolved "https://registry.yarnpkg.com/@graphprotocol/graph-ts/-/graph-ts-0.23.1.tgz#76e595d26ec5672f3778b1d3830e4640a57aec1b"
   integrity sha512-pipofvN1LlwLOXrS7IWy8hSBFZzVyVHdLXDpQskl9nKqdbb3chelj4JoVEzCl7klvomDpP84ngLpW17fBh5vww==
-  dependencies:
-    assemblyscript "0.19.10"
-
-"@graphprotocol/graph-ts@v0.22.0-alpha.2":
-  version "0.22.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@graphprotocol/graph-ts/-/graph-ts-0.22.0-alpha.2.tgz#df2200a20bb8ceaeb835ba905430cf75b37a4874"
-  integrity sha512-UeoNfZLz7S4OAby/2K0zt3lGfcLqa8viujH6D5gjhDjFWTd6TiLb60OToFv7963YBHHdyjeEfIlmm2IuXSQeLA==
   dependencies:
     assemblyscript "0.19.10"
 

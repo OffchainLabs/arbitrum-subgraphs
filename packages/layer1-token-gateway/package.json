@@ -11,7 +11,7 @@
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 offchainlabs/layer1-token-gateway"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.22.0",
-    "@graphprotocol/graph-ts": "0.22.0"
+    "@graphprotocol/graph-cli": "^0.23.2",
+    "@graphprotocol/graph-ts": "^0.23.1"
   }
 }
