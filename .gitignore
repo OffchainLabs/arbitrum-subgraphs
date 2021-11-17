@@ -2,3 +2,4 @@ node_modules
 build
 subgraph.yaml
 .bin
+generated

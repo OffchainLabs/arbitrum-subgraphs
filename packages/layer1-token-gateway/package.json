@@ -3,8 +3,13 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen": "graph codegen",
-    "build": "graph build",
+    "codegen": "yarn prepare:mainnet && graph codegen",
+    "build": "yarn prepare:mainnet && graph build",
+    "postinstall": "yarn codegen",
+
+    "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ offchainlabs/layer1-token-gateway",
     "create-local": "graph create --node http://localhost:8020/ offchainlabs/layer1-token-gateway",
     "remove-local": "graph remove --node http://localhost:8020/ offchainlabs/layer1-token-gateway",
