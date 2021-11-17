@@ -6,7 +6,7 @@ import {
   DepositFinalized as DepositFinalizedEvent,
 } from "../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway"
 import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, Withdrawal } from "../generated/schema";
-import { Address, BigInt } from "@graphprotocol/graph-ts";
+import { Address, BigInt, log } from "@graphprotocol/graph-ts";
 
 const bigIntToId = (input: BigInt): string => input.toHexString()
 
@@ -25,7 +25,7 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
     // TODO: handle gateways being deleted
     return;
   }
-
+  // TODO: should we always create instead of load? should be faster.
   let gatewayEntity = Gateway.load(gatewayId);
   if(gatewayEntity == null) {
     gatewayEntity = new Gateway(gatewayId);
@@ -87,7 +87,8 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
   const tokenId = addressToId(event.params.l1Token);
   const joinId = getJoinId(gatewayId, tokenId)
 
-
+  // TODO: should we always create instead of load? should be faster.
+  // the issue here is if creating again on subsequent deposits. would that break FKs? 
   let gatewayEntity = Gateway.load(gatewayId);
   if(gatewayEntity == null) {
     gatewayEntity = new Gateway(gatewayId);
