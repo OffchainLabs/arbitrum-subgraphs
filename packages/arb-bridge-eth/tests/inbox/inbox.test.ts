@@ -1,8 +1,7 @@
-import { Address, BigInt, Bytes, ethereum, store, Value } from "@graphprotocol/graph-ts";
-import { RawMessage } from "../../generated/schema";
+import { Address, BigInt, Bytes, ethereum, store, log } from "@graphprotocol/graph-ts";
+import { RawMessage, Retryable } from "../../generated/schema";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent} from "../../generated/Inbox/Inbox";
 import { handleInboxMessageDelivered } from "../../src/mapping";
-// import { test } from "matchstick-as";
 
 import { newMockEvent, test, assert, createMockedFunction } from "matchstick-as";
 
@@ -51,7 +50,6 @@ test("Can mock and call function with different argument types", () => {
     assert.fieldEquals(RETRYABLE_ENTITY_TYPE, messageNum.toHexString(), "id", messageNum.toHexString())
     assert.fieldEquals(RETRYABLE_ENTITY_TYPE, messageNum.toHexString(), "isEthDeposit", "false")
     
-    
     messageNum = messageNum.plus(BigInt.fromI32(1))
     const tokenDeposit = Bytes.fromByteArray(Bytes.fromHexString("0x000000000000000000000000096760f208390250649e3e8763348e783aef5562000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000025564458834fa00000000000000000000000000000000000000000000000000000156d198a8360000000000000000000000002dd292297f6b1e84368d3683984f6da4c894eb3b0000000000000000000000002dd292297f6b1e84368d3683984f6da4c894eb3b000000000000000000000000000000000000000000000000000000000006b6ee0000000000000000000000000000000000000000000000000000000058c5212e00000000000000000000000000000000000000000000000000000000000001442e567b36000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000002dd292297f6b1e84368d3683984f6da4c894eb3b0000000000000000000000002dd292297f6b1e84368d3683984f6da4c894eb3b00000000000000000000000000000000000000000000000000000001178bb88000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
     let newInboxEvent3 = createNewMessage("Retryable", messageNum, tokenDeposit)
@@ -59,4 +57,27 @@ test("Can mock and call function with different argument types", () => {
 
     assert.fieldEquals(RETRYABLE_ENTITY_TYPE, messageNum.toHexString(), "id", messageNum.toHexString())
     assert.fieldEquals(RETRYABLE_ENTITY_TYPE, messageNum.toHexString(), "isEthDeposit", "false")
+
+    let retrievedRetryable = Retryable.load(messageNum.toHexString())
+    if(!retrievedRetryable) throw new Error("Null!")
+
+    // can get values 2 different ways, with different typings
+    // TODO: why is ethereum.Value different to Value
+    let valGetter1 = retrievedRetryable.get("destAddr")
+    if(!valGetter1) throw new Error("Null!!")
+
+    let valGetter2 = retrievedRetryable.destAddr
+    if(!valGetter2) throw new Error("Null!!!")
+
+    assert.equals(
+      ethereum.Value.fromBytes(valGetter1.toBytes()),
+      ethereum.Value.fromBytes(valGetter2)
+    )
+    
+    // i love but i hate typing, there probably is a smarter way of doing this
+    const expected = ethereum.Value.fromBytes(Bytes.fromByteArray(Address.fromHexString("0x096760f208390250649e3e8763348e783aef5562")))
+    assert.equals(
+      expected,
+      ethereum.Value.fromBytes(valGetter1.toBytes())
+    )
 })
