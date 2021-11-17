@@ -8,32 +8,31 @@ import { newMockEvent, test, assert, createMockedFunction } from "matchstick-as"
 
 const RAW_ENTITY_TYPE = "RawMessage"
 const RETRYABLE_ENTITY_TYPE = "Retryable"
-const MOCK_ADDRESS = Address.fromString(
-    "0xA140D383Dbe05064c25B5718B2a83d673f163110"
-  );
 
 const createNewMessage = (kind: string, messageNum: BigInt, data: Bytes): InboxMessageDeliveredEvent => {
-    let rawMessage = new RawMessage(messageNum.toHexString());
-    rawMessage.kind = kind
-    rawMessage.save();
+  let mockEvent = newMockEvent();
 
-    let mockEvent = newMockEvent();
-  
-    let newInboxEvent = new InboxMessageDeliveredEvent(MOCK_ADDRESS, mockEvent.logIndex, mockEvent.transactionLogIndex,
-        mockEvent.logType, mockEvent.block, mockEvent.transaction, mockEvent.parameters)
-    
-    newInboxEvent.parameters = new Array();
-    let messageNumParam = new ethereum.EventParam("messageNum", ethereum.Value.fromI32(messageNum.toI32()));
-    let dataParam = new ethereum.EventParam("data", ethereum.Value.fromBytes(data));
-    newInboxEvent.parameters.push(messageNumParam)
-    newInboxEvent.parameters.push(dataParam)
+  if(kind != "Retryable") throw new Error("Currently only supports creating retryables")
 
-    return newInboxEvent
-  }
+  let rawMessage = new RawMessage(messageNum.toHexString());
+  rawMessage.kind = kind
+  rawMessage.save();
+
+  let parameters = new Array<ethereum.EventParam>();
+  let messageNumParam = new ethereum.EventParam("messageNum", ethereum.Value.fromI32(messageNum.toI32()));
+  let dataParam = new ethereum.EventParam("data", ethereum.Value.fromBytes(data));
+  parameters.push(messageNumParam);
+  parameters.push(dataParam);
+
+  let newInboxEvent = new InboxMessageDeliveredEvent(mockEvent.address, mockEvent.logIndex, mockEvent.transactionLogIndex,
+      mockEvent.logType, mockEvent.block, mockEvent.transaction, parameters)
+
+  return newInboxEvent
+}
 
 test("Can mock and call function with different argument types", () => {
     let messageNum = BigInt.fromI32(1)
-    const tokenDepositData = Bytes.fromByteArray(Bytes.fromHexString("0x00000000000000000000000031d3fa5cb29e95eb50e8ad4031334871523e88f4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028f0815ec7670000000000000000000000000000000000000000000000000000000000012d00e28000000000000000000000000031d3fa5cb29e95eb50e8ad4031334871523e88f400000000000000000000000031d3fa5cb29e95eb50e8ad4031334871523e88f4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
+    // const tokenDepositData = Bytes.fromByteArray(Bytes.fromHexString("0x00000000000000000000000031d3fa5cb29e95eb50e8ad4031334871523e88f4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028f0815ec7670000000000000000000000000000000000000000000000000000000000012d00e28000000000000000000000000031d3fa5cb29e95eb50e8ad4031334871523e88f400000000000000000000000031d3fa5cb29e95eb50e8ad4031334871523e88f4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
     const ethDeposit = Bytes.fromByteArray(Bytes.fromHexString("0x00000000000000000000000097def9e0bd14fc70df700006e85babebfed271070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000012d00e28000000000000000000000000097def9e0bd14fc70df700006e85babebfed2710700000000000000000000000097def9e0bd14fc70df700006e85babebfed27107000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
     let newInboxEvent1 = createNewMessage("Retryable", messageNum, ethDeposit)
     handleInboxMessageDelivered(newInboxEvent1)
