@@ -19,9 +19,9 @@ import {
   dataSource,
   crypto,
   store,
+  ByteArray
 } from "@graphprotocol/graph-ts";
-import { encodePadded, padBytes } from "subgraph-common/src/helpers";
-export { runTests } from "./mapping.test"
+import { encodePadded, padBytes } from "subgraph-common";
 
 const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
@@ -52,7 +52,7 @@ const getL2RetryableTicketId = (inboxSequenceNumber: BigInt): Bytes => {
   // keccak256(zeroPad(l2ChainId), zeroPad(bitFlipedinboxSequenceNumber))
   const l2ChainId = getL2ChainId();
   const flipped = bitFlip(inboxSequenceNumber);
-  const encoded = encodePadded(l2ChainId, flipped);
+  const encoded: ByteArray = encodePadded(l2ChainId, flipped);
   const res = Bytes.fromByteArray(crypto.keccak256(encoded));
 
   // log.info(
@@ -185,9 +185,8 @@ export function handleInboxMessageDelivered(
 }
 
 export function handleMessageDelivered(event: MessageDeliveredEvent): void {
-  log.info("Before Processing message delivered", [])
-  let entity = new RawMessage(bigIntToId(event.params.messageIndex));
-  log.info("Processing message delivered", [])
+  const id = bigIntToId(event.params.messageIndex);
+  let entity = new RawMessage(id);
   entity.kind = event.params.kind == 9 ? "Retryable" : "NotSupported";
   entity.save();
 }

@@ -23,10 +23,10 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@graphprotocol/graph-cli@0.22.0", "@graphprotocol/graph-cli@v0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@graphprotocol/graph-cli/-/graph-cli-0.22.0.tgz#ce1dec89105814df5a283c307fc4c90197e0ca4d"
-  integrity sha512-SlB70KW3g7vC9wVwBp9BBO9qojxIp8JvOSiFv/Ql776J+mfvBurbp9Mz7WaSn453dL1jB2t8MpFyjiOgBH7/oQ==
+"@graphprotocol/graph-cli@^0.23.2":
+  version "0.23.2"
+  resolved "https://registry.yarnpkg.com/@graphprotocol/graph-cli/-/graph-cli-0.23.2.tgz#cfb3787bd1b571b28fed05a748116579f01cda19"
+  integrity sha512-1JDyCwaAIeKsEPYPlsJ7IiAB5BhQ+v2fvmDIJTcLfRIYmTKsoETdjrw9qUGJtjICVXIGuL9DeNVhQgKgTMCQZQ==
   dependencies:
     assemblyscript "0.19.10"
     binary-install-raw "0.0.13"
@@ -52,17 +52,10 @@
     which "2.0.2"
     yaml "^1.5.1"
 
-"@graphprotocol/graph-ts@0.22.0", "@graphprotocol/graph-ts@v0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@graphprotocol/graph-ts/-/graph-ts-0.22.0.tgz#5280513d1c8a162077f82ce7f9a492bb5783d6f4"
-  integrity sha512-kJIBL73xBxj0+NJdRABukAtcrc3Mb8jt31s0tCLPe6c57rQXEf7KR9oYrFdzE1ZsJCP6j+MX+A2+sj1Pj3aJtQ==
-  dependencies:
-    assemblyscript "0.19.10"
-
-"@graphprotocol/graph-ts@v0.22.0-alpha.2":
-  version "0.22.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/@graphprotocol/graph-ts/-/graph-ts-0.22.0-alpha.2.tgz#df2200a20bb8ceaeb835ba905430cf75b37a4874"
-  integrity sha512-UeoNfZLz7S4OAby/2K0zt3lGfcLqa8viujH6D5gjhDjFWTd6TiLb60OToFv7963YBHHdyjeEfIlmm2IuXSQeLA==
+"@graphprotocol/graph-ts@0.22.0", "@graphprotocol/graph-ts@^0.23.1":
+  version "0.23.1"
+  resolved "https://registry.yarnpkg.com/@graphprotocol/graph-ts/-/graph-ts-0.23.1.tgz#76e595d26ec5672f3778b1d3830e4640a57aec1b"
+  integrity sha512-pipofvN1LlwLOXrS7IWy8hSBFZzVyVHdLXDpQskl9nKqdbb3chelj4JoVEzCl7klvomDpP84ngLpW17fBh5vww==
   dependencies:
     assemblyscript "0.19.10"
 
@@ -1815,10 +1808,10 @@ mafmt@^7.0.0:
   dependencies:
     multiaddr "^7.3.0"
 
-matchstick-as@^0.0.53:
-  version "0.0.53"
-  resolved "https://registry.yarnpkg.com/matchstick-as/-/matchstick-as-0.0.53.tgz#ab53c1203edad37813595d2ec090ce92e5b3ed0f"
-  integrity sha512-ZUEimSwhdWw+Akd5jWrOVLofGEFbGiEIuy1wZCuq789sZJJ/W89/8hfNZnFkBf2SccenKMLibr83PuzVXmra5Q==
+matchstick-as@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/matchstick-as/-/matchstick-as-0.2.0.tgz#6810d4338a0e6aae9111543c1e91c351713e531b"
+  integrity sha512-LBG8eL4oyUnfSsGnnp2KJxP37GwcARuhQl17Etyywdh+LTtMHTiDLTAGNLnzKfN0lNCcqFZEA8PLQ1z1YibyHQ==
   dependencies:
     "@graphprotocol/graph-ts" "0.22.0"
     assemblyscript "^0.19.16"

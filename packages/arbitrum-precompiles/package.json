@@ -5,6 +5,7 @@
   "scripts": {
     "codegen": "yarn prepare:mainnet && graph codegen",
     "build": "yarn prepare:mainnet && graph build",
+    "postinstall": "yarn codegen",
 
     "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
@@ -13,7 +14,8 @@
     "deploy:rinkeby": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-builtins-rinkeby"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "v0.22.0",
-    "@graphprotocol/graph-ts": "v0.22.0"
+    "subgraph-common": "0.0.1",
+    "@graphprotocol/graph-cli": "^0.23.2",
+    "@graphprotocol/graph-ts": "^0.23.1"
   }
 }
