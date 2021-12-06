@@ -10,10 +10,10 @@ import { Address, BigInt, log } from "@graphprotocol/graph-ts";
 
 const bigIntToId = (input: BigInt): string => input.toHexString()
 
-const addressToId = (input: Address): string =>
+export const addressToId = (input: Address): string =>
   input.toHexString().toLowerCase();
 
-const getJoinId = (gatewayId: string, tokenId: string): string =>
+export const getJoinId = (gatewayId: string, tokenId: string): string =>
   gatewayId.concat(tokenId)
 
 export function handleGatewaySet(event: GatewaySetEvent): void {
