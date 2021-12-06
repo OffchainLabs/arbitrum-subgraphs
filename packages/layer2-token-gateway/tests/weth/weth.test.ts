@@ -1,12 +1,9 @@
-import { addressToId, getJoinId, handleGatewaySet, handleDeposit } from "../../src/mapping";
-
+import { addressToId, getJoinId, handleGatewaySet, handleDeposit, DISABLED_GATEWAY_ADDR } from "../../src/mapping";
 import { Address, BigInt, Bytes, ethereum, store, log } from "@graphprotocol/graph-ts";
 import { newMockEvent, test, assert, createMockedFunction } from "matchstick-as";
 import { GatewaySet as GatewaySetEvent } from "../../generated/L2GatewayRouter/L2GatewayRouter";
 import { DepositFinalized as DepositFinalizedEvent } from "../../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway";
 import { Gateway, Token, TokenGatewayJoinTable } from "../../generated/schema";
-
-const DISABLED_GATEWAY_ADDR = Address.fromString("0x0000000000000000000000000000000000000001");
 
 const createGatewaySet = (token: Address, gateway: Address): GatewaySetEvent => {
     let mockEvent = newMockEvent();
