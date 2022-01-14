@@ -197,5 +197,6 @@ export function handleNodeCreated(event: NodeCreatedEvent): void {
   const id = bigIntToId(event.params.nodeNum);
   let entity = new NodeEntity(id);
   entity.parentHash = event.params.parentNodeHash;
+  entity.blockCreatedAt = event.block.number;
   entity.save();
 }
