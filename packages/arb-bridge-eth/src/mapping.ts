@@ -204,6 +204,8 @@ export function handleNodeCreated(event: NodeCreatedEvent): void {
   entity.inboxMaxCount = event.params.inboxMaxCount
   entity.parentHash = event.params.parentNodeHash;
   entity.blockCreatedAt = event.block.number;
+  entity.timestampCreated = event.block.timestamp;
+  entity.timestampStatusUpdate = null;
   entity.status = "Pending"
   entity.save();
 }
@@ -218,6 +220,7 @@ export function handleNodeConfirmed(event: NodeConfirmedEvent): void {
     log.critical("Should not confirm non-existent node", [])
     throw new Error("no node to confirm")
   }
+  entity.timestampStatusUpdate = event.block.timestamp
   entity.status = "Confirmed"
   entity.save()
 }
@@ -232,6 +235,7 @@ export function handleNodeRejected(event: NodeRejectedEvent): void {
     log.critical("Should not reject non-existent node", [])
     throw new Error("no node to reject")
   }
+  entity.timestampStatusUpdate = event.block.timestamp
   entity.status = "Rejected"
   entity.save()
 }
