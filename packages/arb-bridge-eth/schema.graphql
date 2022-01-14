@@ -46,7 +46,14 @@ type Retryable @entity {
 }
 
 type Node @entity {
+  "node number in hex"
   id: ID!
+  "hash of information contained in this node"
+  nodeHash: Bytes!
+  "hash of parent node"
   parentHash: Bytes!
+  "block the node was created"
   blockCreatedAt: BigInt!
+  "count of inbox at time of assertion"
+  inboxMaxCount: BigInt!
 }

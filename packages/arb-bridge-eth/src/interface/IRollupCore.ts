@@ -30,6 +30,19 @@ export class IRollupCoreNodeCreated__Params {
   get parentNodeHash(): Bytes {
     return this._event.parameters[1].value.toBytes();
   }
+
+  get nodeHash(): Bytes {
+    return this._event.parameters[2].value.toBytes();
+  }
+
+  get executionHash(): Bytes {
+    return this._event.parameters[3].value.toBytes();
+  }
+
+  get inboxMaxCount(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
   // TODO: add in other parameters
 }
 

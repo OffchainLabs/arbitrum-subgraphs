@@ -196,6 +196,8 @@ export function handleMessageDelivered(event: MessageDeliveredEvent): void {
 export function handleNodeCreated(event: NodeCreatedEvent): void {
   const id = bigIntToId(event.params.nodeNum);
   let entity = new NodeEntity(id);
+  entity.nodeHash = event.params.nodeHash;
+  entity.inboxMaxCount = event.params.inboxMaxCount
   entity.parentHash = event.params.parentNodeHash;
   entity.blockCreatedAt = event.block.number;
   entity.save();
