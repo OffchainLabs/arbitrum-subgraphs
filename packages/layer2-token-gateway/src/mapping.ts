@@ -8,6 +8,7 @@ import {
 import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, Withdrawal } from "../generated/schema";
 import { Address, BigInt, log } from "@graphprotocol/graph-ts";
 
+export const DISABLED_GATEWAY_ADDR = Address.fromString("0x0000000000000000000000000000000000000001");
 const bigIntToId = (input: BigInt): string => input.toHexString()
 
 export const addressToId = (input: Address): string =>
@@ -46,6 +47,7 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
   let joinEntity = new TokenGatewayJoinTable(joinId);
   joinEntity.gateway = gatewayId;
   joinEntity.token = tokenId;
+  joinEntity.blockNum = event.block.number
   joinEntity.save();
 }
 
@@ -76,14 +78,14 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
   // this only tracks deposits from the standard gateway for now
   // this is used since we don't "GatewaySet" for the permissionless bridging
 
-  const stdGatewayAddr = event.transaction.to;
+  const gatewayAddr = event.transaction.to;
 
-  if(!stdGatewayAddr) {
+  if(!gatewayAddr) {
     // shouldn't happen, but lets make the compiler happy
     return;
   }
 
-  const gatewayId = addressToId(stdGatewayAddr);
+  const gatewayId = addressToId(gatewayAddr);
   const tokenId = addressToId(event.params.l1Token);
   const joinId = getJoinId(gatewayId, tokenId)
 
@@ -104,10 +106,15 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
     tokenEntity.save();
   }
 
-  let joinEntity = new TokenGatewayJoinTable(joinId);
-  joinEntity.gateway = gatewayId;
-  joinEntity.token = tokenId;
-  joinEntity.save();
+  let joinEntity = TokenGatewayJoinTable.load(joinId);
+  if(joinEntity == null) {
+    joinEntity = new TokenGatewayJoinTable(joinId);
+    joinEntity.gateway = gatewayId;
+    joinEntity.token = tokenId;
+    // if there is no gateway registered yet, then this was std bridged token since GatewaySet wasn't emitted first
+    joinEntity.blockNum = event.block.number
+    joinEntity.save();
+  }
 }
 
 export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {

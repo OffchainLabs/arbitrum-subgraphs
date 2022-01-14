@@ -17,6 +17,8 @@ type Token @entity {
 type TokenGatewayJoinTable @entity {
   "Set to concat `gateway.id` and `token.id`"
   id: ID!
+  "block in which the token-gateway were associated"
+  blockNum: BigInt!
   gateway: Gateway!
   token: Token!
   withdrawals: [Withdrawal!] @derivedFrom(field: "exitInfo")
