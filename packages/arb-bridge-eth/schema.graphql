@@ -45,6 +45,12 @@ type Retryable @entity {
   l2Calldata: Bytes!
 }
 
+enum NodeStatus {
+  Pending
+  Confirmed
+  Rejected
+}
+
 type Node @entity {
   "node number in hex"
   id: ID!
@@ -56,4 +62,6 @@ type Node @entity {
   blockCreatedAt: BigInt!
   "count of inbox at time of assertion"
   inboxMaxCount: BigInt!
+  "confirmation status of node in the rollup"
+  status: NodeStatus!
 }

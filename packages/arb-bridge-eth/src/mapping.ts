@@ -4,7 +4,11 @@ import {
 } from "../generated/Outbox/Outbox";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
 import { MessageDelivered as MessageDeliveredEvent } from "../generated/Bridge/Bridge";
-import { IRollupCoreNodeCreated as NodeCreatedEvent } from "./interface/IRollupCore";
+import {
+  IRollupCoreNodeCreated as NodeCreatedEvent,
+  IRollupCoreNodeConfirmed as NodeConfirmedEvent,
+  IRollupCoreNodeRejected as NodeRejectedEvent,
+} from "./interface/IRollupCore";
 import {
   OutboxEntry,
   OutboxOutput,
@@ -200,5 +204,34 @@ export function handleNodeCreated(event: NodeCreatedEvent): void {
   entity.inboxMaxCount = event.params.inboxMaxCount
   entity.parentHash = event.params.parentNodeHash;
   entity.blockCreatedAt = event.block.number;
+  entity.status = "Pending"
   entity.save();
+}
+
+export function handleNodeConfirmed(event: NodeConfirmedEvent): void {
+  const id = bigIntToId(event.params.nodeNum);
+  // we just edit 1 field, we know the node is already created, so we just update its status
+  // used to be faster to do a `new NodeEntity(id)` than load since it wouldn't overwrite other fields
+  // but that doesn't seem to hold anymore
+  let entity = NodeEntity.load(id);
+  if(!entity) {
+    log.critical("Should not confirm non-existent node", [])
+    throw new Error("no node to confirm")
+  }
+  entity.status = "Confirmed"
+  entity.save()
+}
+
+export function handleNodeRejected(event: NodeRejectedEvent): void {
+  const id = bigIntToId(event.params.nodeNum);
+  // we just edit 1 field, we know the node is already created, so we just update its status
+  // used to be faster to do a `new NodeEntity(id)` than load since it wouldn't overwrite other fields
+  // but that doesn't seem to hold anymore
+  let entity = NodeEntity.load(id);
+  if(!entity) {
+    log.critical("Should not reject non-existent node", [])
+    throw new Error("no node to reject")
+  }
+  entity.status = "Rejected"
+  entity.save()
 }

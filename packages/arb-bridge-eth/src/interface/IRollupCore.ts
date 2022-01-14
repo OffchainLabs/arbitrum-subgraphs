@@ -10,6 +10,53 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class IRollupCoreNodeRejected extends ethereum.Event {
+  get params(): IRollupCoreNodeRejected__Params {
+    return new IRollupCoreNodeRejected__Params(this);
+  }
+}
+
+export class IRollupCoreNodeRejected__Params {
+  _event: IRollupCoreNodeRejected;
+
+  constructor(event: IRollupCoreNodeRejected) {
+    this._event = event;
+  }
+
+  get nodeNum(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+}
+
+
+export class IRollupCoreNodeConfirmed extends ethereum.Event {
+  get params(): IRollupCoreNodeConfirmed__Params {
+    return new IRollupCoreNodeConfirmed__Params(this);
+  }
+}
+export class IRollupCoreNodeConfirmed__Params {
+  _event: IRollupCoreNodeConfirmed;
+
+  constructor(event: IRollupCoreNodeConfirmed) {
+    this._event = event;
+  }
+
+  get nodeNum(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get afterSendAcc(): Bytes {
+    return this._event.parameters[1].value.toBytes();
+  }
+
+  get afterSendCount(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  // TODO: add in other parameters
+}
+
+
 export class IRollupCoreNodeCreated extends ethereum.Event {
   get params(): IRollupCoreNodeCreated__Params {
     return new IRollupCoreNodeCreated__Params(this);
