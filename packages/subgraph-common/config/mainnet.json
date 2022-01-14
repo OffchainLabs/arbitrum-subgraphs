@@ -12,5 +12,7 @@
     "l2StandardGateway": "0x09e9222E96E7B4AE2a407B98d48e330053351EEe",
     "l2StandardGatewayDeployBlock": 2107,
     "l1GatewayRouter": "0x72Ce9c846789fdB6fC1f34aC4AD25Dd9ef7031ef",
-    "l1GatewayRouterDeployBlock": 12640865
+    "l1GatewayRouterDeployBlock": 12640865,
+    "rollupAddress": "0xC12BA48c781F6e392B49Db2E25Cd0c28cD77531A",
+    "rollupDeploymentBlock": 12525700
 }

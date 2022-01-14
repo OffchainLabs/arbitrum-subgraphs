@@ -1,0 +1,13 @@
+{
+    "rollupPreprocessor": "",
+
+    "l1Network": "{{ l1Network }}",
+    "outboxDeploymentBlock": "{{ outboxDeploymentBlock }}",
+    "outboxAddress": "{{ outboxAddress }}",
+    "inboxDeploymentBlock": "{{ inboxDeploymentBlock }}",
+    "inboxAddress": "{{ inboxAddress }}",
+    "bridgeDeploymentBlock": "{{ bridgeDeploymentBlock }}",
+    "bridgeAddress": "{{ bridgeAddress }}",
+    "rollupAddress": "{{ rollupAddress }}",
+    "rollupDeploymentBlock": "{{ rollupDeploymentBlock }}"
+}

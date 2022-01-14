@@ -3,13 +3,19 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen": "yarn prepare:mainnet && graph codegen",
-    "build": "yarn prepare:mainnet && graph build",
+    "codegen": "yarn prepare:codegen && yarn prepare:mainnet && graph codegen",
+    "build": "yarn prepare:build && yarn prepare:mainnet && graph build",
     "postinstall": "yarn codegen",
-    "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+
+    "prepare:codegen": "yarn workspace subgraph-common mustache $(pwd)/src/interface/codegen.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.preprocessed.yaml",
+    "prepare:build": "yarn workspace subgraph-common mustache $(pwd)/src/interface/build.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.preprocessed.yaml",
+    
+    "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
+    
     "deploy:mainnet": "yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth",
     "deploy:rinkeby": "yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby",
+
     "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test"
   },
   "dependencies": {

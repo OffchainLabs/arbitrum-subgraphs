@@ -44,3 +44,9 @@ type Retryable @entity {
   "calldata used in L2 call"
   l2Calldata: Bytes!
 }
+
+type Node @entity {
+  id: ID!
+  parentHash: Bytes!
+  blockCreatedAt: BigInt!
+}

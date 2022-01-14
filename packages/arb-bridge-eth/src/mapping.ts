@@ -4,11 +4,13 @@ import {
 } from "../generated/Outbox/Outbox";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
 import { MessageDelivered as MessageDeliveredEvent } from "../generated/Bridge/Bridge";
+import { IRollupCoreNodeCreated as NodeCreatedEvent } from "./interface/IRollupCore";
 import {
   OutboxEntry,
   OutboxOutput,
   Retryable,
   RawMessage,
+  Node as NodeEntity,
 } from "../generated/schema";
 import {
   Bytes,
@@ -188,5 +190,12 @@ export function handleMessageDelivered(event: MessageDeliveredEvent): void {
   const id = bigIntToId(event.params.messageIndex);
   let entity = new RawMessage(id);
   entity.kind = event.params.kind == 9 ? "Retryable" : "NotSupported";
+  entity.save();
+}
+
+export function handleNodeCreated(event: NodeCreatedEvent): void {
+  const id = bigIntToId(event.params.nodeNum);
+  let entity = new NodeEntity(id);
+  entity.parentHash = event.params.parentNodeHash;
   entity.save();
 }
