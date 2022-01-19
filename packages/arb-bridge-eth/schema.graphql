@@ -44,3 +44,35 @@ type Retryable @entity {
   "calldata used in L2 call"
   l2Calldata: Bytes!
 }
+
+enum NodeStatus {
+  Pending
+  Confirmed
+  Rejected
+}
+
+type Node @entity {
+  "node number in hex"
+  id: ID!
+  
+  "hash of information contained in this node"
+  nodeHash: Bytes!
+  
+  "hash of parent node"
+  parentHash: Bytes!
+  
+  "block the node was created"
+  blockCreatedAt: BigInt!
+  
+  "count of inbox at time of assertion"
+  inboxMaxCount: BigInt!
+
+  "timestamp the node was created"
+  timestampCreated: BigInt!
+
+  "A node is created as pending, this is the timestamp in which it was either confirmed or rejected"
+  timestampStatusUpdate: BigInt
+  
+  "confirmation status of node in the rollup"
+  status: NodeStatus!
+}
