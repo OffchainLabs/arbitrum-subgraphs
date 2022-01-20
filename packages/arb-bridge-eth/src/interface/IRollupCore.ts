@@ -90,6 +90,32 @@ export class IRollupCoreNodeCreated__Params {
     return this._event.parameters[4].value.toBigInt();
   }
 
+  get afterInboxBatchEndCount(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
+
+  get afterInboxBatchAcc(): Bytes {
+    return this._event.parameters[6].value.toBytes();
+  }
+
+  get assertionBytes32Fields(): Array<Array<Bytes>> {
+    const valueArray = this._event.parameters[7].value.toArray()
+
+    return [
+      valueArray[0].toBytesArray(),
+      valueArray[1].toBytesArray()
+    ]
+  }
+
+  get assertionIntFields(): Array<Array<BigInt>> {
+    const valueArray = this._event.parameters[8].value.toArray()
+
+    return [
+      valueArray[0].toBigIntArray(),
+      valueArray[1].toBigIntArray(),
+    ]
+  }
+
   // TODO: add in other parameters
 }
 

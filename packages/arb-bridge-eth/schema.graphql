@@ -63,9 +63,12 @@ type Node @entity {
   
   "block the node was created"
   blockCreatedAt: BigInt!
-  
-  "count of inbox at time of assertion"
+
+  "count of sequencer inbox when assertion is created"
   inboxMaxCount: BigInt!
+
+  "Total number of AVM sends emitted from the beginning of time after this node is confirmed"
+  afterSendCount: BigInt!
 
   "timestamp the node was created"
   timestampCreated: BigInt!

@@ -207,6 +207,7 @@ export function handleNodeCreated(event: NodeCreatedEvent): void {
   entity.timestampCreated = event.block.timestamp;
   entity.timestampStatusUpdate = null;
   entity.status = "Pending"
+  entity.afterSendCount = event.params.assertionIntFields[1][2]
   entity.save();
 }
 
@@ -222,6 +223,12 @@ export function handleNodeConfirmed(event: NodeConfirmedEvent): void {
   }
   entity.timestampStatusUpdate = event.block.timestamp
   entity.status = "Confirmed"
+
+  if(entity.afterSendCount != event.params.afterSendCount) {
+    log.critical("Something went wrong parsing the after send count", [])
+    throw new Error("Wrong send cound")
+  }
+
   entity.save()
 }
 
