@@ -101,22 +101,22 @@ export class IRollupCoreNodeCreated__Params {
   get assertionBytes32Fields(): Array<Array<Bytes>> {
     const valueArray = this._event.parameters[7].value.toArray()
 
-    return [
-      valueArray[0].toBytesArray(),
-      valueArray[1].toBytesArray()
-    ]
+    let out = new Array<Array<Bytes>>(valueArray.length)
+    for (let i: i32 = 0; i < valueArray.length; i++) {
+      out[i] = valueArray[i].toBytesArray()
+    }
+    return out
   }
 
   get assertionIntFields(): Array<Array<BigInt>> {
     const valueArray = this._event.parameters[8].value.toArray()
 
-    return [
-      valueArray[0].toBigIntArray(),
-      valueArray[1].toBigIntArray(),
-    ]
+    let out = new Array<Array<BigInt>>(valueArray.length)
+    for (let i: i32 = 0; i < valueArray.length; i++) {
+      out[i] = valueArray[i].toBigIntArray()
+    }
+    return out
   }
-
-  // TODO: add in other parameters
 }
 
 export class IRollupCore extends ethereum.SmartContract {
