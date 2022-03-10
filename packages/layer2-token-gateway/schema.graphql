@@ -52,6 +52,9 @@ type L1ToL2Transaction @entity {
   
   "this is the amount of eth transfered from L1 to L2 that is creditted to the from account"
   ethDepositAmount: BigInt!
+
+  l2Calldata: Bytes!
+  l2Callvalue: BigInt!
 }
 
 type L2ToL1Transaction @entity {

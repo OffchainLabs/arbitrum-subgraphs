@@ -131,10 +131,11 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
   // parse the tx input
   // funcSignature:
   //    createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)	
-  // we want to skip the `0x679b6ded` at the start
+  // we want to skip the `0x679b6ded` at the start and parse the bytes length instead of the bytes explicitly
+  const inputWithoutSelector = Bytes.fromUint8Array(event.transaction.input.slice(4))
   const parsedWithoutData = ethereum.decode(
-    "(address,uint256,uint256,address,address,uint256,uint256,bytes)",
-    Bytes.fromUint8Array(event.transaction.input.slice(4))
+    "(address,uint256,uint256,address,address,uint256,uint256,uint256,uint256)",
+    inputWithoutSelector
   );
   
   if (!parsedWithoutData) {
@@ -151,7 +152,36 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
   const callValueRefundAddress = parsedArray[4].toAddress()
   const maxGas = parsedArray[5].toBigInt()
   const gasPriceBid = parsedArray[6].toBigInt()
-  const l2Calldata = parsedArray[7].toBytes()
+
+  // this is due to how dynamic length data types are encoded
+  const lengthOfDataLength = parsedArray[7].toBigInt()
+  if(lengthOfDataLength != BigInt.fromI32(256)) {
+    log.critical("something unexpected went wrong with lengthOfDataLength {}", [lengthOfDataLength.toString()])
+    throw new Error("oh damn somethin broke")
+  }
+
+  const dataLength = parsedArray[8].toBigInt()
+  log.debug("lengthOfDataLength expected: {}", [lengthOfDataLength.toString()])
+  log.debug("data length expected: {}", [dataLength.toString()])
+
+  log.debug("input length {}", [inputWithoutSelector.length.toString()])
+
+  // we do this because the graph seems weird when parsing dynamic length data types
+  // can maybe be fixed if we don't parse it as `toTuple`
+  // https://ethereum.stackexchange.com/questions/114582/the-graph-nodes-cant-decode-abi-encoded-data-containing-arrays
+  const sliceStart = ethereum.encode(parsedWithoutData)!.byteLength
+  if(!sliceStart) {
+    throw new Error("oh damn somethin broke")
+  }
+
+  log.debug("expect slice to start at {}", [sliceStart.toString()])
+  const l2Calldata = Bytes.fromByteArray(
+    Bytes.fromUint8Array(
+      inputWithoutSelector.slice(
+        sliceStart, sliceStart + dataLength.toI32()
+      )
+    )
+  )
 
   // we identify if the retryable was created as in the `depositEth` method in the inbox
   // https://github.com/OffchainLabs/arbitrum/blob/98d33a5e92de47de97aec857c7fd92eb63db543e/packages/arb-bridge-eth/contracts/bridge/Inbox.sol#L253-L261
@@ -163,11 +193,13 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
     && callValueRefundAddress.equals(entity.from)
     && maxGas.equals(BigInt.zero())
     && gasPriceBid.equals(BigInt.zero())
-    && l2Calldata.length == 0
+    && dataLength.equals(BigInt.zero())
 
   entity.looksLikeEthDeposit = looksLikeEthDeposit
   entity.ethDepositAmount = event.transaction.value.minus(l2CallValue)
-
+  entity.l2Callvalue = l2CallValue
+  entity.l2Calldata = l2Calldata
+  
   entity.save();
 }
 
