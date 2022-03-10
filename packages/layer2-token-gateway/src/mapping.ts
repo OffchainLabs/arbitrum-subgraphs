@@ -1,12 +1,14 @@
-import { GatewaySet as GatewaySetEvent } from "../generated/L2GatewayRouter/L2GatewayRouter";
+import { GatewaySet as GatewaySetEvent, TxToL1 } from "../generated/L2GatewayRouter/L2GatewayRouter";
 import { L2ToL1Transaction as L2ToL1TransactionEvent } from "../generated/ArbSys/ArbSys";
+import { TicketCreated as TicketCreatedEvent } from "../generated/ArbRetryableTx/ArbRetryableTx";
 import { L2ArbitrumGateway } from "../generated/templates"
 import { 
   WithdrawalInitiated as WithdrawalInitiatedEvent,
   DepositFinalized as DepositFinalizedEvent,
 } from "../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway"
-import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, Withdrawal } from "../generated/schema";
-import { Address, BigInt, log } from "@graphprotocol/graph-ts";
+import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, Withdrawal, L1ToL2Transaction } from "../generated/schema";
+import { Address, BigInt, ethereum, Bytes, log } from "@graphprotocol/graph-ts";
+import { bigIntToAddress } from "subgraph-common";
 
 export const DISABLED_GATEWAY_ADDR = Address.fromString("0x0000000000000000000000000000000000000001");
 const bigIntToId = (input: BigInt): string => input.toHexString()
@@ -116,6 +118,59 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
     joinEntity.save();
   }
 }
+
+export function handleTicketCreated(event: TicketCreatedEvent): void {
+  // this event is only emitted once per L1 to L2 ticket and only once in a tx
+  const id = event.transaction.hash.toHex()
+  let entity = new L1ToL2Transaction(id)
+
+  entity.from = event.transaction.from
+
+  entity.userTxHash = event.params.userTxHash
+
+  // parse the tx input
+  // funcSignature:
+  //    createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)	
+  // we want to skip the `0x679b6ded` at the start
+  const parsedWithoutData = ethereum.decode(
+    "(address,uint256,uint256,address,address,uint256,uint256,bytes)",
+    Bytes.fromUint8Array(event.transaction.input.slice(4))
+  );
+  
+  if (!parsedWithoutData) {
+    log.critical("didn't expect !parsedWithoutData", [])
+    throw new Error("somethin bad happened")
+  }
+
+  const parsedArray = parsedWithoutData.toTuple();
+
+  const destAddr = parsedArray[0].toAddress()
+  const l2CallValue = parsedArray[1].toBigInt()
+  const maxSubmissionCost = parsedArray[2].toBigInt()
+  const excessFeeRefundAddress = parsedArray[3].toAddress()
+  const callValueRefundAddress = parsedArray[4].toAddress()
+  const maxGas = parsedArray[5].toBigInt()
+  const gasPriceBid = parsedArray[6].toBigInt()
+  const l2Calldata = parsedArray[7].toBytes()
+
+  // we identify if the retryable was created as in the `depositEth` method in the inbox
+  // https://github.com/OffchainLabs/arbitrum/blob/98d33a5e92de47de97aec857c7fd92eb63db543e/packages/arb-bridge-eth/contracts/bridge/Inbox.sol#L253-L261
+  const looksLikeEthDeposit =
+    destAddr.equals(entity.from)
+    && l2CallValue.equals(BigInt.zero())
+    && event.transaction.value.gt(BigInt.zero())
+    && excessFeeRefundAddress.equals(entity.from)
+    && callValueRefundAddress.equals(entity.from)
+    && maxGas.equals(BigInt.zero())
+    && gasPriceBid.equals(BigInt.zero())
+    && l2Calldata.length == 0
+
+  entity.looksLikeEthDeposit = looksLikeEthDeposit
+  entity.ethDepositAmount = event.transaction.value.minus(l2CallValue)
+
+  entity.save();
+}
+
 
 export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
   // TODO: delete L2 to L1 txs that arent a token withdrawal

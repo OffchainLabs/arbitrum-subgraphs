@@ -1,4 +1,4 @@
-import { ByteArray, BigInt } from "@graphprotocol/graph-ts";
+import { ByteArray, BigInt, Address } from "@graphprotocol/graph-ts";
 
 export const appendBytes = (a: ByteArray, b: ByteArray): ByteArray => {
   let result = new ByteArray(a.length + b.length);
@@ -26,3 +26,13 @@ export const encodePadded = (_a: ByteArray, _b: ByteArray): ByteArray =>
   appendBytes(padBytes(_a, 32), padBytes(_b, 32));
 
 export const RETRYABLE_LIFETIME_SECONDS = BigInt.fromI32(604800);
+
+export const bigIntToAddress = (input: BigInt): Address => {
+  // remove the prepended 0x
+  const hexString = input.toHexString().substr(2);
+  // add missing padding so address is 20 bytes long
+  const missingZeroes = "0".repeat(40 - hexString.length);
+  // build hexstring again
+  const addressString = "0x" + missingZeroes + hexString;
+  return Address.fromString(addressString);
+};

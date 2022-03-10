@@ -37,6 +37,23 @@ type Withdrawal @entity {
   l2ToL1Event: L2ToL1Transaction
 }
 
+type L1ToL2Transaction @entity {
+  "the ID of the L1 to L2 tx"
+  id: ID!
+  
+  "address that called the inbox in the L1"
+  from: Bytes! #address
+  
+  "the user tx hash of this retryable"
+  userTxHash: Bytes! # bytes32
+
+  "does this look like the user just deposited eth"
+  looksLikeEthDeposit: Boolean!
+  
+  "this is the amount of eth transfered from L1 to L2 that is creditted to the from account"
+  ethDepositAmount: BigInt!
+}
+
 type L2ToL1Transaction @entity {
   "BigInt! # uint256"
   id: ID!
