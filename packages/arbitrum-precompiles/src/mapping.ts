@@ -7,7 +7,7 @@ import {
   TicketCreated as TicketCreatedEvent,
 } from "../generated/ArbRetryableTx/ArbRetryableTx";
 import { log } from "@graphprotocol/graph-ts";
-import { RETRYABLE_LIFETIME_SECONDS } from "subgraph-common/src/helpers";
+import { RETRYABLE_LIFETIME_SECONDS } from "@arbitrum/subgraph-common/src/helpers";
 
 export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
   // TODO: make the uniqueId the actual ID

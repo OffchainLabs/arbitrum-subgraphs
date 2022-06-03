@@ -16,7 +16,7 @@ const createGatewaySet = (token: Address, gateway: Address): GatewaySetEvent => 
     parameters.push(gatewayParam);
   
     let newGatewayEvent = new GatewaySetEvent(mockEvent.address, mockEvent.logIndex, mockEvent.transactionLogIndex,
-        mockEvent.logType, mockEvent.block, mockEvent.transaction, parameters)
+        mockEvent.logType, mockEvent.block, mockEvent.transaction, parameters, mockEvent.receipt)
   
     return newGatewayEvent
 }
@@ -43,7 +43,7 @@ const createDepositFinalized = (token: Address, gateway: Address): DepositFinali
     tx.to = gateway
 
     let newDepositFinalized = new DepositFinalizedEvent(mockEvent.address, mockEvent.logIndex, mockEvent.transactionLogIndex,
-        mockEvent.logType, mockEvent.block, tx, parameters)
+        mockEvent.logType, mockEvent.block, tx, parameters, mockEvent.receipt)
   
     return newDepositFinalized
 }

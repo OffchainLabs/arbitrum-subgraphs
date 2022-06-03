@@ -6,8 +6,5 @@
   "workspaces": {
     "packages": [ "packages/*" ],
     "nohoist": [ "**" ]
-  },
-  "resolutions": {
-    "@graphprotocol/graph-ts": "^0.23.1"
   }
 }

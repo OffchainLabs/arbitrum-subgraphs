@@ -24,7 +24,7 @@ const createNewMessage = (kind: string, messageNum: BigInt, data: Bytes): InboxM
   parameters.push(dataParam);
 
   let newInboxEvent = new InboxMessageDeliveredEvent(mockEvent.address, mockEvent.logIndex, mockEvent.transactionLogIndex,
-      mockEvent.logType, mockEvent.block, mockEvent.transaction, parameters)
+      mockEvent.logType, mockEvent.block, mockEvent.transaction, parameters, mockEvent.receipt)
 
   return newInboxEvent
 }

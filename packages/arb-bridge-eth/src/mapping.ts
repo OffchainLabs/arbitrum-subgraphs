@@ -27,7 +27,7 @@ import {
   store,
   ByteArray
 } from "@graphprotocol/graph-ts";
-import { encodePadded, padBytes } from "subgraph-common";
+import { encodePadded, padBytes } from "@arbitrum/subgraph-common";
 
 const getL2ChainId = (): Bytes => {
   const network = dataSource.network();

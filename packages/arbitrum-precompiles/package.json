@@ -7,15 +7,15 @@
     "build": "yarn prepare:mainnet && graph build",
     "postinstall": "yarn codegen",
 
-    "prepare:mainnet": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:rinkeby": "yarn workspace subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:rinkeby": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
 
     "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-builtins",
     "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-builtins-rinkeby"
   },
   "dependencies": {
-    "subgraph-common": "0.0.1",
-    "@graphprotocol/graph-cli": "^0.23.2",
-    "@graphprotocol/graph-ts": "^0.23.1"
+    "@arbitrum/subgraph-common": "0.0.1",
+    "@graphprotocol/graph-cli": "0.30.3",
+    "@graphprotocol/graph-ts": "0.27.0"
   }
 }

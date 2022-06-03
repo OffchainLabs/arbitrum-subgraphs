@@ -23,12 +23,32 @@ dataSources:
           handler: handleGatewaySet
       file: ./src/mapping.ts
   - kind: ethereum/contract
+    name: ArbRetryableTx
+    network: {{ l2Network }}
+    source:
+      address: "0x000000000000000000000000000000000000006E"
+      abi: ArbRetryableTx
+      startBlock: {{ arbRetryableTxStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - L1ToL2Transaction
+      abis:
+        - name: ArbRetryableTx
+          file: ./abis/ArbRetryableTx.json
+      eventHandlers:
+        - event: TicketCreated(indexed bytes32)
+          handler: handleTicketCreated
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
     name: ArbSys
     network: {{ l2Network }}
     source:
       address: "0x0000000000000000000000000000000000000064"
       abi: ArbSys
-      startBlock: {{ l2GatewayRouterDeployBlock }}
+      startBlock: {{ arbSysStartBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
