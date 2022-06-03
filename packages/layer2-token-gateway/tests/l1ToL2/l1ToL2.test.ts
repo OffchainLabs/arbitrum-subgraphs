@@ -53,7 +53,8 @@ const createEthDeposit = (): TicketCreatedEvent => {
     mockEvent.logType,
     mockEvent.block,
     tx,
-    parameters
+    parameters,
+    mockEvent.receipt
   );
 
   return newDeposit;
@@ -96,7 +97,8 @@ const createTokenDeposit = (): TicketCreatedEvent => {
     mockEvent.logType,
     mockEvent.block,
     tx,
-    parameters
+    parameters,
+    mockEvent.receipt
   );
 
   return newDeposit;

@@ -13,12 +13,12 @@
     "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway",
     "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-rinkeby",
     
-    "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test"
+    "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"
   },
   "dependencies": {
-    "matchstick-as": "^0.2.0",
+    "matchstick-as": "^0.5.0",
     "@arbitrum/subgraph-common": "0.0.1",
-    "@graphprotocol/graph-cli": "^0.23.2",
-    "@graphprotocol/graph-ts": "^0.23.1"
+    "@graphprotocol/graph-cli": "0.30.3",
+    "@graphprotocol/graph-ts": "0.27.0"
   }
 }

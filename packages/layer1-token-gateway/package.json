@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@arbitrum/subgraph-common": "0.0.1",
-    "@graphprotocol/graph-cli": "^0.23.2",
-    "@graphprotocol/graph-ts": "^0.23.1"
+    "@graphprotocol/graph-cli": "0.30.3",
+    "@graphprotocol/graph-ts": "0.27.0"
   }
 }
