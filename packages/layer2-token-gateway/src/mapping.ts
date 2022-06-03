@@ -8,7 +8,6 @@ import {
 } from "../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway"
 import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, Withdrawal, L1ToL2Transaction } from "../generated/schema";
 import { Address, BigInt, ethereum, Bytes, log } from "@graphprotocol/graph-ts";
-import { bigIntToAddress } from "subgraph-common";
 
 export const DISABLED_GATEWAY_ADDR = Address.fromString("0x0000000000000000000000000000000000000001");
 const bigIntToId = (input: BigInt): string => input.toHexString()
