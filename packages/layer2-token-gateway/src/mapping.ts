@@ -204,7 +204,6 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
 
 
 export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
-  // TODO: delete L2 to L1 txs that arent a token withdrawal
   const id = bigIntToId(event.params.uniqueId)
   let entity = new L2ToL1Transaction(id);
   entity.caller = event.params.caller;
@@ -217,6 +216,13 @@ export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
   entity.callvalue = event.params.callvalue;
   entity.data = event.params.data;
   entity.withdrawal = id
+
+  const looksLikeEthWithdrawal =
+    event.params.callvalue.gt(BigInt.zero())
+    && event.params.data.equals(Bytes.empty())
+  
+  entity.looksLikeEthWithdrawal = looksLikeEthWithdrawal;
+  entity.l2TxHash = event.transaction.hash;
 
   // TODO: query for L2 to L1 tx proof
   // TODO: don't make this an archive query

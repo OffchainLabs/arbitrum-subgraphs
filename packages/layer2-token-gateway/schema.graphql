@@ -58,8 +58,15 @@ type L1ToL2Transaction @entity {
 }
 
 type L2ToL1Transaction @entity {
-  "BigInt! # uint256"
+  "this is the l2ToL1Id of the transaction as surfaced by arb-os"
   id: ID!
+
+  "does this look like the user just withdrew eth"
+  looksLikeEthWithdrawal: Boolean!
+
+  "L2 Tx hash that triggered this event"
+  l2TxHash: Bytes!
+
   caller: Bytes! # address
   destination: Bytes! # address
   batchNumber: BigInt! # uint256
