@@ -1,6 +1,8 @@
 import { GatewaySet as GatewaySetEvent, TxToL1 } from "../generated/L2GatewayRouter/L2GatewayRouter";
-import { L2ToL1Transaction as L2ToL1TransactionEvent } from "../generated/ClassicArbSys/ClassicArbSys";
-import { TicketCreated as TicketCreatedEvent } from "../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
+import { L2ToL1Transaction as ClassicL2ToL1TransactionEvent } from "../generated/ClassicArbSys/ClassicArbSys";
+import { TicketCreated as ClassicTicketCreatedEvent } from "../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
+import { L2ToL1Tx as NitroL2ToL1TxEvent } from "../generated/NitroArbSys/NitroArbSys";
+import { TicketCreated as NitroTicketCreatedEvent } from "../generated/NitroArbRetryableTx/NitroArbRetryableTx";
 import { L2ArbitrumGateway } from "../generated/templates"
 import { 
   WithdrawalInitiated as WithdrawalInitiatedEvent,
@@ -118,7 +120,12 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
   }
 }
 
-export function handleTicketCreated(event: TicketCreatedEvent): void {
+export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
+}
+
+export function handleClassicTicketCreated(event: ClassicTicketCreatedEvent): void {
+  // TODO: should we skip this if in nitro? it has the same signature
+
   // this event is only emitted once per L1 to L2 ticket and only once in a tx
   const id = event.transaction.hash.toHex()
   let entity = new L1ToL2Transaction(id)
@@ -203,7 +210,11 @@ export function handleTicketCreated(event: TicketCreatedEvent): void {
 }
 
 
-export function handleL2ToL1Transaction(event: L2ToL1TransactionEvent): void {
+export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
+  
+}
+
+export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEvent): void {
   const id = bigIntToId(event.params.uniqueId)
   let entity = new L2ToL1Transaction(id);
   entity.caller = event.params.caller;

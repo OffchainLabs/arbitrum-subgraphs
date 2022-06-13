@@ -40,7 +40,27 @@ dataSources:
           file: ./abis/ClassicArbRetryableTx.json
       eventHandlers:
         - event: TicketCreated(indexed bytes32)
-          handler: handleTicketCreated
+          handler: handleClassicTicketCreated
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: NitroArbRetryableTx
+    network: {{ l2Network }}
+    source:
+      address: "0x000000000000000000000000000000000000006E"
+      abi: NitroArbRetryableTx
+      startBlock: {{ arbRetryableTxStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - L1ToL2Transaction
+      abis:
+        - name: NitroArbRetryableTx
+          file: ./abis/NitroArbRetryableTx.json
+      eventHandlers:
+        - event: TicketCreated(indexed bytes32)
+          handler: handleNitroTicketCreated
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: ClassicArbSys
@@ -60,7 +80,27 @@ dataSources:
           file: ./abis/ClassicArbSys.json
       eventHandlers:
         - event: L2ToL1Transaction(address,indexed address,indexed uint256,indexed uint256,uint256,uint256,uint256,uint256,uint256,bytes)
-          handler: handleL2ToL1Transaction
+          handler: handleClassicL2ToL1Transaction
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: NitroArbSys
+    network: {{ l2Network }}
+    source:
+      address: "0x0000000000000000000000000000000000000064"
+      abi: NitroArbSys
+      startBlock: {{ arbSysStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - L2ToL1Transaction
+      abis:
+        - name: NitroArbSys
+          file: ./abis/NitroArbSys.json
+      eventHandlers:
+        - event: L2ToL1Tx(address,indexed address,indexed uint256,indexed uint256,uint256,uint256,uint256,uint256,bytes)
+          handler: handleNitroL2ToL1Transaction
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: L2StandardGateway
