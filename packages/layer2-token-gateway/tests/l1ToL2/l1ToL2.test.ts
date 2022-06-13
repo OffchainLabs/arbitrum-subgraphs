@@ -13,7 +13,7 @@ import {
   assert,
   createMockedFunction,
 } from "matchstick-as";
-import { TicketCreated as TicketCreatedEvent } from "../../generated/ArbRetryableTx/ArbRetryableTx";
+import { TicketCreated as TicketCreatedEvent } from "../../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
 import { L1ToL2Transaction } from "../../generated/schema";
 
 const createEthDeposit = (): TicketCreatedEvent => {

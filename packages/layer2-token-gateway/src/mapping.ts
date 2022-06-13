@@ -1,6 +1,6 @@
 import { GatewaySet as GatewaySetEvent, TxToL1 } from "../generated/L2GatewayRouter/L2GatewayRouter";
-import { L2ToL1Transaction as L2ToL1TransactionEvent } from "../generated/ArbSys/ArbSys";
-import { TicketCreated as TicketCreatedEvent } from "../generated/ArbRetryableTx/ArbRetryableTx";
+import { L2ToL1Transaction as L2ToL1TransactionEvent } from "../generated/ClassicArbSys/ClassicArbSys";
+import { TicketCreated as TicketCreatedEvent } from "../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
 import { L2ArbitrumGateway } from "../generated/templates"
 import { 
   WithdrawalInitiated as WithdrawalInitiatedEvent,

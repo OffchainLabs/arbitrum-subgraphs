@@ -23,11 +23,11 @@ dataSources:
           handler: handleGatewaySet
       file: ./src/mapping.ts
   - kind: ethereum/contract
-    name: ArbRetryableTx
+    name: ClassicArbRetryableTx
     network: {{ l2Network }}
     source:
       address: "0x000000000000000000000000000000000000006E"
-      abi: ArbRetryableTx
+      abi: ClassicArbRetryableTx
       startBlock: {{ arbRetryableTxStartBlock }}
     mapping:
       kind: ethereum/events
@@ -36,18 +36,18 @@ dataSources:
       entities:
         - L1ToL2Transaction
       abis:
-        - name: ArbRetryableTx
-          file: ./abis/ArbRetryableTx.json
+        - name: ClassicArbRetryableTx
+          file: ./abis/ClassicArbRetryableTx.json
       eventHandlers:
         - event: TicketCreated(indexed bytes32)
           handler: handleTicketCreated
       file: ./src/mapping.ts
   - kind: ethereum/contract
-    name: ArbSys
+    name: ClassicArbSys
     network: {{ l2Network }}
     source:
       address: "0x0000000000000000000000000000000000000064"
-      abi: ArbSys
+      abi: ClassicArbSys
       startBlock: {{ arbSysStartBlock }}
     mapping:
       kind: ethereum/events
@@ -56,8 +56,8 @@ dataSources:
       entities:
         - L2ToL1Transaction
       abis:
-        - name: ArbSys
-          file: ./abis/ArbSys.json
+        - name: ClassicArbSys
+          file: ./abis/ClassicArbSys.json
       eventHandlers:
         - event: L2ToL1Transaction(address,indexed address,indexed uint256,indexed uint256,uint256,uint256,uint256,uint256,uint256,bytes)
           handler: handleL2ToL1Transaction
