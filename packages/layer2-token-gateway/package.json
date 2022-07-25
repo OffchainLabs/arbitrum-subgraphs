@@ -1,6 +1,6 @@
 {
   "name": "layer2-token-gateway",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "scripts": {
     "codegen": "yarn prepare:mainnet && graph codegen",
@@ -10,8 +10,8 @@
     "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:rinkeby": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
 
-    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway",
-    "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-rinkeby",
+    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro",
+    "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro-rinkeby",
     
     "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"
   },

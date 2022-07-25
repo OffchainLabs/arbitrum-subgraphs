@@ -1,4 +1,4 @@
-import { handleTicketCreated } from "../../src/mapping";
+import { handleClassicTicketCreated } from "../../src/mapping";
 import {
   Address,
   BigInt,
@@ -13,7 +13,7 @@ import {
   assert,
   createMockedFunction,
 } from "matchstick-as";
-import { TicketCreated as TicketCreatedEvent } from "../../generated/ArbRetryableTx/ArbRetryableTx";
+import { TicketCreated as TicketCreatedEvent } from "../../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
 import { L1ToL2Transaction } from "../../generated/schema";
 
 const createEthDeposit = (): TicketCreatedEvent => {
@@ -106,7 +106,7 @@ const createTokenDeposit = (): TicketCreatedEvent => {
 
 test("Can process eth deposit", () => {
   let newEthDeposit = createEthDeposit();
-  handleTicketCreated(newEthDeposit);
+  handleClassicTicketCreated(newEthDeposit);
 
   let entity = L1ToL2Transaction.load(newEthDeposit.transaction.hash.toHex());
   if (!entity) throw new Error("No entity found");
@@ -120,7 +120,7 @@ test("Can process eth deposit", () => {
 
 test("Can process token deposit", () => {
   let newTokenDeposit = createTokenDeposit();
-  handleTicketCreated(newTokenDeposit);
+  handleClassicTicketCreated(newTokenDeposit);
 
   let entity = L1ToL2Transaction.load(newTokenDeposit.transaction.hash.toHex());
   if (!entity) throw new Error("No entity found");
