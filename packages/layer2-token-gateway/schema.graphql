@@ -45,10 +45,13 @@ type L1ToL2Transaction @entity {
   from: Bytes! #address
   
   "the user tx hash of this retryable"
-  userTxHash: Bytes! # bytes32
+  userTxHash: Bytes # bytes32
 
   "does this look like the user just deposited eth"
   looksLikeEthDeposit: Boolean!
+
+  "was this created before the nitro migration"
+  isClassic: Boolean!
   
   "this is the amount of eth transfered from L1 to L2 that is creditted to the from account"
   ethDepositAmount: BigInt!
@@ -69,6 +72,7 @@ type L2ToL1Transaction @entity {
 
   caller: Bytes! # address
   destination: Bytes! # address
+  
   batchNumber: BigInt! # uint256
   indexInBatch: BigInt! # uint256
   arbBlockNum: BigInt! # uint256
@@ -76,5 +80,8 @@ type L2ToL1Transaction @entity {
   timestamp: BigInt! # uint256
   callvalue: BigInt! # uint256
   data: Bytes! # bytes
+  
+  "indicates if this L2 to L1 tx was initiated before the nitro upgrade"
+  isClassic: Boolean!
   withdrawal: Withdrawal
 }

@@ -23,26 +23,6 @@ dataSources:
           handler: handleGatewaySet
       file: ./src/mapping.ts
   - kind: ethereum/contract
-    name: ClassicArbRetryableTx
-    network: {{ l2Network }}
-    source:
-      address: "0x000000000000000000000000000000000000006E"
-      abi: ClassicArbRetryableTx
-      startBlock: {{ arbRetryableTxStartBlock }}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      entities:
-        - L1ToL2Transaction
-      abis:
-        - name: ClassicArbRetryableTx
-          file: ./abis/ClassicArbRetryableTx.json
-      eventHandlers:
-        - event: TicketCreated(indexed bytes32)
-          handler: handleClassicTicketCreated
-      file: ./src/mapping.ts
-  - kind: ethereum/contract
     name: NitroArbRetryableTx
     network: {{ l2Network }}
     source:
@@ -60,7 +40,7 @@ dataSources:
           file: ./abis/NitroArbRetryableTx.json
       eventHandlers:
         - event: TicketCreated(indexed bytes32)
-          handler: handleNitroTicketCreated
+          handler: handleTicketCreated
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: ClassicArbSys

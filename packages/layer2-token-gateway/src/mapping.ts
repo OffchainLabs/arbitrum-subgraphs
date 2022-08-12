@@ -1,6 +1,5 @@
 import { GatewaySet as GatewaySetEvent, TxToL1 } from "../generated/L2GatewayRouter/L2GatewayRouter";
 import { L2ToL1Transaction as ClassicL2ToL1TransactionEvent } from "../generated/ClassicArbSys/ClassicArbSys";
-import { TicketCreated as ClassicTicketCreatedEvent } from "../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
 import { L2ToL1Tx as NitroL2ToL1TxEvent } from "../generated/NitroArbSys/NitroArbSys";
 import { TicketCreated as NitroTicketCreatedEvent } from "../generated/NitroArbRetryableTx/NitroArbRetryableTx";
 import { L2ArbitrumGateway } from "../generated/templates"
@@ -120,19 +119,44 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
   }
 }
 
-export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
+export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
+  // would be better to check the mix digest or extra data, but they arent exposed in the subgraph
+  const ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
+  const isNitro = event.block.stateRoot.toHexString() == ZERO_HASH
+
+  if(isNitro) handleNitroTicketCreated(event)
+  else handleClassicTicketCreated(event)
 }
 
-export function handleClassicTicketCreated(event: ClassicTicketCreatedEvent): void {
+
+// exported so it can be used in testing
+export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
+    // this event is only emitted once per L1 to L2 ticket and only once in a tx
+    const id = event.transaction.hash.toHex()
+    let entity = new L1ToL2Transaction(id)
+  
+    entity.isClassic = false
+    entity.from = event.transaction.from
+  
+    // this is set on the follow up RedeemScheduled
+    // we don't currently have a good way of looking up if the tx was successful
+    entity.userTxHash = null
+}
+
+// exported so it can be used in testing
+export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void {
+  // Nitro and Classic ticket creation events are backward compatible
+
   // TODO: should we skip this if in nitro? it has the same signature
 
   // this event is only emitted once per L1 to L2 ticket and only once in a tx
   const id = event.transaction.hash.toHex()
   let entity = new L1ToL2Transaction(id)
 
+  entity.isClassic = true
   entity.from = event.transaction.from
 
-  entity.userTxHash = event.params.userTxHash
+  entity.userTxHash = event.params.ticketId
 
   // parse the tx input
   // funcSignature:
@@ -211,7 +235,9 @@ export function handleClassicTicketCreated(event: ClassicTicketCreatedEvent): vo
 
 
 export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
-  
+  // const id = bigIntToId(event.params.position)
+  // let entity = new L2ToL1Transaction(id);
+  // entity.isClassic = true;
 }
 
 export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEvent): void {
@@ -226,6 +252,9 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
   entity.timestamp = event.params.timestamp;
   entity.callvalue = event.params.callvalue;
   entity.data = event.params.data;
+  entity.isClassic = true;
+
+  // TODO: should we make this a derived field instead?
   entity.withdrawal = id
 
   const looksLikeEthWithdrawal =
