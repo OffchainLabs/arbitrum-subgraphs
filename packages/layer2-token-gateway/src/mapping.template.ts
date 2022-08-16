@@ -7,7 +7,7 @@ import {
   WithdrawalInitiated as WithdrawalInitiatedEvent,
   DepositFinalized as DepositFinalizedEvent,
 } from "../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway"
-import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, GatewayWithdrawalData, L1ToL2Transaction } from "../generated/schema";
+import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, GatewayWithdrawalData, L1ToL2Transaction, GatewayDepositData } from "../generated/schema";
 import { Address, BigInt, ethereum, Bytes, log } from "@graphprotocol/graph-ts";
 
 export const DISABLED_GATEWAY_ADDR = Address.fromString("0x0000000000000000000000000000000000000001");
@@ -63,25 +63,7 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
 }
 
 export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
-  const withdrawalId = bigIntToId(event.params._l2ToL1Id)
-  const withdrawal = new GatewayWithdrawalData(withdrawalId)
-
-  withdrawal.from = event.params._from
-  withdrawal.to = event.params._to
-  withdrawal.amount = event.params._amount
-  withdrawal.exitNum = event.params._exitNum
-  withdrawal.l2ToL1Event = withdrawalId
-
-  const gatewayId = addressToId(event.address)
-  const tokenId = addressToId(event.params.l1Token)
-  withdrawal.tokenGatewayJoin = getJoinId(gatewayId, tokenId)
-
-  withdrawal.save()
-}
-
-export function handleDeposit(event: DepositFinalizedEvent): void {
-  // TODO: add deposit event handler for template data source that tracks withdrawals
-
+  // this event got emitted in the gateway itself
   const gatewayAddr = event.address;
 
   const gatewayId = addressToId(gatewayAddr);
@@ -91,11 +73,53 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
   let joinEntity = TokenGatewayJoinTable.load(joinId);
   if(joinEntity == null) {
     // the first deposit to an unrecognised pair is equivalent to a `GatewaySet` to handle the default gateway
-    // TODO: check the dest address is actually the expected standard gateway when this happens
     // if there is no gateway registered yet, then this was std bridged token since GatewaySet wasn't emitted first
     joinEntity = new TokenGatewayJoinTable(joinId);
     createTokenGatewayPair(gatewayAddr, event.params.l1Token, event.block)
   }
+
+  const withdrawalId = bigIntToId(event.params._l2ToL1Id)
+  const withdrawal = new GatewayWithdrawalData(withdrawalId)
+
+  withdrawal.from = event.params._from
+  withdrawal.to = event.params._to
+  withdrawal.amount = event.params._amount
+  withdrawal.exitNum = event.params._exitNum
+  withdrawal.l2ToL1Event = withdrawalId
+  withdrawal.tokenGatewayJoin = joinId
+
+  withdrawal.save()
+}
+
+export function handleDeposit(event: DepositFinalizedEvent): void {
+  // this event got emitted in the gateway itself
+  const gatewayAddr = event.address;
+
+  const gatewayId = addressToId(gatewayAddr);
+  const tokenId = addressToId(event.params.l1Token);
+  const joinId = getJoinId(gatewayId, tokenId)
+
+  let joinEntity = TokenGatewayJoinTable.load(joinId);
+  if(joinEntity == null) {
+    // the first deposit to an unrecognised pair is equivalent to a `GatewaySet` to handle the default gateway
+    // if there is no gateway registered yet, then this was std bridged token since GatewaySet wasn't emitted first
+    joinEntity = new TokenGatewayJoinTable(joinId);
+    createTokenGatewayPair(gatewayAddr, event.params.l1Token, event.block)
+  }
+  // TODO: handle deposits
+  return;
+  
+  // TODO: how to we handle deposit IDs
+  const depositId = ""
+  const deposit = new GatewayDepositData(depositId)
+  deposit.from = event.params._from
+  deposit.to = event.params._to
+  deposit.amount = event.params._amount
+
+  deposit.tokenGatewayJoin = joinId
+  // TODO: how to handle this
+  deposit.l1ToL2Transaction = ""
+  deposit.save()
 }
 
 export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
@@ -125,8 +149,6 @@ export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
 // exported so it can be used in testing
 export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void {
   // Nitro and Classic ticket creation events are backward compatible
-
-  // TODO: should we skip this if in nitro? it has the same signature
 
   // this event is only emitted once per L1 to L2 ticket and only once in a tx
   const id = event.transaction.hash.toHex()
@@ -214,9 +236,27 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
 
 
 export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
-  // const id = bigIntToId(event.params.position)
-  // let entity = new L2ToL1Transaction(id);
-  // entity.isClassic = true;
+  const id = bigIntToId(event.params.position)
+  let entity = new L2ToL1Transaction(id);
+  entity.caller = event.params.caller;
+  entity.destination = event.params.destination;
+  entity.batchNumber = null;
+  entity.indexInBatch = event.params.position;
+  entity.arbBlockNum = event.params.arbBlockNum;
+  entity.ethBlockNum = event.params.ethBlockNum;
+  entity.timestamp = event.params.timestamp;
+  entity.callvalue = event.params.callvalue;
+  entity.data = event.params.data;
+  entity.isClassic = false;
+
+  const looksLikeEthWithdrawal =
+    event.params.callvalue.gt(BigInt.zero())
+    && event.params.data.equals(Bytes.empty())
+  
+  entity.looksLikeEthWithdrawal = looksLikeEthWithdrawal;
+  entity.l2TxHash = event.transaction.hash;
+
+  entity.save();
 }
 
 export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEvent): void {
@@ -239,11 +279,6 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
   
   entity.looksLikeEthWithdrawal = looksLikeEthWithdrawal;
   entity.l2TxHash = event.transaction.hash;
-
-  // TODO: query for L2 to L1 tx proof
-  // TODO: don't make this an archive query
-  // this will either be the proof or null
-  // if not null, backfill previous ones that were null
 
   entity.save();
 }
