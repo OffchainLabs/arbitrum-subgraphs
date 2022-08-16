@@ -123,3 +123,6 @@ templates:
       eventHandlers:
         - event: WithdrawalInitiated(address,indexed address,indexed address,indexed uint256,uint256,uint256)
           handler: handleWithdrawal
+        - event: DepositFinalized(indexed address,indexed address,indexed address,uint256)
+          handler: handleDeposit
+

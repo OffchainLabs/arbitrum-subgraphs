@@ -7,7 +7,7 @@ import {
   WithdrawalInitiated as WithdrawalInitiatedEvent,
   DepositFinalized as DepositFinalizedEvent,
 } from "../generated/templates/L2ArbitrumGateway/L2ArbitrumGateway"
-import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, Withdrawal, L1ToL2Transaction } from "../generated/schema";
+import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, GatewayWithdrawalData, L1ToL2Transaction } from "../generated/schema";
 import { Address, BigInt, ethereum, Bytes, log } from "@graphprotocol/graph-ts";
 
 export const DISABLED_GATEWAY_ADDR = Address.fromString("0x0000000000000000000000000000000000000001");
@@ -52,10 +52,7 @@ const createTokenGatewayPair = (l2Gateway: Address, l1Token: Address, block: eth
 }
 
 export function handleGatewaySet(event: GatewaySetEvent): void {
-  // this event is not triggered for the default standard gateway, so we instead declare that on the subgraph manifest
-  const gatewayId = addressToId(event.params.gateway);
-  const tokenId = addressToId(event.params.l1Token);
-  const joinId = getJoinId(gatewayId, tokenId)
+  // this event is not triggered for the default standard gateway, so we instead declare that bridge on the subgraph manifest separately
 
   if (event.params.gateway == Address.zero()) {
     // TODO: handle gateways being deleted
@@ -67,18 +64,17 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
 
 export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
   const withdrawalId = bigIntToId(event.params._l2ToL1Id)
-  const withdrawal = new Withdrawal(withdrawalId)
+  const withdrawal = new GatewayWithdrawalData(withdrawalId)
 
-  withdrawal.l2BlockNum = event.block.number
   withdrawal.from = event.params._from
   withdrawal.to = event.params._to
   withdrawal.amount = event.params._amount
   withdrawal.exitNum = event.params._exitNum
+  withdrawal.l2ToL1Event = withdrawalId
 
   const gatewayId = addressToId(event.address)
   const tokenId = addressToId(event.params.l1Token)
-  withdrawal.exitInfo = getJoinId(gatewayId, tokenId)
-  withdrawal.l2ToL1Event = withdrawalId
+  withdrawal.tokenGatewayJoin = getJoinId(gatewayId, tokenId)
 
   withdrawal.save()
 }
@@ -86,17 +82,7 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
 export function handleDeposit(event: DepositFinalizedEvent): void {
   // TODO: add deposit event handler for template data source that tracks withdrawals
 
-  // Right now this method is mimic'ing the GatewaySet handler to cover for permissionless token bridging
-  // currently #Hacky but works. can be cleaned up with a bigger refactor
-  // this only tracks deposits from the standard gateway for now
-  // this is used since we don't "GatewaySet" for the permissionless bridging
-
-  const gatewayAddr = event.transaction.to;
-
-  if(!gatewayAddr) {
-    // shouldn't happen, but lets make the compiler happy
-    return;
-  }
+  const gatewayAddr = event.address;
 
   const gatewayId = addressToId(gatewayAddr);
   const tokenId = addressToId(event.params.l1Token);
@@ -246,9 +232,6 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
   entity.callvalue = event.params.callvalue;
   entity.data = event.params.data;
   entity.isClassic = true;
-
-  // TODO: should we make this a derived field instead?
-  entity.withdrawal = id
 
   const looksLikeEthWithdrawal =
     event.params.callvalue.gt(BigInt.zero())

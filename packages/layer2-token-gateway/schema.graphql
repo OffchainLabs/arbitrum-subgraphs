@@ -19,24 +19,36 @@ type TokenGatewayJoinTable @entity {
   blockNum: BigInt!
   gateway: Gateway!
   token: Token!
-  withdrawals: [Withdrawal!] @derivedFrom(field: "exitInfo")
+
+  withdrawals: [GatewayWithdrawalData!] @derivedFrom(field: "tokenGatewayJoin")
+  deposits: [GatewayDepositData!] @derivedFrom(field: "tokenGatewayJoin")
 }
 
-type Withdrawal @entity {
+type GatewayDepositData @entity {
+  "the L1 to L2 retryable creation id"
+  id: ID!
+  from: Bytes!
+  to: Bytes!
+  amount: BigInt!
+
+  tokenGatewayJoin: TokenGatewayJoinTable!
+  l1ToL2Transaction: L1ToL2Transaction
+}
+
+type GatewayWithdrawalData @entity {
   "this is the l2ToL1Id of the transaction as surfaced by arb-os"
   id: ID!
-  "the L2 block number when this was triggered"
-  l2BlockNum: BigInt!
   from: Bytes!
   to: Bytes!
   amount: BigInt!
   exitNum: BigInt!
-  exitInfo: TokenGatewayJoinTable!
+
+  tokenGatewayJoin: TokenGatewayJoinTable!
   l2ToL1Event: L2ToL1Transaction
 }
 
 type L1ToL2Transaction @entity {
-  "the ID of the L1 to L2 tx"
+  "the L1 to L2 retryable creation id"
   id: ID!
   
   "address that called the inbox in the L1"
@@ -56,6 +68,8 @@ type L1ToL2Transaction @entity {
 
   l2Calldata: Bytes!
   l2Callvalue: BigInt!
+
+  gatewayDepositData: [GatewayDepositData!] @derivedFrom(field: "l1ToL2Transaction")
 }
 
 type L2ToL1Transaction @entity {
@@ -71,15 +85,20 @@ type L2ToL1Transaction @entity {
   caller: Bytes! # address
   destination: Bytes! # address
   
-  batchNumber: BigInt! # uint256
+  "batch numbers are not available in "
+  batchNumber: BigInt # uint256
+
+  "this is position in global merkle tree for nitro, but classic its within a batch num"
   indexInBatch: BigInt! # uint256
+
   arbBlockNum: BigInt! # uint256
   ethBlockNum: BigInt! # uint256
   timestamp: BigInt! # uint256
   callvalue: BigInt! # uint256
   data: Bytes! # bytes
   
+  gatewayWithdrawalData: [GatewayWithdrawalData!] @derivedFrom(field: "l2ToL1Event")
+
   "indicates if this L2 to L1 tx was initiated before the nitro upgrade"
   isClassic: Boolean!
-  withdrawal: Withdrawal
 }
