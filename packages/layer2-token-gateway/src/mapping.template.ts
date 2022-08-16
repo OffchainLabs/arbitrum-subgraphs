@@ -19,7 +19,40 @@ export const addressToId = (input: Address): string =>
 export const getJoinId = (gatewayId: string, tokenId: string): string =>
   gatewayId.concat(tokenId)
 
+
+const createTokenGatewayPair = (l2Gateway: Address, l1Token: Address, block: ethereum.Block): void => {
+  const gatewayId = addressToId(l2Gateway);
+  const tokenId = addressToId(l1Token);
+  const joinId = getJoinId(gatewayId, tokenId)
+
+  // TODO: should we always create instead of load? should be faster.
+  // the issue here is if creating again on subsequent deposits. would that break FKs? 
+  let gatewayEntity = Gateway.load(gatewayId);
+  // we use moustache to template this value in (as used in the subgraph manifest template)
+  const isL2StdGateway = l2Gateway.toString().toLowerCase() == "{{{ l2StandardGateway }}}".toLowerCase()
+  if(!isL2StdGateway && gatewayEntity == null) {
+    gatewayEntity = new Gateway(gatewayId);
+    gatewayEntity.save();
+    // we want to track every new arbitrum gateway
+    // so we initialize a Data Source Template
+    L2ArbitrumGateway.create(l2Gateway)
+  }
+
+  let tokenEntity = Token.load(tokenId);
+  if(tokenEntity == null) {
+    tokenEntity = new Token(tokenId);
+    tokenEntity.save();
+  }
+
+  let joinEntity = new TokenGatewayJoinTable(joinId);
+  joinEntity.gateway = gatewayId;
+  joinEntity.token = tokenId;
+  joinEntity.blockNum = block.number
+  joinEntity.save();
+}
+
 export function handleGatewaySet(event: GatewaySetEvent): void {
+  // this event is not triggered for the default standard gateway, so we instead declare that on the subgraph manifest
   const gatewayId = addressToId(event.params.gateway);
   const tokenId = addressToId(event.params.l1Token);
   const joinId = getJoinId(gatewayId, tokenId)
@@ -28,29 +61,8 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
     // TODO: handle gateways being deleted
     return;
   }
-  // TODO: should we always create instead of load? should be faster.
-  let gatewayEntity = Gateway.load(gatewayId);
-  if(gatewayEntity == null) {
-    gatewayEntity = new Gateway(gatewayId);
-    gatewayEntity.save();
-    // we want to track every new arbitrum gateway
-    // so we initialize a Data Source Template
-    L2ArbitrumGateway.create(event.params.gateway)
-  }
-
-  let tokenEntity = Token.load(tokenId);
-  if(tokenEntity == null) {
-    tokenEntity = new Token(tokenId);
-    // TODO: query gateway for L2 address
-    // tokenEntity.l2Address = null;
-    tokenEntity.save();
-  }
-
-  let joinEntity = new TokenGatewayJoinTable(joinId);
-  joinEntity.gateway = gatewayId;
-  joinEntity.token = tokenId;
-  joinEntity.blockNum = event.block.number
-  joinEntity.save();
+  createTokenGatewayPair(event.params.gateway, event.params.l1Token, event.block)
+  
 }
 
 export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
@@ -72,7 +84,6 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
 }
 
 export function handleDeposit(event: DepositFinalizedEvent): void {
-  // TODO: add deposit support
   // TODO: add deposit event handler for template data source that tracks withdrawals
 
   // Right now this method is mimic'ing the GatewaySet handler to cover for permissionless token bridging
@@ -91,31 +102,13 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
   const tokenId = addressToId(event.params.l1Token);
   const joinId = getJoinId(gatewayId, tokenId)
 
-  // TODO: should we always create instead of load? should be faster.
-  // the issue here is if creating again on subsequent deposits. would that break FKs? 
-  let gatewayEntity = Gateway.load(gatewayId);
-  if(gatewayEntity == null) {
-    gatewayEntity = new Gateway(gatewayId);
-    gatewayEntity.save();
-    // we don't start a new data source template, since this is not dynamic
-  }
-
-  let tokenEntity = Token.load(tokenId);
-  if(tokenEntity == null) {
-    tokenEntity = new Token(tokenId);
-    // TODO: query gateway for L2 address
-    // tokenEntity.l2Address = null;
-    tokenEntity.save();
-  }
-
   let joinEntity = TokenGatewayJoinTable.load(joinId);
   if(joinEntity == null) {
-    joinEntity = new TokenGatewayJoinTable(joinId);
-    joinEntity.gateway = gatewayId;
-    joinEntity.token = tokenId;
+    // the first deposit to an unrecognised pair is equivalent to a `GatewaySet` to handle the default gateway
+    // TODO: check the dest address is actually the expected standard gateway when this happens
     // if there is no gateway registered yet, then this was std bridged token since GatewaySet wasn't emitted first
-    joinEntity.blockNum = event.block.number
-    joinEntity.save();
+    joinEntity = new TokenGatewayJoinTable(joinId);
+    createTokenGatewayPair(gatewayAddr, event.params.l1Token, event.block)
   }
 }
 

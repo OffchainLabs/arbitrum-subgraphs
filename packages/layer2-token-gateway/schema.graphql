@@ -8,8 +8,6 @@ type Gateway @entity {
 type Token @entity {
   "l1 token address hex string"
   id: ID!
-  "l2 token address hex string, optional"
-  l2Address: Bytes # address
   "gateway that supports this token"
   gateway: [TokenGatewayJoinTable!] @derivedFrom(field: "token")
 }
