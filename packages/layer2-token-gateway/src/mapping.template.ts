@@ -122,12 +122,17 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
   deposit.save()
 }
 
-export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
+const isNitro = (block: ethereum.Block): boolean => {
+  // we use moustache to template this value in (as used in the subgraph manifest template)
+  // const isNitroBlock = BigInt.fromString("{{{ nitroGenesisBlockNum }}}")
+
   // would be better to check the mix digest or extra data, but they arent exposed in the subgraph
   const ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
-  const isNitro = event.block.stateRoot.toHexString() == ZERO_HASH
+  return block.stateRoot.toHexString() == ZERO_HASH
+}
 
-  if(isNitro) handleNitroTicketCreated(event)
+export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
+  if(isNitro(event.block)) handleNitroTicketCreated(event)
   else handleClassicTicketCreated(event)
 }
 
@@ -143,7 +148,14 @@ export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
   
     // this is set on the follow up RedeemScheduled
     // we don't currently have a good way of looking up if the tx was successful
-    entity.userTxHash = null
+    
+    // TODO: parse tx input
+    // submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)	
+    entity.ethDepositAmount = BigInt.fromI32(0)
+    entity.l2Callvalue = BigInt.fromI32(0)
+    entity.l2Calldata = Bytes.fromI32(0)
+
+    entity.save()
 }
 
 // exported so it can be used in testing
@@ -156,8 +168,6 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
 
   entity.isClassic = true
   entity.from = event.transaction.from
-
-  entity.userTxHash = event.params.ticketId
 
   // parse the tx input
   // funcSignature:
@@ -214,19 +224,6 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
     )
   )
 
-  // we identify if the retryable was created as in the `depositEth` method in the inbox
-  // https://github.com/OffchainLabs/arbitrum/blob/98d33a5e92de47de97aec857c7fd92eb63db543e/packages/arb-bridge-eth/contracts/bridge/Inbox.sol#L253-L261
-  const looksLikeEthDeposit =
-    destAddr.equals(entity.from)
-    && l2CallValue.equals(BigInt.zero())
-    && event.transaction.value.gt(BigInt.zero())
-    && excessFeeRefundAddress.equals(entity.from)
-    && callValueRefundAddress.equals(entity.from)
-    && maxGas.equals(BigInt.zero())
-    && gasPriceBid.equals(BigInt.zero())
-    && dataLength.equals(BigInt.zero())
-
-  entity.looksLikeEthDeposit = looksLikeEthDeposit
   entity.ethDepositAmount = event.transaction.value.minus(l2CallValue)
   entity.l2Callvalue = l2CallValue
   entity.l2Calldata = l2Calldata
@@ -248,12 +245,6 @@ export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
   entity.callvalue = event.params.callvalue;
   entity.data = event.params.data;
   entity.isClassic = false;
-
-  const looksLikeEthWithdrawal =
-    event.params.callvalue.gt(BigInt.zero())
-    && event.params.data.equals(Bytes.empty())
-  
-  entity.looksLikeEthWithdrawal = looksLikeEthWithdrawal;
   entity.l2TxHash = event.transaction.hash;
 
   entity.save();
@@ -272,12 +263,6 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
   entity.callvalue = event.params.callvalue;
   entity.data = event.params.data;
   entity.isClassic = true;
-
-  const looksLikeEthWithdrawal =
-    event.params.callvalue.gt(BigInt.zero())
-    && event.params.data.equals(Bytes.empty())
-  
-  entity.looksLikeEthWithdrawal = looksLikeEthWithdrawal;
   entity.l2TxHash = event.transaction.hash;
 
   entity.save();

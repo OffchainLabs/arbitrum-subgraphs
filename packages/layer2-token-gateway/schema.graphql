@@ -25,7 +25,7 @@ type TokenGatewayJoinTable @entity {
 }
 
 type GatewayDepositData @entity {
-  "the L1 to L2 retryable creation id"
+  "the L2 tx hash that got executed"
   id: ID!
   from: Bytes!
   to: Bytes!
@@ -53,31 +53,26 @@ type L1ToL2Transaction @entity {
   
   "address that called the inbox in the L1"
   from: Bytes! #address
-  
-  "the user tx hash of this retryable"
-  userTxHash: Bytes # bytes32
-
-  "does this look like the user just deposited eth"
-  looksLikeEthDeposit: Boolean!
 
   "was this created before the nitro migration"
   isClassic: Boolean!
-  
+
   "this is the amount of eth transfered from L1 to L2 that is creditted to the from account"
   ethDepositAmount: BigInt!
 
   l2Calldata: Bytes!
   l2Callvalue: BigInt!
 
-  gatewayDepositData: [GatewayDepositData!] @derivedFrom(field: "l1ToL2Transaction")
+  # "we are not able to corellate these 2 events"
+  # gatewayDepositData: [GatewayDepositData!] @derivedFrom(field: "l1ToL2Transaction")
+
+  # "the user tx hash of this retryable. undefined in nitro since"
+  # userTxHash: Bytes # bytes32
 }
 
 type L2ToL1Transaction @entity {
-  "this is the l2ToL1Id of the transaction as surfaced by arb-os"
+  "a unique identifier for this L2 to L1 tx"
   id: ID!
-
-  "does this look like the user just withdrew eth"
-  looksLikeEthWithdrawal: Boolean!
 
   "L2 Tx hash that triggered this event"
   l2TxHash: Bytes!
@@ -85,7 +80,7 @@ type L2ToL1Transaction @entity {
   caller: Bytes! # address
   destination: Bytes! # address
   
-  "batch numbers are not available in "
+  "batch numbers are not available in nitro"
   batchNumber: BigInt # uint256
 
   "this is position in global merkle tree for nitro, but classic its within a batch num"
