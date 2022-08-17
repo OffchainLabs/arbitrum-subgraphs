@@ -124,11 +124,11 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
 
 const isNitro = (block: ethereum.Block): boolean => {
   // we use moustache to template this value in (as used in the subgraph manifest template)
-  // const isNitroBlock = BigInt.fromString("{{{ nitroGenesisBlockNum }}}")
+  const nitroStartBlock = BigInt.fromString("{{{ nitroGenesisBlockNum }}}")
 
   // would be better to check the mix digest or extra data, but they arent exposed in the subgraph
   const ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
-  return block.stateRoot.toHexString() == ZERO_HASH
+  return block.stateRoot.toHexString() == ZERO_HASH || block.number.ge(nitroStartBlock)
 }
 
 export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
@@ -147,7 +147,7 @@ export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
     entity.from = event.transaction.from
   
     // this is set on the follow up RedeemScheduled
-    // we don't currently have a good way of looking up if the tx was successful
+    // we don't currently have a good way of looking up if the tx was successful to correlate this event with a potential deposit event
     
     // TODO: parse tx input
     // submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)	
@@ -233,12 +233,22 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
 
 
 export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
+  /**
+   * the classic unique id was a counter in the precompile starting from 0
+   * with nitro this instead became a hash of the leaf
+   * then it got changed to be a counter again (position in merkle tree) starting from 0
+   * 
+   * here we assume classic id gets remapped to avoid a PK clash
+   * we also assume the leaf hash doesn't clash with the counter
+   */
+
   const id = bigIntToId(event.params.position)
   let entity = new L2ToL1Transaction(id);
   entity.caller = event.params.caller;
   entity.destination = event.params.destination;
   entity.batchNumber = null;
   entity.indexInBatch = event.params.position;
+  entity.uniqueId = event.params.position;
   entity.arbBlockNum = event.params.arbBlockNum;
   entity.ethBlockNum = event.params.ethBlockNum;
   entity.timestamp = event.params.timestamp;
@@ -251,12 +261,23 @@ export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
 }
 
 export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEvent): void {
-  const id = bigIntToId(event.params.uniqueId)
+  /**
+   * the classic unique id was a counter in the precompile
+   * with nitro this instead became a hash of the leaf id
+   * then it got changed to be a counter again (position in merkle tree) starting from 0
+   * 
+   * to deal with this we flip the highest bit in the ID (which is fully deterministic)
+   * and allows us to correlate this event with the gateway's withdrawal event that uses the returned unique id
+   */
+  const mask = BigInt.fromI32(1).leftShift(63)
+  const remappedId = mask.bitOr(event.params.uniqueId)
+  const id = bigIntToId(remappedId)
   let entity = new L2ToL1Transaction(id);
   entity.caller = event.params.caller;
   entity.destination = event.params.destination;
   entity.batchNumber = event.params.batchNumber;
   entity.indexInBatch = event.params.indexInBatch;
+  entity.uniqueId = event.params.uniqueId;
   entity.arbBlockNum = event.params.arbBlockNum;
   entity.ethBlockNum = event.params.ethBlockNum;
   entity.timestamp = event.params.timestamp;

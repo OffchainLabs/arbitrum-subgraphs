@@ -71,8 +71,11 @@ type L1ToL2Transaction @entity {
 }
 
 type L2ToL1Transaction @entity {
-  "a unique identifier for this L2 to L1 tx"
+  "a unique identifier used as a PK for the subgraph - deterministically generated from the uniqueId"
   id: ID!
+
+  "the unique id surfaced by Arb-Os L2 to L1 tx - this might not always actually be unique when comparing pre vs post nitro"
+  uniqueId: BigInt!
 
   "L2 Tx hash that triggered this event"
   l2TxHash: Bytes!
