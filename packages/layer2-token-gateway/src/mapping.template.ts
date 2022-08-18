@@ -270,8 +270,10 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
    * with nitro this instead became a hash of the leaf id
    * then it got changed to be a counter again (position in merkle tree) starting from 0
    * 
-   * to deal with this we flip the highest bit in the ID (which is fully deterministic)
+   * to deal with this we set the highest bit in the ID (which is fully deterministic)
    * and allows us to correlate this event with the gateway's withdrawal event that uses the returned unique id
+   *
+   * this is equivalent to having a composite PK of `isClassic` and `uniqueId`, but subgraph schema doesn't allow us to do that
    */
   const mask = BigInt.fromI32(1).leftShift(63)
   const remappedId = mask.bitOr(event.params.uniqueId)

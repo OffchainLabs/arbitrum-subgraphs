@@ -57,7 +57,7 @@ type L1ToL2Transaction @entity {
   "was this created before the nitro migration"
   isClassic: Boolean!
 
-  "this is the amount of eth transfered from L1 to L2 that is creditted to the from account"
+  "this is the amount of eth transfered from L1 to L2 that is creditted to the from account. note that eth can also be deposited through the eth deposit message which isn't tracked here"
   ethDepositAmount: BigInt!
 
   l2Calldata: Bytes!
