@@ -106,20 +106,24 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
     joinEntity = new TokenGatewayJoinTable(joinId);
     createTokenGatewayPair(gatewayAddr, event.params.l1Token, event.block)
   }
-  // TODO: handle deposits
-  return;
   
-  // TODO: how to we handle deposit IDs
-  const depositId = ""
-  const deposit = new GatewayDepositData(depositId)
-  deposit.from = event.params._from
-  deposit.to = event.params._to
-  deposit.amount = event.params._amount
-
-  deposit.tokenGatewayJoin = joinId
-  // TODO: how to handle this
-  deposit.l1ToL2Transaction = ""
-  deposit.save()
+  // tx hash here follows 
+  const depositId = event.transaction.hash.toHexString()
+  let deposit = GatewayDepositData.load(depositId)
+  if(deposit == null) {
+    deposit = new GatewayDepositData(depositId)
+    deposit.from = event.params._from
+    deposit.to = event.params._to
+    deposit.amount = event.params._amount
+  
+    deposit.tokenGatewayJoin = joinId
+    // TODO: can we correlate this without parsing all blocks
+    // this is determined based on the retry attempt number and some other fields
+    // deposit.l1ToL2Transaction = null
+    deposit.save()
+  } else {
+    log.debug("deposit event not expected to be emitted twice in tx: {}", [depositId.toString()])
+  }
 }
 
 const isNitro = (block: ethereum.Block): boolean => {
@@ -140,7 +144,7 @@ export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
 // exported so it can be used in testing
 export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
     // this event is only emitted once per L1 to L2 ticket and only once in a tx
-    const id = event.transaction.hash.toHex()
+    const id = event.transaction.hash.toHexString()
     let entity = new L1ToL2Transaction(id)
   
     entity.isClassic = false
@@ -163,7 +167,7 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
   // Nitro and Classic ticket creation events are backward compatible
 
   // this event is only emitted once per L1 to L2 ticket and only once in a tx
-  const id = event.transaction.hash.toHex()
+  const id = event.transaction.hash.toHexString()
   let entity = new L1ToL2Transaction(id)
 
   entity.isClassic = true

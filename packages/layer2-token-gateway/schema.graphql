@@ -32,7 +32,7 @@ type GatewayDepositData @entity {
   amount: BigInt!
 
   tokenGatewayJoin: TokenGatewayJoinTable!
-  l1ToL2Transaction: L1ToL2Transaction
+  # l1ToL2Transaction: L1ToL2Transaction!
 }
 
 type GatewayWithdrawalData @entity {
@@ -44,7 +44,7 @@ type GatewayWithdrawalData @entity {
   exitNum: BigInt!
 
   tokenGatewayJoin: TokenGatewayJoinTable!
-  l2ToL1Event: L2ToL1Transaction
+  l2ToL1Event: L2ToL1Transaction!
 }
 
 type L1ToL2Transaction @entity {
@@ -63,7 +63,7 @@ type L1ToL2Transaction @entity {
   l2Calldata: Bytes!
   l2Callvalue: BigInt!
 
-  # "we are not able to corellate these 2 events"
+  # we are not able to corellate these 2 events, without indexing every block
   # gatewayDepositData: [GatewayDepositData!] @derivedFrom(field: "l1ToL2Transaction")
 
   # "the user tx hash of this retryable. undefined in nitro since"
