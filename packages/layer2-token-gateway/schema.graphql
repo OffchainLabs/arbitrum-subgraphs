@@ -51,8 +51,11 @@ type L1ToL2Transaction @entity {
   "the L1 to L2 retryable creation id"
   id: ID!
   
-  "address that called the inbox in the L1"
+  "aliased L1 address that called the inbox in the L1"
   from: Bytes! #address
+
+  "L2 destination address of retryable"
+  to: Bytes! #address
 
   "was this created before the nitro migration"
   isClassic: Boolean!

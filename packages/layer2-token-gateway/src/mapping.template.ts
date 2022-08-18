@@ -128,11 +128,11 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
 
 const isNitro = (block: ethereum.Block): boolean => {
   // we use moustache to template this value in (as used in the subgraph manifest template)
-  const nitroStartBlock = BigInt.fromString("{{{ nitroGenesisBlockNum }}}")
+  // const nitroStartBlock = BigInt.fromString("{{{ nitroGenesisBlockNum }}}")
+  // return block.stateRoot.notEqual(Bytes.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000000")) || block.number.ge(nitroStartBlock)
 
   // would be better to check the mix digest or extra data, but they arent exposed in the subgraph
-  const ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
-  return block.stateRoot.toHexString() == ZERO_HASH || block.number.ge(nitroStartBlock)
+  return block.stateRoot.notEqual(Bytes.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000000"))
 }
 
 export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
@@ -141,23 +141,85 @@ export function handleTicketCreated(event: NitroTicketCreatedEvent): void {
 }
 
 
+export class SubmitRetryableInputFields {
+  public ethDepositAmount: BigInt;
+  public l2Callvalue: BigInt;
+  public l2Calldata: Bytes;
+  public to: Address;
+
+  constructor(tx: ethereum.Transaction) {
+    // parsing fields from
+//   function submitRetryable(
+//     bytes32 requestId,
+//     uint256 l1BaseFee,
+//     uint256 deposit,
+//     uint256 callvalue,
+//     uint256 gasFeeCap,
+//     uint64 gasLimit,
+//     uint256 maxSubmissionFee,
+//     address feeRefundAddress,
+//     address beneficiary,
+//     address retryTo,
+//     bytes calldata retryData
+// ) external;
+
+    // TODO: check correct function signature
+  const inputWithoutSelector = Bytes.fromUint8Array(tx.input.slice(4))
+  const parsedWithoutData = ethereum.decode(
+    "(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,uint256,uint256)",
+    inputWithoutSelector
+  );
+  if (!parsedWithoutData) {
+    log.error("didn't expect !parsedWithoutData", [])
+    throw new Error("goddamn")
+  }
+  const parsedArray = parsedWithoutData.toTuple();
+
+
+  this.ethDepositAmount = parsedArray[2].toBigInt()
+  this.l2Callvalue = parsedArray[3].toBigInt()
+  this.to = parsedArray[9].toAddress()
+  
+
+  // TODO: DRY up logic used here and classic (ie abi decoding the input data)
+    const lengthOfDataLength = parsedArray[10].toBigInt()
+    const dataLength = parsedArray[11].toBigInt()
+
+    const sliceStart = ethereum.encode(parsedWithoutData)!.byteLength
+    if(!sliceStart) {
+      // throw new Error("oh damn somethin broke")
+      log.error("ah damn no encoding of start", [])
+      throw new Error("goddamn2")
+    }
+  
+    log.debug("expect slice to start at {}", [sliceStart.toString()])
+    this.l2Calldata = Bytes.fromByteArray(
+      Bytes.fromUint8Array(
+        inputWithoutSelector.slice(
+          sliceStart, sliceStart + dataLength.toI32()
+        )
+      )
+    )
+  }
+}
+
 // exported so it can be used in testing
-export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
+export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {  
+    // this is set on the follow up RedeemScheduled
+    // we don't currently have a good way of looking up if the tx was successful to correlate this event with a potential deposit event
+
     // this event is only emitted once per L1 to L2 ticket and only once in a tx
     const id = event.transaction.hash.toHexString()
     let entity = new L1ToL2Transaction(id)
   
     entity.isClassic = false
     entity.from = event.transaction.from
-  
-    // this is set on the follow up RedeemScheduled
-    // we don't currently have a good way of looking up if the tx was successful to correlate this event with a potential deposit event
-    
-    // TODO: parse tx input
-    // submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)	
-    entity.ethDepositAmount = BigInt.fromI32(0)
-    entity.l2Callvalue = BigInt.fromI32(0)
-    entity.l2Calldata = Bytes.fromI32(0)
+
+    const submitRetryableData = new SubmitRetryableInputFields(event.transaction)
+    entity.ethDepositAmount = submitRetryableData.ethDepositAmount
+    entity.l2Callvalue = submitRetryableData.l2Callvalue
+    entity.l2Calldata = submitRetryableData.l2Calldata
+    entity.to = submitRetryableData.to
 
     entity.save()
 }
@@ -173,9 +235,17 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
   entity.isClassic = true
   entity.from = event.transaction.from
 
-  // parse the tx input
-  // funcSignature:
-  //    createRetryableTicket(address,uint256,uint256,address,address,uint256,uint256,bytes)	
+  // parsing fields from
+  //   function createRetryableTicket(
+  //     address destAddr,
+  //     uint256 l2CallValue,
+  //     uint256 maxSubmissionCost,
+  //     address excessFeeRefundAddress,
+  //     address callValueRefundAddress,
+  //     uint256 maxGas,
+  //     uint256 gasPriceBid,
+  //     bytes calldata data
+  // ) external payable;
   // we want to skip the `0x679b6ded` at the start and parse the bytes length instead of the bytes explicitly
   const inputWithoutSelector = Bytes.fromUint8Array(event.transaction.input.slice(4))
   const parsedWithoutData = ethereum.decode(
@@ -190,13 +260,7 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
 
   const parsedArray = parsedWithoutData.toTuple();
 
-  const destAddr = parsedArray[0].toAddress()
   const l2CallValue = parsedArray[1].toBigInt()
-  const maxSubmissionCost = parsedArray[2].toBigInt()
-  const excessFeeRefundAddress = parsedArray[3].toAddress()
-  const callValueRefundAddress = parsedArray[4].toAddress()
-  const maxGas = parsedArray[5].toBigInt()
-  const gasPriceBid = parsedArray[6].toBigInt()
 
   // this is due to how dynamic length data types are encoded
   const lengthOfDataLength = parsedArray[7].toBigInt()
@@ -216,7 +280,9 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
   // https://ethereum.stackexchange.com/questions/114582/the-graph-nodes-cant-decode-abi-encoded-data-containing-arrays
   const sliceStart = ethereum.encode(parsedWithoutData)!.byteLength
   if(!sliceStart) {
-    throw new Error("oh damn somethin broke")
+    // throw new Error("oh damn somethin broke")
+    log.critical("something broke", []);
+    return;
   }
 
   log.debug("expect slice to start at {}", [sliceStart.toString()])
@@ -228,9 +294,10 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
     )
   )
 
-  entity.ethDepositAmount = event.transaction.value.minus(l2CallValue)
+  entity.ethDepositAmount = event.transaction.value
   entity.l2Callvalue = l2CallValue
   entity.l2Calldata = l2Calldata
+  entity.to = parsedArray[0].toAddress()
   
   entity.save();
 }

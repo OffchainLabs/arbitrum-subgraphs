@@ -17,7 +17,7 @@
     "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro-goerli",
     "deploy:nova": "yarn build && yarn prepare:nova && graph deploy --node http://localhost:8020 fredlacs/layer2-token-gateway-nitro-nova",
     
-    "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"
+    "test": "yarn codegen && yarn build && graph test -r --version 0.5.0"
   },
   "dependencies": {
     "matchstick-as": "^0.5.0",
