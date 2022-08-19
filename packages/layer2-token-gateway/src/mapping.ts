@@ -10,7 +10,7 @@ import {
 import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, GatewayWithdrawalData, L1ToL2Transaction, GatewayDepositData } from "../generated/schema";
 import { Address, BigInt, ethereum, Bytes, log } from "@graphprotocol/graph-ts";
 import { addressToId, bigIntToId, getJoinId, isNitro, L2_STD_GATEWAY } from "./util";
-import { SubmitRetryableInputFields } from "./abi";
+import { CreateRetryableTicketInputFields, SubmitRetryableInputFields } from "./abi";
 
 
 const processTokenGatewayPair = (
@@ -152,72 +152,16 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
 
   entity.isClassic = true
   entity.l1FromAliased = event.transaction.from
-
-  // parsing fields from
-  //   function createRetryableTicket(
-  //     address destAddr,
-  //     uint256 l2CallValue,
-  //     uint256 maxSubmissionCost,
-  //     address excessFeeRefundAddress,
-  //     address callValueRefundAddress,
-  //     uint256 maxGas,
-  //     uint256 gasPriceBid,
-  //     bytes calldata data
-  // ) external payable;
-  // we want to skip the `0x679b6ded` at the start and parse the bytes length instead of the bytes explicitly
-  const inputWithoutSelector = Bytes.fromUint8Array(event.transaction.input.slice(4))
-  const parsedWithoutData = ethereum.decode(
-    "(address,uint256,uint256,address,address,uint256,uint256,uint256,uint256)",
-    inputWithoutSelector
-  );
   
-  if (!parsedWithoutData) {
-    log.critical("didn't expect !parsedWithoutData", [])
-    throw new Error("somethin bad happened")
-  }
-
-  const parsedArray = parsedWithoutData.toTuple();
-
-  const l2CallValue = parsedArray[1].toBigInt()
-
-  // this is due to how dynamic length data types are encoded
-  const lengthOfDataLength = parsedArray[7].toBigInt()
-  if(lengthOfDataLength != BigInt.fromI32(256)) {
-    log.critical("something unexpected went wrong with lengthOfDataLength {}", [lengthOfDataLength.toString()])
-    throw new Error("oh damn somethin broke")
-  }
-
-  const dataLength = parsedArray[8].toBigInt()
-  log.debug("lengthOfDataLength expected: {}", [lengthOfDataLength.toString()])
-  log.debug("data length expected: {}", [dataLength.toString()])
-
-  log.debug("input length {}", [inputWithoutSelector.length.toString()])
-
-  // we do this because the graph seems weird when parsing dynamic length data types
-  // can maybe be fixed if we don't parse it as `toTuple`
-  // https://ethereum.stackexchange.com/questions/114582/the-graph-nodes-cant-decode-abi-encoded-data-containing-arrays
-  const sliceStart = ethereum.encode(parsedWithoutData)!.byteLength
-  if(!sliceStart) {
-    // throw new Error("oh damn somethin broke")
-    log.critical("something broke", []);
-    return;
-  }
-
-  log.debug("expect slice to start at {}", [sliceStart.toString()])
-  const l2Calldata = Bytes.fromByteArray(
-    Bytes.fromUint8Array(
-      inputWithoutSelector.slice(
-        sliceStart, sliceStart + dataLength.toI32()
-      )
-    )
-  )
-
-  entity.deposit = event.transaction.value
-  entity.l2Callvalue = l2CallValue
-  entity.l2Calldata = l2Calldata
   entity.l2BlockNum = event.block.number
   entity.l2TxHash = event.transaction.hash
-  entity.l2To = parsedArray[0].toAddress()
+
+  const createRetrytableData = new CreateRetryableTicketInputFields(event.transaction)
+  
+  entity.l2Callvalue = createRetrytableData.l2Callvalue
+  entity.l2Calldata = createRetrytableData.l2Calldata
+  entity.deposit = createRetrytableData.deposit
+  entity.l2To = createRetrytableData.l2To
   
   entity.save();
 }
