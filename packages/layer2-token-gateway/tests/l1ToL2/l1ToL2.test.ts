@@ -1,4 +1,4 @@
-import { handleClassicTicketCreated, SubmitRetryableInputFields } from "../../src/mapping";
+import { handleClassicTicketCreated } from "../../src/mapping";
 import {
   Address,
   BigInt,
@@ -15,6 +15,7 @@ import {
 } from "matchstick-as";
 import { TicketCreated as TicketCreatedEvent } from "../../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
 import { L1ToL2Transaction } from "../../generated/schema";
+import { SubmitRetryableInputFields } from "../../src/abi";
 
 const createEthDeposit = (): TicketCreatedEvent => {
   let mockEvent = newMockEvent();
@@ -113,7 +114,7 @@ test("Can parse nitro submit retryable", () => {
   event.transaction.input = Bytes.fromHexString(txInput);
   const data = new SubmitRetryableInputFields(event.transaction)
 
-  assert.bigIntEquals(BigInt.fromU64(149493736155328), data.ethDepositAmount)
+  assert.bigIntEquals(BigInt.fromU64(149493736155328), data.deposit)
   assert.bigIntEquals(BigInt.fromU64(0), data.l2Callvalue)
   assert.bytesEquals(
     Bytes.fromHexString("0xc28e83fd000000000000000000000000201169156a01750c638811874bb84cdaeda12b3b00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000044c92ff21f0000000000000000000000007de3fa3b1a17d18bf8aec29dd0f8f498849c5c390000000000000000000000004d29069a89b0a9aa16f49115bed6572a8f9160e700000000000000000000000000000000000000000000000000000000"),
@@ -121,7 +122,7 @@ test("Can parse nitro submit retryable", () => {
   )
   assert.addressEquals(
     Address.fromBytes(Bytes.fromHexString("0xb5a646adf963cbe6b0574947976afc19a8b42ef8")),
-    data.to
+    data.l2To
   )
 })
 
