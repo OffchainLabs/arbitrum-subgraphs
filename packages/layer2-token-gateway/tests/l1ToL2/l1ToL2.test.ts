@@ -11,11 +11,13 @@ import {
   newMockEvent,
   test,
   assert,
-  createMockedFunction,
+  // createMockedFunction,
 } from "matchstick-as";
 import { TicketCreated as TicketCreatedEvent } from "../../generated/ClassicArbRetryableTx/ClassicArbRetryableTx";
 import { L1ToL2Transaction } from "../../generated/schema";
-import { SubmitRetryableInputFields } from "../../src/abi";
+import { parseRetryableInput } from "../../src/abi";
+import { TicketCreated as NitroTicketCreatedEvent } from "../../generated/NitroArbRetryableTx/NitroArbRetryableTx";
+
 
 const createEthDeposit = (): TicketCreatedEvent => {
   let mockEvent = newMockEvent();
@@ -105,14 +107,17 @@ const createTokenDeposit = (): TicketCreatedEvent => {
   return newDeposit;
 };
 
+
+
 test("Can parse nitro submit retryable", () => {
   // sample from https://testnet.arbiscan.io/txs?block=14349610
 
   // submitRetryable(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)
   const txInput = "0xc9f95d320000000000000000000000000000000000000000000000000000000000001d250000000000000000000000000000000000000000000000000000000000052a29000000000000000000000000000000000000000000000000000087f6b90a28c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005f5e100000000000000000000000000000000000000000000000000000000000016cf600000000000000000000000000000000000000000000000000000000155e6c8c0000000000000000000000000b5a646adf963cbe6b0574947976afc19a8b42ef8000000000000000000000000b5a646adf963cbe6b0574947976afc19a8b42ef8000000000000000000000000b5a646adf963cbe6b0574947976afc19a8b42ef8000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000c4c28e83fd000000000000000000000000201169156a01750c638811874bb84cdaeda12b3b00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000044c92ff21f0000000000000000000000007de3fa3b1a17d18bf8aec29dd0f8f498849c5c390000000000000000000000004d29069a89b0a9aa16f49115bed6572a8f9160e70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-  const event = newMockEvent();
+  const event = newMockEvent()
+  // const event = NitroTicketCreatedEvent(newMockEvent());
   event.transaction.input = Bytes.fromHexString(txInput);
-  const data = new SubmitRetryableInputFields(event.transaction)
+  const data = parseRetryableInput(event)
 
   assert.bigIntEquals(BigInt.fromU64(149493736155328), data.deposit)
   assert.bigIntEquals(BigInt.fromU64(0), data.l2Callvalue)

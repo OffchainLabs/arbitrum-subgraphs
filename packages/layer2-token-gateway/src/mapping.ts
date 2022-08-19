@@ -10,7 +10,7 @@ import {
 import { Gateway, L2ToL1Transaction, Token, TokenGatewayJoinTable, GatewayWithdrawalData, L1ToL2Transaction, GatewayDepositData } from "../generated/schema";
 import { Address, BigInt, ethereum, Bytes, log } from "@graphprotocol/graph-ts";
 import { addressToId, bigIntToId, getJoinId, isNitro, L2_STD_GATEWAY } from "./util";
-import { CreateRetryableTicketInputFields, SubmitRetryableInputFields } from "./abi";
+import { parseRetryableInput } from "./abi";
 
 
 const processTokenGatewayPair = (
@@ -133,7 +133,7 @@ export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
     entity.isClassic = false
     entity.l1FromAliased = event.transaction.from
 
-    const submitRetryableData = new SubmitRetryableInputFields(event.transaction)
+    const submitRetryableData = parseRetryableInput(event)
     entity.deposit = submitRetryableData.deposit
     entity.l2Callvalue = submitRetryableData.l2Callvalue
     entity.l2Calldata = submitRetryableData.l2Calldata
@@ -156,7 +156,7 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
   entity.l2BlockNum = event.block.number
   entity.l2TxHash = event.transaction.hash
 
-  const createRetrytableData = new CreateRetryableTicketInputFields(event.transaction)
+  const createRetrytableData = parseRetryableInput(event)
   
   entity.l2Callvalue = createRetrytableData.l2Callvalue
   entity.l2Calldata = createRetrytableData.l2Calldata

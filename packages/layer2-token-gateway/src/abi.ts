@@ -1,12 +1,27 @@
-import { Address, Bytes, ethereum, log, BigInt } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  Bytes,
+  ethereum,
+  log,
+  BigInt,
+} from "@graphprotocol/graph-ts";
+import { TicketCreated as NitroTicketCreatedEvent } from "../generated/NitroArbRetryableTx/NitroArbRetryableTx";
 
-export class SubmitRetryableInputFields {
-  public deposit: BigInt;
-  public l2Callvalue: BigInt;
-  public l2Calldata: Bytes;
-  public l2To: Address;
+class RetryableInput {
+  constructor(
+  public deposit: BigInt,
+  public l2Callvalue: BigInt,
+  public l2Calldata: Bytes,
+  public l2To: Address,
+  ) {}
+}
 
-  constructor(tx: ethereum.Transaction) {
+export const parseRetryableInput = (
+  event: ethereum.Event
+): RetryableInput => {
+  const funcSig = Bytes.fromUint8Array(event.transaction.input.slice(0, 4));
+
+  if (funcSig.equals(Bytes.fromHexString("0xc9f95d32"))) {
     // parsing fields from
     //   function submitRetryable(
     //     bytes32 requestId,
@@ -21,9 +36,10 @@ export class SubmitRetryableInputFields {
     //     address retryTo,
     //     bytes calldata retryData
     // ) external;
-
-    // TODO: check correct function signature
-    const inputWithoutSelector = Bytes.fromUint8Array(tx.input.slice(4));
+    const inputWithoutSelector = Bytes.fromUint8Array(
+      event.transaction.input.slice(4)
+    );
+    // TODO: what if we decode one at a time instead of decoding the tuple
     const parsedWithoutData = ethereum.decode(
       "(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,uint256,uint256)",
       inputWithoutSelector
@@ -34,9 +50,9 @@ export class SubmitRetryableInputFields {
     }
     const parsedArray = parsedWithoutData.toTuple();
 
-    this.deposit = parsedArray[2].toBigInt();
-    this.l2Callvalue = parsedArray[3].toBigInt();
-    this.l2To = parsedArray[9].toAddress();
+    const deposit = parsedArray[2].toBigInt();
+    const l2Callvalue = parsedArray[3].toBigInt();
+    const l2To = parsedArray[9].toAddress();
 
     // TODO: DRY up logic used here and classic (ie abi decoding the input data)
     //   const lengthOfDataLength = parsedArray[10].toBigInt()
@@ -50,22 +66,15 @@ export class SubmitRetryableInputFields {
     }
 
     log.debug("expect slice to start at {}", [sliceStart.toString()]);
-    this.l2Calldata = Bytes.fromByteArray(
+    const l2Calldata = Bytes.fromByteArray(
       Bytes.fromUint8Array(
         inputWithoutSelector.slice(sliceStart, sliceStart + dataLength.toI32())
       )
     );
-  }
-}
 
-export class CreateRetryableTicketInputFields {
-  public deposit: BigInt;
-  public l2Callvalue: BigInt;
-  public l2Calldata: Bytes;
-  public l2To: Address;
-
-  constructor(tx: ethereum.Transaction) {
-    // parsing fields from
+    return new RetryableInput(deposit, l2Callvalue, l2Calldata, l2To)
+  } else if (funcSig.equals(Bytes.fromHexString("0x679b6ded"))) {
+    // parsing fields from classic
     //   function createRetryableTicket(
     //     address destAddr,
     //     uint256 l2CallValue,
@@ -77,9 +86,10 @@ export class CreateRetryableTicketInputFields {
     //     bytes calldata data
     // ) external payable;
 
-    // TODO: check correct function signature
     // we want to skip the `0x679b6ded` at the start and parse the bytes length instead of the bytes explicitly
-    const inputWithoutSelector = Bytes.fromUint8Array(tx.input.slice(4));
+    const inputWithoutSelector = Bytes.fromUint8Array(
+      event.transaction.input.slice(4)
+    );
     const parsedWithoutData = ethereum.decode(
       "(address,uint256,uint256,address,address,uint256,uint256,uint256,uint256)",
       inputWithoutSelector
@@ -92,8 +102,8 @@ export class CreateRetryableTicketInputFields {
 
     const parsedArray = parsedWithoutData.toTuple();
 
-    this.l2Callvalue = parsedArray[1].toBigInt();
-    this.deposit = tx.value
+    const l2Callvalue = parsedArray[1].toBigInt();
+    const deposit = event.transaction.value;
 
     // this is due to how dynamic length data types are encoded
     const lengthOfDataLength = parsedArray[7].toBigInt();
@@ -124,10 +134,32 @@ export class CreateRetryableTicketInputFields {
     }
 
     log.debug("expect slice to start at {}", [sliceStart.toString()]);
-    this.l2Calldata = Bytes.fromByteArray(
+    const l2Calldata = Bytes.fromByteArray(
       Bytes.fromUint8Array(
         inputWithoutSelector.slice(sliceStart, sliceStart + dataLength.toI32())
       )
     );
+
+    const l2To = event.transaction.to;
+    if(!l2To) {
+      log.error("not expected null to since this isn't contract deploy", [])
+      throw new Error("not expected null to since this isn't contract deploy")
+    }
+    
+    return new RetryableInput(deposit, l2Callvalue, l2Calldata, l2To)
+  } else {
+    log.error("not recorgnized retryable input", []);
+    throw new Error("Not recognised input");
   }
-}
+};
+
+// export class CreateRetryableTicketInputFields {
+//   public deposit: BigInt;
+//   public l2Callvalue: BigInt;
+//   public l2Calldata: Bytes;
+//   public l2To: Address;
+
+//   constructor(tx: ethereum.Transaction) {
+
+//   }
+// }
