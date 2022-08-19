@@ -16,7 +16,8 @@ type TokenGatewayJoinTable @entity {
   "Set to concat `gateway.id` and `token.id`"
   id: ID!
   "block in which the token-gateway were associated"
-  blockNum: BigInt!
+  l2BlockNum: BigInt!
+
   gateway: Gateway!
   token: Token!
 
@@ -27,44 +28,68 @@ type TokenGatewayJoinTable @entity {
 type GatewayDepositData @entity {
   "the L2 tx hash that got executed"
   id: ID!
+
+  "L2 Tx hash that triggered this event"
+  l2TxHash: Bytes!
+
+  "block in which the event was emitted"
+  l2BlockNum: BigInt!
+
   from: Bytes!
   to: Bytes!
   amount: BigInt!
 
   tokenGatewayJoin: TokenGatewayJoinTable!
+
+  # disabled since we're not able to link the creation and redemption txs efficiently
   # l1ToL2Transaction: L1ToL2Transaction!
 }
 
 type GatewayWithdrawalData @entity {
   "this is the l2ToL1Id of the transaction as surfaced by arb-os"
   id: ID!
+
+  "L2 Tx hash that triggered this event"
+  l2TxHash: Bytes!
+
+  "block in which the event was emitted"
+  l2BlockNum: BigInt!
+
   from: Bytes!
   to: Bytes!
   amount: BigInt!
   exitNum: BigInt!
 
   tokenGatewayJoin: TokenGatewayJoinTable!
-  l2ToL1Event: L2ToL1Transaction!
+
+  # disabled to keep consistent with the L1ToL2 flow
+  # l2ToL1Event: L2ToL1Transaction!
 }
 
 type L1ToL2Transaction @entity {
   "the L1 to L2 retryable creation id"
   id: ID!
+
+  "L2 Tx hash that triggered this event"
+  l2TxHash: Bytes!
   
   "aliased L1 address that called the inbox in the L1"
-  from: Bytes! #address
+  l1FromAliased: Bytes! #address
 
   "L2 destination address of retryable"
-  to: Bytes! #address
+  l2To: Bytes! #address
 
   "was this created before the nitro migration"
   isClassic: Boolean!
 
   "this is the amount of eth transfered from L1 to L2 that is creditted to the from account. note that eth can also be deposited through the eth deposit message which isn't tracked here"
-  ethDepositAmount: BigInt!
+  deposit: BigInt!
 
   l2Calldata: Bytes!
   l2Callvalue: BigInt!
+
+  "block in which the event was emitted"
+  l2BlockNum: BigInt!
 
   # we are not able to corellate these 2 events, without indexing every block
   # gatewayDepositData: [GatewayDepositData!] @derivedFrom(field: "l1ToL2Transaction")
@@ -74,7 +99,7 @@ type L1ToL2Transaction @entity {
 }
 
 type L2ToL1Transaction @entity {
-  "a unique identifier used as a PK for the subgraph - deterministically generated from the uniqueId"
+  "a unique identifier used as a PK for the subgraph - when not classic this is the unique id, in classic it is deterministically generated from the uniqueId (sets the highest bit of the unique id as a uint64)"
   id: ID!
 
   "the unique id surfaced by Arb-Os L2 to L1 tx - this might not always actually be unique when comparing pre vs post nitro"
@@ -83,8 +108,11 @@ type L2ToL1Transaction @entity {
   "L2 Tx hash that triggered this event"
   l2TxHash: Bytes!
 
-  caller: Bytes! # address
-  destination: Bytes! # address
+  "address that initiated the L2 to L1 tx"
+  l2From: Bytes! # address
+
+  "address that will receive the L1 call from the outbox"
+  l1To: Bytes! # address
   
   "batch numbers are not available in nitro"
   batchNumber: BigInt # uint256
@@ -92,14 +120,24 @@ type L2ToL1Transaction @entity {
   "this is position in global merkle tree for nitro, but classic its within a batch num"
   indexInBatch: BigInt! # uint256
 
-  arbBlockNum: BigInt! # uint256
-  ethBlockNum: BigInt! # uint256
-  timestamp: BigInt! # uint256
-  callvalue: BigInt! # uint256
-  data: Bytes! # bytes
+  "block in which the event was emitted"
+  l2BlockNum: BigInt!
+
+  "L1 block estimate when the event was emitted"
+  l1BlockNum: BigInt! # uint256
+
+  "timestamp when the event was emitted"
+  l2Timestamp: BigInt! # uint256
   
-  gatewayWithdrawalData: [GatewayWithdrawalData!] @derivedFrom(field: "l2ToL1Event")
+  "value that was sent in the L2, that will be transferred in the L2"
+  l1Callvalue: BigInt! # uint256
+
+  "data that will be used to call the L1 contract"
+  l1Calldata: Bytes! # bytes
 
   "indicates if this L2 to L1 tx was initiated before the nitro upgrade"
   isClassic: Boolean!
+
+  # disabled to keep consistent with L1ToL2 flow
+  # gatewayWithdrawalData: [GatewayWithdrawalData!] @derivedFrom(field: "l2ToL1Event")
 }

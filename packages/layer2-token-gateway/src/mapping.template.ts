@@ -47,7 +47,7 @@ const createTokenGatewayPair = (l2Gateway: Address, l1Token: Address, block: eth
   let joinEntity = new TokenGatewayJoinTable(joinId);
   joinEntity.gateway = gatewayId;
   joinEntity.token = tokenId;
-  joinEntity.blockNum = block.number
+  joinEntity.l2BlockNum = block.number
   joinEntity.save();
 }
 
@@ -85,7 +85,8 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
   withdrawal.to = event.params._to
   withdrawal.amount = event.params._amount
   withdrawal.exitNum = event.params._exitNum
-  withdrawal.l2ToL1Event = withdrawalId
+  // disabled for consistency with deposit
+  // withdrawal.l2ToL1Event = withdrawalId
   withdrawal.tokenGatewayJoin = joinId
 
   withdrawal.save()
@@ -115,6 +116,8 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
     deposit.from = event.params._from
     deposit.to = event.params._to
     deposit.amount = event.params._amount
+    deposit.l2BlockNum = event.block.number
+    deposit.l2TxHash = event.transaction.hash
   
     deposit.tokenGatewayJoin = joinId
     // TODO: can we correlate this without parsing all blocks
@@ -122,7 +125,7 @@ export function handleDeposit(event: DepositFinalizedEvent): void {
     // deposit.l1ToL2Transaction = null
     deposit.save()
   } else {
-    log.debug("deposit event not expected to be emitted twice in tx: {}", [depositId.toString()])
+    log.error("deposit event not expected to be emitted twice in tx: {}", [depositId.toString()])
   }
 }
 
@@ -213,13 +216,13 @@ export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
     let entity = new L1ToL2Transaction(id)
   
     entity.isClassic = false
-    entity.from = event.transaction.from
+    entity.l1FromAliased = event.transaction.from
 
     const submitRetryableData = new SubmitRetryableInputFields(event.transaction)
-    entity.ethDepositAmount = submitRetryableData.ethDepositAmount
+    entity.deposit = submitRetryableData.ethDepositAmount
     entity.l2Callvalue = submitRetryableData.l2Callvalue
     entity.l2Calldata = submitRetryableData.l2Calldata
-    entity.to = submitRetryableData.to
+    entity.l2To = submitRetryableData.to
 
     entity.save()
 }
@@ -233,7 +236,7 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
   let entity = new L1ToL2Transaction(id)
 
   entity.isClassic = true
-  entity.from = event.transaction.from
+  entity.l1FromAliased = event.transaction.from
 
   // parsing fields from
   //   function createRetryableTicket(
@@ -294,10 +297,12 @@ export function handleClassicTicketCreated(event: NitroTicketCreatedEvent): void
     )
   )
 
-  entity.ethDepositAmount = event.transaction.value
+  entity.deposit = event.transaction.value
   entity.l2Callvalue = l2CallValue
   entity.l2Calldata = l2Calldata
-  entity.to = parsedArray[0].toAddress()
+  entity.l2BlockNum = event.block.number
+  entity.l2TxHash = event.transaction.hash
+  entity.l2To = parsedArray[0].toAddress()
   
   entity.save();
 }
@@ -315,16 +320,18 @@ export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
 
   const id = bigIntToId(event.params.position)
   let entity = new L2ToL1Transaction(id);
-  entity.caller = event.params.caller;
-  entity.destination = event.params.destination;
+  entity.l2From = event.params.caller;
+  entity.l1To = event.params.destination;
   entity.batchNumber = null;
   entity.indexInBatch = event.params.position;
   entity.uniqueId = event.params.position;
-  entity.arbBlockNum = event.params.arbBlockNum;
-  entity.ethBlockNum = event.params.ethBlockNum;
-  entity.timestamp = event.params.timestamp;
-  entity.callvalue = event.params.callvalue;
-  entity.data = event.params.data;
+  // entity.l2BlockNum = event.params.arbBlockNum;
+  entity.l2BlockNum = event.block.number
+  entity.l2TxHash = event.transaction.hash
+  entity.l1BlockNum = event.params.ethBlockNum;
+  entity.l2Timestamp = event.params.timestamp;
+  entity.l1Callvalue = event.params.callvalue;
+  entity.l1Calldata = event.params.data;
   entity.isClassic = false;
   entity.l2TxHash = event.transaction.hash;
 
@@ -337,7 +344,7 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
    * with nitro this instead became a hash of the leaf id
    * then it got changed to be a counter again (position in merkle tree) starting from 0
    * 
-   * to deal with this we set the highest bit in the ID (which is fully deterministic)
+   * the unique id deterministically generated from the uniqueId (sets the highest bit of the unique id as a uint64)
    * and allows us to correlate this event with the gateway's withdrawal event that uses the returned unique id
    *
    * this is equivalent to having a composite PK of `isClassic` and `uniqueId`, but subgraph schema doesn't allow us to do that
@@ -346,16 +353,18 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
   const remappedId = mask.bitOr(event.params.uniqueId)
   const id = bigIntToId(remappedId)
   let entity = new L2ToL1Transaction(id);
-  entity.caller = event.params.caller;
-  entity.destination = event.params.destination;
+  entity.l2From = event.params.caller;
+  entity.l1To = event.params.destination;
   entity.batchNumber = event.params.batchNumber;
   entity.indexInBatch = event.params.indexInBatch;
   entity.uniqueId = event.params.uniqueId;
-  entity.arbBlockNum = event.params.arbBlockNum;
-  entity.ethBlockNum = event.params.ethBlockNum;
-  entity.timestamp = event.params.timestamp;
-  entity.callvalue = event.params.callvalue;
-  entity.data = event.params.data;
+  // entity.l2BlockNum = event.params.arbBlockNum;
+  entity.l2BlockNum = event.block.number
+  entity.l2TxHash = event.transaction.hash
+  entity.l1BlockNum = event.params.ethBlockNum;
+  entity.l2Timestamp = event.params.timestamp;
+  entity.l1Callvalue = event.params.callvalue;
+  entity.l1Calldata = event.params.data;
   entity.isClassic = true;
   entity.l2TxHash = event.transaction.hash;
 
