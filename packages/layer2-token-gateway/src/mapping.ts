@@ -140,6 +140,8 @@ export function handleNitroTicketCreated(event: NitroTicketCreatedEvent): void {
     entity.l2Callvalue = submitRetryableData.l2Callvalue
     entity.l2Calldata = submitRetryableData.l2Calldata
     entity.l2To = submitRetryableData.l2To
+    entity.l2TxHash = event.transaction.hash
+    entity.l2BlockNum = event.block.number
 
     entity.save()
 }
