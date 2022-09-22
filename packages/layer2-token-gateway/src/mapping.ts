@@ -78,6 +78,8 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
   withdrawal.to = event.params._to
   withdrawal.amount = event.params._amount
   withdrawal.exitNum = event.params._exitNum
+  withdrawal.l2TxHash = event.transaction.hash
+  withdrawal.l2BlockNum = event.block.number
   // disabled for consistency with deposit
   // withdrawal.l2ToL1Event = withdrawalId
   withdrawal.tokenGatewayJoin = join.id
