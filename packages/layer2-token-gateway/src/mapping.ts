@@ -33,12 +33,18 @@ const processTokenGatewayPair = (
   // the issue here is if creating again on subsequent deposits. would that break FKs?
   let gatewayEntity = Gateway.load(gatewayId);
   
-  if (l2Gateway.notEqual(L2_STD_GATEWAY) && gatewayEntity == null) {
+  if (gatewayEntity == null) {
     gatewayEntity = new Gateway(gatewayId);
     gatewayEntity.save();
-    // we want to track every new arbitrum gateway
-    // so we initialize a Data Source Template
-    L2ArbitrumGateway.create(l2Gateway);
+
+    // the initial deposit/withdrawal will set the std gateway
+    // but we don't want to create another listener
+    // as these are only expected to be triggered on gateway set
+    if(l2Gateway.notEqual(L2_STD_GATEWAY) ) {
+      // we want to track every new arbitrum gateway
+      // so we initialize a Data Source Template
+      L2ArbitrumGateway.create(l2Gateway);
+    }
   }
 
   let tokenEntity = Token.load(tokenId);
