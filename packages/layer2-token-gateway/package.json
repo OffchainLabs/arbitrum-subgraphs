@@ -12,7 +12,7 @@
     "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
     "prepare:nova": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
 
-    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro",
+    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-arb1",
     "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro-rinkeby",
     "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro-goerli",
     "deploy:nova": "yarn build && yarn prepare:nova && graph deploy --node http://localhost:8020 fredlacs/layer2-token-gateway-nitro-nova",

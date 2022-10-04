@@ -1,6 +1,7 @@
 specVersion: 0.0.2
 schema:
   file: ./schema.graphql
+description: Subgraph of arbitrum L2 token bridge
 dataSources:
   - kind: ethereum/contract
     name: L2GatewayRouter
