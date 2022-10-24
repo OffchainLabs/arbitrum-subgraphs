@@ -3,7 +3,7 @@ import {
   OutboxEntryCreated as OutboxEntryCreatedEvent,
 } from "../generated/Outbox/Outbox";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
-import { MessageDelivered as MessageDeliveredEvent } from "../generated/Bridge/Bridge";
+import { MessageDelivered as MessageDeliveredEvent, MessageDelivered1 as NitroMessageDeliveredEvent } from "../generated/Bridge/Bridge";
 import {
   IRollupCoreNodeCreated as NodeCreatedEvent,
   IRollupCoreNodeConfirmed as NodeConfirmedEvent,
@@ -195,6 +195,10 @@ export function handleMessageDelivered(event: MessageDeliveredEvent): void {
   let entity = new RawMessage(id);
   entity.kind = event.params.kind == 9 ? "Retryable" : "NotSupported";
   entity.save();
+}
+
+export function handleNitroMessageDelivered(event: NitroMessageDeliveredEvent): void {
+  //TODO
 }
 
 export function handleNodeCreated(event: NodeCreatedEvent): void {

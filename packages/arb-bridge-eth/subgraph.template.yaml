@@ -65,5 +65,7 @@ dataSources:
       eventHandlers:
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32)
           handler: handleMessageDelivered
+        - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32,uint256,uint64)
+          handler: handleNitroMessageDelivered
       file: ./src/mapping.ts
 {{{ rollupPreprocessor }}}
