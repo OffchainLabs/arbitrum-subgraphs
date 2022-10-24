@@ -17,5 +17,12 @@
     "l1GatewayRouterDeployBlock": 12640865,
     "rollupAddress": "0xC12BA48c781F6e392B49Db2E25Cd0c28cD77531A",
     "rollupDeploymentBlock": 12525700,
-    "nitroGenesisBlockNum": 99999999999999
+    "nitroGenesisBlockNum": 99999999999999,
+    "nitroOutboxDeploymentBlock": 15411056,
+    "nitroOutboxAddress": "0x0b9857ae2d4a3dbe74ffe1d7df045bb7f96e4840",
+    "nitroInboxUpgradeBlock": 15447157,
+    "nitroBridgeDeploymentBlock": 15411056,
+    "nitroBridgeAddress": "0x8315177ab297ba92a06054ce80a67ed4dbd7ed3a",
+    "nitroRollupDeploymentBlock": 15411056,
+    "nitroRollupAddress": "0x5ef0d09d1e6204141b4d37530808ed19f60fba35"
 }
