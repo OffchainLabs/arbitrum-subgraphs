@@ -161,6 +161,7 @@ export function handleInboxMessageDelivered(
 ): void {
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
   const id = bigIntToId(event.params.messageNum);
+
   let prevEntity = RawMessage.load(id);
 
   // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
@@ -190,15 +191,27 @@ export function handleInboxMessageDelivered(
   }
 }
 
-export function handleMessageDelivered(event: MessageDeliveredEvent): void {
-  const id = bigIntToId(event.params.messageIndex);
-  let entity = new RawMessage(id);
-  entity.kind = event.params.kind == 9 ? "Retryable" : "NotSupported";
-  entity.save();
+export function handleClassicMessageDelivered(event: MessageDeliveredEvent): void {
+  handleMessageDelivered(event.params.messageIndex, event.params.kind);
 }
 
 export function handleNitroMessageDelivered(event: NitroMessageDeliveredEvent): void {
-  //TODO
+  handleMessageDelivered(event.params.messageIndex, event.params.kind);
+}
+
+function handleMessageDelivered(messageIndex: BigInt, messageKind: i32): void {
+  const id = bigIntToId(messageIndex);
+  let entity = new RawMessage(id);
+
+  if(messageKind == 9) {
+    entity.kind = "Retryable";
+  } else if(messageKind == 12) {
+    entity.kind = "EthDeposit";
+  } else {
+    entity.kind = "NotSupported";
+  }
+
+  entity.save();
 }
 
 export function handleNodeCreated(event: NodeCreatedEvent): void {

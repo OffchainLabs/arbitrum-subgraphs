@@ -21,6 +21,7 @@ type OutboxOutput @entity {
 enum MessageKind {
   Retryable
   NotSupported
+  EthDeposit
 }
 
 type RawMessage @entity {
