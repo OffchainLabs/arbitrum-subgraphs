@@ -15,6 +15,7 @@ import {
   Retryable,
   RawMessage,
   Node as NodeEntity,
+  EthDeposit,
 } from "../generated/schema";
 import {
   Bytes,
@@ -169,8 +170,14 @@ export function handleInboxMessageDelivered(
     log.critical("Wrong order in entity!!", []);
     throw new Error("Oh damn no entity wrong order");
   }
+
+  if(prevEntity.kind == "EthDeposit") {
+    handleEthDeposit(event, prevEntity);
+    return;
+  }
+
   if (prevEntity.kind != "Retryable") {
-    log.info("Prev entity not a retryable, skipping. messageNum: {}", [event.params.messageNum.toHexString()])
+    log.info("Prev entity not a retryable nor ETH deposit, skipping. messageNum: {}", [event.params.messageNum.toHexString()])
     return;
   }
   log.info("Processing retryable before", [])
@@ -192,14 +199,14 @@ export function handleInboxMessageDelivered(
 }
 
 export function handleClassicMessageDelivered(event: MessageDeliveredEvent): void {
-  handleMessageDelivered(event.params.messageIndex, event.params.kind);
+  handleMessageDelivered(event.params.messageIndex, event.params.kind, event.params.sender);
 }
 
 export function handleNitroMessageDelivered(event: NitroMessageDeliveredEvent): void {
-  handleMessageDelivered(event.params.messageIndex, event.params.kind);
+  handleMessageDelivered(event.params.messageIndex, event.params.kind, event.params.sender);
 }
 
-function handleMessageDelivered(messageIndex: BigInt, messageKind: i32): void {
+function handleMessageDelivered(messageIndex: BigInt, messageKind: i32, sender: Address): void {
   const id = bigIntToId(messageIndex);
   let entity = new RawMessage(id);
 
@@ -211,7 +218,45 @@ function handleMessageDelivered(messageIndex: BigInt, messageKind: i32): void {
     entity.kind = "NotSupported";
   }
 
+  entity.sender = sender;
   entity.save();
+}
+
+function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
+  const id = bigIntToId(event.params.messageNum);
+
+  // we track deposits with EthDeposit entities
+  let entity = new EthDeposit(id);
+
+  // get sender from preceding MessageDelivered event
+  entity.senderAliased = rawMessage.sender;
+  entity.msgData = event.params.data;
+
+  //// get destination address and eth value by parsing the data field
+
+  // data consists of dest address 20 bytes + eth value 32 bytes
+  // ethereum.decode requires full 32 byte words for decoding, so we need to add 12 bytes of 0s as prefix
+  const completeData = new Bytes(64);
+  const zeroBytesToFillPrefix = 12;
+  for(let i = 0; i < completeData.length; i++) {
+    if(i < zeroBytesToFillPrefix) {
+      completeData[i] = 0;
+    } else {
+      completeData[i] = event.params.data[i - zeroBytesToFillPrefix];
+    }
+  }
+
+  // decode it and save to EthDeposit entity
+  const decodedData = ethereum.decode("(address,uint256)", completeData);
+  if (decodedData) {
+    const decodedTuple = decodedData.toTuple();
+    entity.destAddr = decodedTuple[0].toAddress();
+    entity.value = decodedTuple[1].toBigInt();
+  }
+  entity.save();
+
+  // delete the old raw message
+  store.remove("RawMessage", id);
 }
 
 export function handleNodeCreated(event: NodeCreatedEvent): void {

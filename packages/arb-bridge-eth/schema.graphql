@@ -29,6 +29,8 @@ type RawMessage @entity {
   id: ID!
   "is this inbox message a regular eth deposit or a retryable"
   kind: MessageKind!
+  "message sender, aliased"
+  sender: Bytes! # address
 }
 
 type Retryable @entity {
@@ -44,6 +46,19 @@ type Retryable @entity {
   retryableTicketID: Bytes! # bytes32
   "calldata used in L2 call"
   l2Calldata: Bytes!
+}
+
+type EthDeposit @entity {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "account that deposited Eth on L1, aliased"
+  senderAliased: Bytes! # bytes32
+  "indicates the L2 address destination"
+  destAddr: Bytes! # bytes32
+  "value being deposited to L2 in wei"
+  value: BigInt!
+  "abi encoding of dest address + deposit value"
+  msgData: Bytes!
 }
 
 enum NodeStatus {
