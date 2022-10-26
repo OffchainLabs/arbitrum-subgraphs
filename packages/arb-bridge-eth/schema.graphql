@@ -46,19 +46,23 @@ type Retryable @entity {
   retryableTicketID: Bytes! # bytes32
   "calldata used in L2 call"
   l2Calldata: Bytes!
+  "L1 deposit tx"
+  transactionHash: Bytes!
 }
 
 type EthDeposit @entity {
   "the inbox sequence number of the current message"
   id: ID!
   "account that deposited Eth on L1, aliased"
-  senderAliased: Bytes! # bytes32
+  senderAliased: Bytes! # address
   "indicates the L2 address destination"
-  destAddr: Bytes! # bytes32
+  destAddr: Bytes! # address
   "value being deposited to L2 in wei"
-  value: BigInt!
+  value: BigInt! # uint256
   "abi encoding of dest address + deposit value"
-  msgData: Bytes!
+  msgData: Bytes! # bytes
+  "L1 deposit tx"
+  transactionHash: Bytes!
 }
 
 enum NodeStatus {

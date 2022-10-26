@@ -190,6 +190,7 @@ export function handleInboxMessageDelivered(
     entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
     entity.destAddr = retryable.destAddress;
     entity.l2Calldata = retryable.data;
+    entity.transactionHash = event.transaction.hash;
     entity.save();
     // we delete the old raw message since now we saved the retryable
     store.remove("RawMessage", id);
@@ -253,6 +254,7 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
     entity.destAddr = decodedTuple[0].toAddress();
     entity.value = decodedTuple[1].toBigInt();
   }
+  entity.transactionHash = event.transaction.hash;
   entity.save();
 
   // delete the old raw message
