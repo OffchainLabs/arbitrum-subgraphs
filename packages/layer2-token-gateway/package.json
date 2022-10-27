@@ -1,19 +1,23 @@
 {
   "name": "layer2-token-gateway",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "scripts": {
     "codegen": "yarn prepare:mainnet && graph codegen",
     "build": "yarn prepare:mainnet && graph build",
     "postinstall": "yarn codegen",
 
-    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:rinkeby": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
+    "prepare:rinkeby": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
+    "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
+    "prepare:nova": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
 
-    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway",
-    "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-rinkeby",
+    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-arb1",
+    "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro-rinkeby",
+    "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer2-token-gateway-nitro-goerli",
+    "deploy:nova": "yarn build && yarn prepare:nova && graph deploy --node http://localhost:8020 fredlacs/layer2-token-gateway-nitro-nova",
     
-    "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"
+    "test": "yarn codegen && yarn build && graph test -r --version 0.5.0"
   },
   "dependencies": {
     "matchstick-as": "^0.5.0",

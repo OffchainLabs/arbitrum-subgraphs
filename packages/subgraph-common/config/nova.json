@@ -1,0 +1,20 @@
+{
+    "l2Network": "arbitrum-nova",
+    "outboxDeploymentBlock": 13124585,
+    "outboxAddress": "0xD4B80C3D7240325D18E645B49e6535A3Bf95cc58",
+    "inboxDeploymentBlock": 12525700,
+    "inboxAddress": "0xc4448b71118c9071bcb9734a0eac55d18a153949",
+    "bridgeDeploymentBlock": 12525700,
+    "bridgeAddress": "0xc1ebd02f738644983b6c4b2d440b8e77dde276bd",
+    "arbRetryableTxStartBlock": 0,
+    "arbSysStartBlock": 0,
+    "l2GatewayRouter": "0x21903d3F8176b1a0c17E953Cd896610Be9fFDFa8",
+    "l2GatewayRouterDeployBlock": 2108,
+    "l2StandardGateway": "0xcF9bAb7e53DDe48A6DC4f286CB14e05298799257",
+    "l2StandardGatewayDeployBlock": 2107,
+    "l1GatewayRouter": "0xC840838Bc438d73C16c2f8b22D2Ce3669963cD48",
+    "l1GatewayRouterDeployBlock": 12640865,
+    "rollupAddress": "0xfb209827c58283535b744575e11953dcc4bead88",
+    "rollupDeploymentBlock": 12525700,
+    "nitroGenesisBlockNum": 0
+}

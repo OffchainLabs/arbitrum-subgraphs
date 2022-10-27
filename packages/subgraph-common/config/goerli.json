@@ -1,0 +1,10 @@
+{
+    "l1Network": "goerli",
+    "l2Network": "arbitrum-goerli",
+    "arbRetryableTxStartBlock": 0,
+    "arbSysStartBlock": 0,
+    "l2GatewayRouter": "0xE5B9d8d42d656d1DcB8065A6c012FE3780246041",
+    "l2GatewayRouterDeployBlock": 5,
+    "l2StandardGateway": "0x2eC7Bc552CE8E51f098325D2FcF0d3b9d3d2A9a2",
+    "l2StandardGatewayDeployBlock": 7
+}

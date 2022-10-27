@@ -4,3 +4,4 @@ subgraph.preprocessed.yaml
 subgraph.yaml
 .bin
 generated
+packages/layer2-token-gateway/metadata.ts

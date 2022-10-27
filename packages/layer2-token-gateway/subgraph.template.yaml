@@ -1,6 +1,7 @@
 specVersion: 0.0.2
 schema:
   file: ./schema.graphql
+description: Subgraph of arbitrum L2 token bridge
 dataSources:
   - kind: ethereum/contract
     name: L2GatewayRouter
@@ -23,11 +24,11 @@ dataSources:
           handler: handleGatewaySet
       file: ./src/mapping.ts
   - kind: ethereum/contract
-    name: ArbRetryableTx
+    name: NitroArbRetryableTx
     network: {{ l2Network }}
     source:
       address: "0x000000000000000000000000000000000000006E"
-      abi: ArbRetryableTx
+      abi: NitroArbRetryableTx
       startBlock: {{ arbRetryableTxStartBlock }}
     mapping:
       kind: ethereum/events
@@ -36,18 +37,18 @@ dataSources:
       entities:
         - L1ToL2Transaction
       abis:
-        - name: ArbRetryableTx
-          file: ./abis/ArbRetryableTx.json
+        - name: NitroArbRetryableTx
+          file: ./abis/NitroArbRetryableTx.json
       eventHandlers:
         - event: TicketCreated(indexed bytes32)
           handler: handleTicketCreated
       file: ./src/mapping.ts
   - kind: ethereum/contract
-    name: ArbSys
+    name: ClassicArbSys
     network: {{ l2Network }}
     source:
       address: "0x0000000000000000000000000000000000000064"
-      abi: ArbSys
+      abi: ClassicArbSys
       startBlock: {{ arbSysStartBlock }}
     mapping:
       kind: ethereum/events
@@ -56,11 +57,31 @@ dataSources:
       entities:
         - L2ToL1Transaction
       abis:
-        - name: ArbSys
-          file: ./abis/ArbSys.json
+        - name: ClassicArbSys
+          file: ./abis/ClassicArbSys.json
       eventHandlers:
         - event: L2ToL1Transaction(address,indexed address,indexed uint256,indexed uint256,uint256,uint256,uint256,uint256,uint256,bytes)
-          handler: handleL2ToL1Transaction
+          handler: handleClassicL2ToL1Transaction
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: NitroArbSys
+    network: {{ l2Network }}
+    source:
+      address: "0x0000000000000000000000000000000000000064"
+      abi: NitroArbSys
+      startBlock: {{ arbSysStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - L2ToL1Transaction
+      abis:
+        - name: NitroArbSys
+          file: ./abis/NitroArbSys.json
+      eventHandlers:
+        - event: L2ToL1Tx(address,indexed address,indexed uint256,indexed uint256,uint256,uint256,uint256,uint256,bytes)
+          handler: handleNitroL2ToL1Transaction
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: L2StandardGateway
@@ -103,3 +124,6 @@ templates:
       eventHandlers:
         - event: WithdrawalInitiated(address,indexed address,indexed address,indexed uint256,uint256,uint256)
           handler: handleWithdrawal
+        - event: DepositFinalized(indexed address,indexed address,indexed address,uint256)
+          handler: handleDeposit
+
