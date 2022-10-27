@@ -235,10 +235,10 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
 
   //// get destination address and eth value by parsing the data field
 
-  // data consists of dest address 20 bytes + eth value 32 bytes
+  // data consists of dest address 20 bytes + eth value 32 bytes (created by abi.encodePacked)
   // ethereum.decode requires full 32 byte words for decoding, so we need to add 12 bytes of 0s as prefix
   const completeData = new Bytes(64);
-  const zeroBytesToFillPrefix = 12;
+  const zeroBytesToFillPrefix = completeData.length - event.params.data.length;
   for(let i = 0; i < completeData.length; i++) {
     if(i < zeroBytesToFillPrefix) {
       completeData[i] = 0;
