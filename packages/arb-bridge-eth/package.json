@@ -13,11 +13,13 @@
     "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:nitro-mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nitro-mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:nova-mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova-mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:nitro-goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:rinkeby": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     
     "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth",
     "deploy:nitro-mainnet": "yarn build && yarn prepare:nitro-mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/bridge-eth-deposits",
     "deploy:nova-mainnet": "yarn build && yarn prepare:nova-mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nova",
+    "deploy:nitro-goerli": "yarn build && yarn prepare:nitro-goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-goerli",
     "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby",
 
     "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"

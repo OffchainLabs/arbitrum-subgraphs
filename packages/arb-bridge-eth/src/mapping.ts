@@ -36,6 +36,8 @@ const getL2ChainId = (): Bytes => {
     return Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
   if (network == "rinkeby")
     return Bytes.fromByteArray(Bytes.fromHexString("0x066EEB"));
+  if (network == "goerli")
+    return Bytes.fromByteArray(Bytes.fromHexString("0x066eed"));
 
   log.critical("No chain id recognised", []);
   throw new Error("No chain id found");
