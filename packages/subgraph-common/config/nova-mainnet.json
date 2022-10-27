@@ -1,0 +1,11 @@
+{
+    "l1Network": "mainnet",
+    "outboxAddress": "0xd4b80c3d7240325d18e645b49e6535a3bf95cc58",
+    "outboxDeploymentBlock": 15016829,
+    "inboxAddress": "0xc4448b71118c9071bcb9734a0eac55d18a153949",
+    "inboxDeploymentBlock": 15016829,
+    "bridgeAddress": "0xc1ebd02f738644983b6c4b2d440b8e77dde276bd",
+    "bridgeDeploymentBlock": 15016829,
+    "rollupAddress": "0xfb209827c58283535b744575e11953dcc4bead88",
+    "rollupDeploymentBlock": 15016829
+}
