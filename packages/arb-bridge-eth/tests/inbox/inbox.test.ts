@@ -114,7 +114,6 @@ test("Can properly decode Eth deposit message data", () => {
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "destAddr", "0x08A9626DB08E83D2AFEC24523B727F50E362E4B8".toLowerCase())
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "value", "1480000000000000000")
 
-
   //// test again, address starting with multiple leading zero
   messageNum = BigInt.fromI32(3)
   const msgDataAddrMultipleLeadingZero = Bytes.fromByteArray(
@@ -126,5 +125,18 @@ test("Can properly decode Eth deposit message data", () => {
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "senderAliased", TEST_ADDRESS.toHexString())
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "msgData", msgDataAddrMultipleLeadingZero.toHexString())
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "destAddr", "0x000206732258D7511FA624127228E6A032718E62".toLowerCase())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "value", "18000000000000000000")
+
+  //// test again, address starting and ending with zeros
+  messageNum = BigInt.fromI32(4)
+  const msgDataStartEndZeros = Bytes.fromByteArray(
+    Bytes.fromHexString("000206732258D7511FA624127228E6A032718000000000000000000000000000000000000000000000000000F9CCD8A1C5080000"))
+  let eventAddrStartEndZeros = createNewMessage(ETH_DEPOSIT_ENTITY_TYPE, messageNum, msgDataStartEndZeros)
+  handleInboxMessageDelivered(eventAddrStartEndZeros)
+
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "id", messageNum.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "senderAliased", TEST_ADDRESS.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "msgData", msgDataStartEndZeros.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "destAddr", "0x000206732258D7511FA624127228E6A032718000".toLowerCase())
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "value", "18000000000000000000")
 })
