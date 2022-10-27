@@ -33,7 +33,7 @@ type RawMessage @entity {
   sender: Bytes! # address
 }
 
-type Retryable @entity {
+type Retryable @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
   "is the current retryable a deposit of eth"
@@ -46,11 +46,13 @@ type Retryable @entity {
   retryableTicketID: Bytes! # bytes32
   "calldata used in L2 call"
   l2Calldata: Bytes!
-  "L1 deposit tx"
+  "L1 tx retryable is created at"
   transactionHash: Bytes!
+  "L1 block retryable is created at"
+  blockCreatedAt: BigInt!
 }
 
-type EthDeposit @entity {
+type EthDeposit @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
   "account that deposited Eth on L1, aliased"
@@ -63,6 +65,8 @@ type EthDeposit @entity {
   msgData: Bytes! # bytes
   "L1 deposit tx"
   transactionHash: Bytes!
+  "L1 block in which Eth is deposited"
+  blockCreatedAt: BigInt!
 }
 
 enum NodeStatus {
