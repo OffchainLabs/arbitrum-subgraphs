@@ -21,6 +21,7 @@ type OutboxOutput @entity {
 enum MessageKind {
   Retryable
   NotSupported
+  EthDeposit
 }
 
 type RawMessage @entity {
@@ -28,9 +29,11 @@ type RawMessage @entity {
   id: ID!
   "is this inbox message a regular eth deposit or a retryable"
   kind: MessageKind!
+  "message sender, aliased"
+  sender: Bytes! # address
 }
 
-type Retryable @entity {
+type Retryable @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
   "is the current retryable a deposit of eth"
@@ -43,6 +46,27 @@ type Retryable @entity {
   retryableTicketID: Bytes! # bytes32
   "calldata used in L2 call"
   l2Calldata: Bytes!
+  "L1 tx retryable is created at"
+  transactionHash: Bytes!
+  "L1 block retryable is created at"
+  blockCreatedAt: BigInt!
+}
+
+type EthDeposit @entity(immutable: true) {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "account that deposited Eth on L1, aliased"
+  senderAliased: Bytes! # address
+  "indicates the L2 address destination"
+  destAddr: Bytes! # address
+  "value being deposited to L2 in wei"
+  value: BigInt! # uint256
+  "abi encoding of dest address + deposit value"
+  msgData: Bytes! # bytes
+  "L1 deposit tx"
+  transactionHash: Bytes!
+  "L1 block in which Eth is deposited"
+  blockCreatedAt: BigInt!
 }
 
 enum NodeStatus {

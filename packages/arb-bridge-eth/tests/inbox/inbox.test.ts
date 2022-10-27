@@ -7,14 +7,18 @@ import { newMockEvent, test, assert, createMockedFunction } from "matchstick-as"
 
 const RAW_ENTITY_TYPE = "RawMessage"
 const RETRYABLE_ENTITY_TYPE = "Retryable"
+const ETH_DEPOSIT_ENTITY_TYPE = "EthDeposit"
+
+const TEST_ADDRESS = Address.fromString("0000000000000000000000000000000000001337");
 
 const createNewMessage = (kind: string, messageNum: BigInt, data: Bytes): InboxMessageDeliveredEvent => {
   let mockEvent = newMockEvent();
 
-  if(kind != "Retryable") throw new Error("Currently only supports creating retryables")
+  if(kind != RETRYABLE_ENTITY_TYPE && kind != ETH_DEPOSIT_ENTITY_TYPE) throw new Error("Currently only supports creating retryables and eth deposits")
 
   let rawMessage = new RawMessage(messageNum.toHexString());
   rawMessage.kind = kind
+  rawMessage.sender = TEST_ADDRESS;
   rawMessage.save();
 
   let parameters = new Array<ethereum.EventParam>();
@@ -80,4 +84,59 @@ test("Can mock and call function with different argument types", () => {
       expected,
       ethereum.Value.fromBytes(valGetter1.toBytes())
     )
+})
+
+test("Can properly decode Eth deposit message data", () => {
+  // create mock event and run handler
+  let messageNum = BigInt.fromI32(1)
+  const msgData = Bytes.fromByteArray(
+    Bytes.fromHexString("7AC5E909E4DDDCE3B9ECB7D332F991AC037CB6DD000000000000000000000000000000000000000000000000058D15E176280000"))
+  let newInboxEvent = createNewMessage(ETH_DEPOSIT_ENTITY_TYPE, messageNum, msgData)
+  handleInboxMessageDelivered(newInboxEvent)
+
+  // check EthDeposit entity is properly created
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "id", messageNum.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "senderAliased", TEST_ADDRESS.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "msgData", msgData.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "destAddr", "0x7AC5E909E4DDDCE3B9ECB7D332F991AC037CB6DD".toLowerCase())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "value", "400000000000000000")
+
+  //// test again, address starting with one leading zero
+  messageNum = BigInt.fromI32(2)
+  const msgDataAddrOneLeadingZero = Bytes.fromByteArray(
+    Bytes.fromHexString("08A9626DB08E83D2AFEC24523B727F50E362E4B8000000000000000000000000000000000000000000000000148A04289B940000"))
+  let eventAddrOneLeadingZero = createNewMessage(ETH_DEPOSIT_ENTITY_TYPE, messageNum, msgDataAddrOneLeadingZero)
+  handleInboxMessageDelivered(eventAddrOneLeadingZero)
+
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "id", messageNum.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "senderAliased", TEST_ADDRESS.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "msgData", msgDataAddrOneLeadingZero.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "destAddr", "0x08A9626DB08E83D2AFEC24523B727F50E362E4B8".toLowerCase())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "value", "1480000000000000000")
+
+  //// test again, address starting with multiple leading zero
+  messageNum = BigInt.fromI32(3)
+  const msgDataAddrMultipleLeadingZero = Bytes.fromByteArray(
+    Bytes.fromHexString("000206732258D7511FA624127228E6A032718E62000000000000000000000000000000000000000000000000F9CCD8A1C5080000"))
+  let eventAddrMultipleLeadingZero = createNewMessage(ETH_DEPOSIT_ENTITY_TYPE, messageNum, msgDataAddrMultipleLeadingZero)
+  handleInboxMessageDelivered(eventAddrMultipleLeadingZero)
+
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "id", messageNum.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "senderAliased", TEST_ADDRESS.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "msgData", msgDataAddrMultipleLeadingZero.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "destAddr", "0x000206732258D7511FA624127228E6A032718E62".toLowerCase())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "value", "18000000000000000000")
+
+  //// test again, address starting and ending with zeros
+  messageNum = BigInt.fromI32(4)
+  const msgDataStartEndZeros = Bytes.fromByteArray(
+    Bytes.fromHexString("000206732258D7511FA624127228E6A032718000000000000000000000000000000000000000000000000000F9CCD8A1C5080000"))
+  let eventAddrStartEndZeros = createNewMessage(ETH_DEPOSIT_ENTITY_TYPE, messageNum, msgDataStartEndZeros)
+  handleInboxMessageDelivered(eventAddrStartEndZeros)
+
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "id", messageNum.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "senderAliased", TEST_ADDRESS.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "msgData", msgDataStartEndZeros.toHexString())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "destAddr", "0x000206732258D7511FA624127228E6A032718000".toLowerCase())
+  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, messageNum.toHexString(), "value", "18000000000000000000")
 })
