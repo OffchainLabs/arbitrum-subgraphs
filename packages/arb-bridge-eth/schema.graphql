@@ -69,6 +69,25 @@ type EthDeposit @entity(immutable: true) {
   blockCreatedAt: BigInt!
 }
 
+type TokenDeposit @entity(immutable: true) {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "token being deposited"
+  l1Token: Bytes!
+  "account that deposited tokens on L1"
+  from: Bytes! # address
+  "account that receives tokens on L2"
+  to: Bytes! # address
+  "unique id for retryable transaction"
+  sequenceNumber: BigInt! # uint256
+  "amount being deposited on L1"
+  amount: BigInt! # uint256
+  "L1 deposit tx"
+  transactionHash: Bytes!
+  "L1 block in which token is deposited"
+  blockCreatedAt: BigInt!
+}
+
 enum NodeStatus {
   Pending
   Confirmed
@@ -78,13 +97,13 @@ enum NodeStatus {
 type Node @entity {
   "node number in hex"
   id: ID!
-  
+
   "hash of information contained in this node"
   nodeHash: Bytes!
-  
+
   "hash of parent node"
   parentHash: Bytes!
-  
+
   "block the node was created"
   blockCreatedAt: BigInt!
 
@@ -99,7 +118,7 @@ type Node @entity {
 
   "A node is created as pending, this is the timestamp in which it was either confirmed or rejected"
   timestampStatusUpdate: BigInt
-  
+
   "confirmation status of node in the rollup"
   status: NodeStatus!
 }
