@@ -68,4 +68,55 @@ dataSources:
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32,uint256,uint64)
           handler: handleNitroMessageDelivered
       file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: L1GatewayRouter
+    network: mainnet
+    source:
+      address: "{{ l1GatewayRouter }}"
+      abi: L1GatewayRouter
+      startBlock: {{ l1GatewayRouterDeployBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - DefaultGatewayUpdated
+        - GatewaySet
+        - TransferRouted
+        - TxToL2
+        - WhitelistSourceUpdated
+      abis:
+        - name: L1GatewayRouter
+          file: ./abis/L1GatewayRouter.json
+      eventHandlers:
+        - event: DefaultGatewayUpdated(address)
+          handler: handleDefaultGatewayUpdated
+        - event: GatewaySet(indexed address,indexed address)
+          handler: handleGatewaySet
+        - event: TransferRouted(indexed address,indexed address,indexed address,address)
+          handler: handleTransferRouted
+        - event: TxToL2(indexed address,indexed address,indexed uint256,bytes)
+          handler: handleTxToL2
+        - event: WhitelistSourceUpdated(address)
+          handler: handleWhitelistSourceUpdated
+      file: ./src/mapping.ts
+templates:
+  - name: L1ArbitrumGateway
+    kind: ethereum/contract
+    network: {{ l1Network }}
+    source:
+      abi: L1ArbitrumGateway
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - L1ArbitrumGateway
+      abis:
+        - name: L1ArbitrumGateway
+          file: ./abis/L1ArbitrumGateway.json
+      eventHandlers:
+        - event: DepositInitiated(address,indexed address,indexed address,indexed uint256,uint256)
+          handler: handleDepositInitiated
 {{{ rollupPreprocessor }}}
