@@ -3,13 +3,16 @@ import {
   OutboxEntryCreated as OutboxEntryCreatedEvent,
 } from "../generated/Outbox/Outbox";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
-import { MessageDelivered as MessageDeliveredEvent, MessageDelivered1 as NitroMessageDeliveredEvent } from "../generated/Bridge/Bridge";
+import {
+  MessageDelivered as MessageDeliveredEvent,
+  MessageDelivered1 as NitroMessageDeliveredEvent,
+} from "../generated/Bridge/Bridge";
 import {
   IRollupCoreNodeCreated as NodeCreatedEvent,
   IRollupCoreNodeConfirmed as NodeConfirmedEvent,
   IRollupCoreNodeRejected as NodeRejectedEvent,
 } from "./interface/IRollupCore";
-import {  
+import {
   DefaultGatewayUpdated,
   OutboxEntry,
   OutboxOutput,
@@ -31,7 +34,7 @@ import {
   dataSource,
   crypto,
   store,
-  ByteArray
+  ByteArray,
 } from "@graphprotocol/graph-ts";
 import { encodePadded, padBytes } from "@arbitrum/subgraph-common";
 import {
@@ -39,17 +42,14 @@ import {
   GatewaySet as GatewaySetEvent,
   TransferRouted as TransferRoutedEvent,
   TxToL2 as TxToL2Event,
-  WhitelistSourceUpdated as WhitelistSourceUpdatedEvent
-} from "../generated/L1GatewayRouter/L1GatewayRouter"
+  WhitelistSourceUpdated as WhitelistSourceUpdatedEvent,
+} from "../generated/L1GatewayRouter/L1GatewayRouter";
 
 const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
-  if (network == "mainnet")
-    return Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
-  if (network == "rinkeby")
-    return Bytes.fromByteArray(Bytes.fromHexString("0x066EEB"));
-  if (network == "goerli")
-    return Bytes.fromByteArray(Bytes.fromHexString("0x066eed"));
+  if (network == "mainnet") return Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
+  if (network == "rinkeby") return Bytes.fromByteArray(Bytes.fromHexString("0x066EEB"));
+  if (network == "goerli") return Bytes.fromByteArray(Bytes.fromHexString("0x066eed"));
 
   log.critical("No chain id recognised", []);
   throw new Error("No chain id found");
@@ -92,9 +92,7 @@ const getL2RetryableTicketId = (inboxSequenceNumber: BigInt): Bytes => {
 
 const bigIntToId = (input: BigInt): string => input.toHexString();
 
-export function handleOutBoxTransactionExecuted(
-  event: OutBoxTransactionExecutedEvent
-): void {
+export function handleOutBoxTransactionExecuted(event: OutBoxTransactionExecutedEvent): void {
   // this ID is not the same as the outputId used on chain
   const id = event.transaction.hash.toHex() + "-" + event.logIndex.toString();
   let entity = new OutboxOutput(id);
@@ -149,8 +147,8 @@ class RetryableTx {
       const dataLength = parsedArray[8].toBigInt().toI32();
       const l2Calldata = new Bytes(dataLength);
 
-      for(let i = 0; i < dataLength; i++) {
-        l2Calldata[dataLength-i-1] = data[data.length - i - 1]
+      for (let i = 0; i < dataLength; i++) {
+        l2Calldata[dataLength - i - 1] = data[data.length - i - 1];
       }
 
       return new RetryableTx(
@@ -171,9 +169,7 @@ class RetryableTx {
   }
 }
 
-export function handleInboxMessageDelivered(
-  event: InboxMessageDeliveredEvent
-): void {
+export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): void {
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
   const id = bigIntToId(event.params.messageNum);
 
@@ -185,18 +181,20 @@ export function handleInboxMessageDelivered(
     throw new Error("Oh damn no entity wrong order");
   }
 
-  if(prevEntity.kind == "EthDeposit") {
+  if (prevEntity.kind == "EthDeposit") {
     handleEthDeposit(event, prevEntity);
     return;
   }
 
   if (prevEntity.kind != "Retryable") {
-    log.info("Prev entity not a retryable nor ETH deposit, skipping. messageNum: {}", [event.params.messageNum.toHexString()])
+    log.info("Prev entity not a retryable nor ETH deposit, skipping. messageNum: {}", [
+      event.params.messageNum.toHexString(),
+    ]);
     return;
   }
-  log.info("Processing retryable before", [])
+  log.info("Processing retryable before", []);
   const retryable = RetryableTx.parseRetryable(event.params.data);
-  log.info("Processing retryable after", [])
+  log.info("Processing retryable after", []);
   if (retryable) {
     let entity = new Retryable(id);
     entity.value = event.transaction.value;
@@ -226,9 +224,9 @@ function handleMessageDelivered(messageIndex: BigInt, messageKind: i32, sender: 
   const id = bigIntToId(messageIndex);
   let entity = new RawMessage(id);
 
-  if(messageKind == 9) {
+  if (messageKind == 9) {
     entity.kind = "Retryable";
-  } else if(messageKind == 12) {
+  } else if (messageKind == 12) {
     entity.kind = "EthDeposit";
   } else {
     entity.kind = "NotSupported";
@@ -254,8 +252,8 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
   // ethereum.decode requires full 32 byte words for decoding, so we need to add 12 bytes of 0s as prefix
   const completeData = new Bytes(64);
   const zeroBytesToFillPrefix = completeData.length - event.params.data.length;
-  for(let i = 0; i < completeData.length; i++) {
-    if(i < zeroBytesToFillPrefix) {
+  for (let i = 0; i < completeData.length; i++) {
+    if (i < zeroBytesToFillPrefix) {
       completeData[i] = 0;
     } else {
       completeData[i] = event.params.data[i - zeroBytesToFillPrefix];
@@ -281,13 +279,13 @@ export function handleNodeCreated(event: NodeCreatedEvent): void {
   const id = bigIntToId(event.params.nodeNum);
   let entity = new NodeEntity(id);
   entity.nodeHash = event.params.nodeHash;
-  entity.inboxMaxCount = event.params.inboxMaxCount
+  entity.inboxMaxCount = event.params.inboxMaxCount;
   entity.parentHash = event.params.parentNodeHash;
   entity.blockCreatedAt = event.block.number;
   entity.timestampCreated = event.block.timestamp;
   entity.timestampStatusUpdate = null;
-  entity.status = "Pending"
-  entity.afterSendCount = event.params.assertionIntFields[1][2]
+  entity.status = "Pending";
+  entity.afterSendCount = event.params.assertionIntFields[1][2];
   entity.save();
 }
 
@@ -297,19 +295,19 @@ export function handleNodeConfirmed(event: NodeConfirmedEvent): void {
   // used to be faster to do a `new NodeEntity(id)` than load since it wouldn't overwrite other fields
   // but that doesn't seem to hold anymore
   let entity = NodeEntity.load(id);
-  if(!entity) {
-    log.critical("Should not confirm non-existent node", [])
-    throw new Error("no node to confirm")
+  if (!entity) {
+    log.critical("Should not confirm non-existent node", []);
+    throw new Error("no node to confirm");
   }
-  entity.timestampStatusUpdate = event.block.timestamp
-  entity.status = "Confirmed"
+  entity.timestampStatusUpdate = event.block.timestamp;
+  entity.status = "Confirmed";
 
-  if(entity.afterSendCount != event.params.afterSendCount) {
-    log.critical("Something went wrong parsing the after send count", [])
-    throw new Error("Wrong send cound")
+  if (entity.afterSendCount != event.params.afterSendCount) {
+    log.critical("Something went wrong parsing the after send count", []);
+    throw new Error("Wrong send cound");
   }
 
-  entity.save()
+  entity.save();
 }
 
 export function handleNodeRejected(event: NodeRejectedEvent): void {
@@ -318,62 +316,52 @@ export function handleNodeRejected(event: NodeRejectedEvent): void {
   // used to be faster to do a `new NodeEntity(id)` than load since it wouldn't overwrite other fields
   // but that doesn't seem to hold anymore
   let entity = NodeEntity.load(id);
-  if(!entity) {
-    log.critical("Should not reject non-existent node", [])
-    throw new Error("no node to reject")
+  if (!entity) {
+    log.critical("Should not reject non-existent node", []);
+    throw new Error("no node to reject");
   }
-  entity.timestampStatusUpdate = event.block.timestamp
-  entity.status = "Rejected"
-  entity.save()
+  entity.timestampStatusUpdate = event.block.timestamp;
+  entity.status = "Rejected";
+  entity.save();
 }
 
-export function handleDefaultGatewayUpdated(
-  event: DefaultGatewayUpdatedEvent
-): void {
+export function handleDefaultGatewayUpdated(event: DefaultGatewayUpdatedEvent): void {
   let entity = new DefaultGatewayUpdated(
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.newDefaultGateway = event.params.newDefaultGateway
-  entity.save()
+  );
+  entity.newDefaultGateway = event.params.newDefaultGateway;
+  entity.save();
 }
 
 export function handleGatewaySet(event: GatewaySetEvent): void {
-  let entity = new GatewaySet(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.l1Token = event.params.l1Token
-  entity.gateway = event.params.gateway
-  entity.save()
+  let entity = new GatewaySet(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
+  entity.l1Token = event.params.l1Token;
+  entity.gateway = event.params.gateway;
+  entity.save();
 }
 
 export function handleTransferRouted(event: TransferRoutedEvent): void {
-  let entity = new TransferRouted(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.token = event.params.token
-  entity._userFrom = event.params._userFrom
-  entity._userTo = event.params._userTo
-  entity.gateway = event.params.gateway
-  entity.save()
+  let entity = new TransferRouted(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
+  entity.token = event.params.token;
+  entity._userFrom = event.params._userFrom;
+  entity._userTo = event.params._userTo;
+  entity.gateway = event.params.gateway;
+  entity.save();
 }
 
 export function handleTxToL2(event: TxToL2Event): void {
-  let entity = new TxToL2(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity._from = event.params._from
-  entity._to = event.params._to
-  entity._seqNum = event.params._seqNum
-  entity._data = event.params._data
-  entity.save()
+  let entity = new TxToL2(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
+  entity._from = event.params._from;
+  entity._to = event.params._to;
+  entity._seqNum = event.params._seqNum;
+  entity._data = event.params._data;
+  entity.save();
 }
 
-export function handleWhitelistSourceUpdated(
-  event: WhitelistSourceUpdatedEvent
-): void {
+export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent): void {
   let entity = new WhitelistSourceUpdated(
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.newSource = event.params.newSource
-  entity.save()
+  );
+  entity.newSource = event.params.newSource;
+  entity.save();
 }
