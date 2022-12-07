@@ -73,7 +73,7 @@ type TokenDeposit @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
   "token being deposited"
-  l1Token: Bytes!
+  l1Token: Token!
   "account that deposited tokens on L1"
   from: Bytes! # address
   "account that receives tokens on L2"
@@ -86,6 +86,20 @@ type TokenDeposit @entity(immutable: true) {
   transactionHash: Bytes!
   "L1 block in which token is deposited"
   blockCreatedAt: BigInt!
+}
+
+type Gateway @entity {
+  "gateway address"
+  id: ID!
+  "tokens this gateway supports"
+  tokens: [Token!] @derivedFrom(field: "gateway")
+}
+
+type Token @entity {
+  "L1 token address"
+  id: ID!
+  "gateway that supports this token"
+  gateway: Gateway
 }
 
 enum NodeStatus {

@@ -24,6 +24,7 @@ import {
   TransferRouted,
   TxToL2,
   WhitelistSourceUpdated,
+  TokenDeposit,
 } from "../generated/schema";
 import {
   Bytes,
@@ -44,6 +45,8 @@ import {
   TxToL2 as TxToL2Event,
   WhitelistSourceUpdated as WhitelistSourceUpdatedEvent,
 } from "../generated/L1GatewayRouter/L1GatewayRouter";
+import { DepositInitiated } from "../generated/templates/L1ArbitrumGateway/L1ArbitrumGateway";
+import { getOrCreateGateway, getOrCreateToken } from "./bridgeUtils";
 
 const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
@@ -338,6 +341,12 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
   entity.l1Token = event.params.l1Token;
   entity.gateway = event.params.gateway;
   entity.save();
+
+  // create entities if needed and set gateway ref
+  let gateway = getOrCreateGateway(event.params.gateway);
+  let token = getOrCreateToken(event.params.l1Token);
+  token.gateway = gateway.id;
+  token.save();
 }
 
 export function handleTransferRouted(event: TransferRoutedEvent): void {
@@ -364,4 +373,16 @@ export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent)
   );
   entity.newSource = event.params.newSource;
   entity.save();
+}
+
+export function handleDepositInitiated(event: DepositInitiated): void {
+  let tokenDeposit = new TokenDeposit(event.params._sequenceNumber.toString());
+  tokenDeposit.amount = event.params._amount;
+  tokenDeposit.from = event.params._from;
+  tokenDeposit.to = event.params._to;
+  tokenDeposit.sequenceNumber = event.params._sequenceNumber;
+  tokenDeposit.l1Token = getOrCreateToken(event.params.l1Token).id;
+  tokenDeposit.transactionHash = event.transaction.hash;
+  tokenDeposit.blockCreatedAt = event.block.number;
+  tokenDeposit.save();
 }
