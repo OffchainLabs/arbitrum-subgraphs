@@ -91,6 +91,8 @@ type TokenDeposit @entity(immutable: true) {
 type Gateway @entity {
   "gateway address"
   id: ID!
+  "L1 block number in which this gateway was first registered in router"
+  registeredAtBlock: BigInt!
   "tokens this gateway supports"
   tokens: [Token!] @derivedFrom(field: "gateway")
 }

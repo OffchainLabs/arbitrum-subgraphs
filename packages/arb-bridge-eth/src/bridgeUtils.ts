@@ -1,8 +1,8 @@
-import { Address } from "@graphprotocol/graph-ts";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { Gateway, Token } from "../generated/schema";
 import { L1ArbitrumGateway } from "../generated/templates";
 
-export function getOrCreateGateway(gatewayAddress: Address): Gateway {
+export function getOrCreateGateway(gatewayAddress: Address, blockNumber: BigInt): Gateway {
   let gateway = Gateway.load(gatewayAddress.toHexString());
   if (gateway != null) {
     return gateway;
@@ -10,6 +10,7 @@ export function getOrCreateGateway(gatewayAddress: Address): Gateway {
 
   // create new gateway entity
   gateway = new Gateway(gatewayAddress.toHexString());
+  gateway.registeredAtBlock = blockNumber;
   gateway.save();
 
   // start indexing new gateway

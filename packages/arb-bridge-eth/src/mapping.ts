@@ -343,7 +343,7 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
   entity.save();
 
   // create entities if needed and set gateway ref
-  let gateway = getOrCreateGateway(event.params.gateway);
+  let gateway = getOrCreateGateway(event.params.gateway, event.block.number);
   let token = getOrCreateToken(event.params.l1Token);
   token.gateway = gateway.id;
   token.save();
