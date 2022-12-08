@@ -70,7 +70,7 @@ type EthDeposit @entity(immutable: true) {
 }
 
 type TokenDeposit @entity(immutable: true) {
-  "the inbox sequence number of the current message"
+  "txHash-txIndex"
   id: ID!
   "token being deposited"
   l1Token: Token!

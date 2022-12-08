@@ -376,7 +376,10 @@ export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent)
 }
 
 export function handleDepositInitiated(event: DepositInitiated): void {
-  let tokenDeposit = new TokenDeposit(event.params._sequenceNumber.toString());
+  let tokenDepositId =
+    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
+    
+  let tokenDeposit = new TokenDeposit(tokenDepositId);
   tokenDeposit.amount = event.params._amount;
   tokenDeposit.from = event.params._from;
   tokenDeposit.to = event.params._to;
