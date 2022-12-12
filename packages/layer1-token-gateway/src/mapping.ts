@@ -29,7 +29,6 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
   )
   entity.l1Token = event.params.l1Token
   entity.gateway = event.params.gateway
-  entity.blockNumber = event.block
   entity.save()
 }
 
