@@ -7,7 +7,6 @@ type GatewaySet @entity {
   id: ID!
   l1Token: Bytes! # address
   gateway: Bytes! # address
-  blockNumber: Int! #uint32
 }
 
 type TransferRouted @entity {
