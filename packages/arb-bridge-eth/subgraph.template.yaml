@@ -12,7 +12,7 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
-      file: ./src/mapping.ts
+      file: ./src/tokenBridge.ts
       entities:
         - L1ArbitrumGateway
       abis:
@@ -118,5 +118,5 @@ dataSources:
           handler: handleTxToL2
         - event: WhitelistSourceUpdated(address)
           handler: handleWhitelistSourceUpdated
-      file: ./src/mapping.ts
+      file: ./src/tokenBridge.ts
 {{{ rollupPreprocessor }}}
