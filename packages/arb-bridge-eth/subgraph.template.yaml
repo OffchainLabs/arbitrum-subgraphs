@@ -44,7 +44,7 @@ dataSources:
           handler: handleOutBoxTransactionExecuted
         - event: OutboxEntryCreated(indexed uint256,uint256,bytes32,uint256)
           handler: handleOutboxEntryCreated
-      file: ./src/mapping.ts
+      file: ./src/outbox.ts
   - kind: ethereum/contract
     name: Inbox
     network: {{ l1Network }}
@@ -64,7 +64,7 @@ dataSources:
       eventHandlers:
         - event: InboxMessageDelivered(indexed uint256,bytes)
           handler: handleInboxMessageDelivered
-      file: ./src/mapping.ts
+      file: ./src/bridge.ts
   - kind: ethereum/contract
     name: Bridge
     network: {{ l1Network }}
@@ -86,7 +86,7 @@ dataSources:
           handler: handleClassicMessageDelivered
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32,uint256,uint64)
           handler: handleNitroMessageDelivered
-      file: ./src/mapping.ts
+      file: ./src/bridge.ts
   - kind: ethereum/contract
     name: L1GatewayRouter
     network: mainnet

@@ -1,69 +1,11 @@
-import {
-  OutBoxTransactionExecuted as OutBoxTransactionExecutedEvent,
-  OutboxEntryCreated as OutboxEntryCreatedEvent,
-} from "../generated/Outbox/Outbox";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
 import {
   MessageDelivered as MessageDeliveredEvent,
   MessageDelivered1 as NitroMessageDeliveredEvent,
 } from "../generated/Bridge/Bridge";
-import {
-  IRollupCoreNodeCreated as NodeCreatedEvent,
-  IRollupCoreNodeConfirmed as NodeConfirmedEvent,
-  IRollupCoreNodeRejected as NodeRejectedEvent,
-} from "./interface/IRollupCore";
-import {
-  DefaultGatewayUpdated,
-  OutboxEntry,
-  OutboxOutput,
-  Retryable,
-  RawMessage,
-  Node as NodeEntity,
-  EthDeposit,
-  GatewaySet,
-  TransferRouted,
-  TxToL2,
-  WhitelistSourceUpdated,
-  TokenDeposit,
-} from "../generated/schema";
+import { Retryable, RawMessage, EthDeposit } from "../generated/schema";
 import { Bytes, BigInt, ethereum, Address, log, store } from "@graphprotocol/graph-ts";
-import {
-  DefaultGatewayUpdated as DefaultGatewayUpdatedEvent,
-  GatewaySet as GatewaySetEvent,
-  TransferRouted as TransferRoutedEvent,
-  TxToL2 as TxToL2Event,
-  WhitelistSourceUpdated as WhitelistSourceUpdatedEvent,
-} from "../generated/L1GatewayRouter/L1GatewayRouter";
-import { DepositInitiated } from "../generated/templates/L1ArbitrumGateway/L1ArbitrumGateway";
-import { getOrCreateGateway, getOrCreateToken } from "./bridgeUtils";
 import { bigIntToId, getL2RetryableTicketId, RetryableTx } from "./utils";
-
-/**
- * Last token deposit prior to Nitro was in TX 0xbc4324b4fe584f573e82b8b5b458f8303be318bf2bf46b0fc71087146bea4e37.
- * Used to distinguish between classic and nitro token deposits.
- */
-const BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT = 15446977;
-
-export function handleOutBoxTransactionExecuted(event: OutBoxTransactionExecutedEvent): void {
-  // this ID is not the same as the outputId used on chain
-  const id = event.transaction.hash.toHex() + "-" + event.logIndex.toString();
-  let entity = new OutboxOutput(id);
-  entity.destAddr = event.params.destAddr;
-  entity.l2Sender = event.params.l2Sender;
-  entity.outboxEntry = bigIntToId(event.params.outboxEntryIndex);
-  entity.path = event.params.transactionIndex;
-  // if OutBoxTransactionExecuted was emitted then the OutboxOutput was spent
-  entity.spent = true;
-  entity.save();
-}
-
-export function handleOutboxEntryCreated(event: OutboxEntryCreatedEvent): void {
-  let entity = new OutboxEntry(bigIntToId(event.params.batchNum));
-  entity.outboxEntryIndex = event.params.outboxEntryIndex;
-  entity.outputRoot = event.params.outputRoot;
-  entity.numInBatch = event.params.numInBatch;
-  entity.save();
-}
 
 export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): void {
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
@@ -171,54 +113,4 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
 
   // delete the old raw message
   store.remove("RawMessage", id);
-}
-
-export function handleNodeCreated(event: NodeCreatedEvent): void {
-  const id = bigIntToId(event.params.nodeNum);
-  let entity = new NodeEntity(id);
-  entity.nodeHash = event.params.nodeHash;
-  entity.inboxMaxCount = event.params.inboxMaxCount;
-  entity.parentHash = event.params.parentNodeHash;
-  entity.blockCreatedAt = event.block.number;
-  entity.timestampCreated = event.block.timestamp;
-  entity.timestampStatusUpdate = null;
-  entity.status = "Pending";
-  entity.afterSendCount = event.params.assertionIntFields[1][2];
-  entity.save();
-}
-
-export function handleNodeConfirmed(event: NodeConfirmedEvent): void {
-  const id = bigIntToId(event.params.nodeNum);
-  // we just edit 1 field, we know the node is already created, so we just update its status
-  // used to be faster to do a `new NodeEntity(id)` than load since it wouldn't overwrite other fields
-  // but that doesn't seem to hold anymore
-  let entity = NodeEntity.load(id);
-  if (!entity) {
-    log.critical("Should not confirm non-existent node", []);
-    throw new Error("no node to confirm");
-  }
-  entity.timestampStatusUpdate = event.block.timestamp;
-  entity.status = "Confirmed";
-
-  if (entity.afterSendCount != event.params.afterSendCount) {
-    log.critical("Something went wrong parsing the after send count", []);
-    throw new Error("Wrong send cound");
-  }
-
-  entity.save();
-}
-
-export function handleNodeRejected(event: NodeRejectedEvent): void {
-  const id = bigIntToId(event.params.nodeNum);
-  // we just edit 1 field, we know the node is already created, so we just update its status
-  // used to be faster to do a `new NodeEntity(id)` than load since it wouldn't overwrite other fields
-  // but that doesn't seem to hold anymore
-  let entity = NodeEntity.load(id);
-  if (!entity) {
-    log.critical("Should not reject non-existent node", []);
-    throw new Error("no node to reject");
-  }
-  entity.timestampStatusUpdate = event.block.timestamp;
-  entity.status = "Rejected";
-  entity.save();
 }
