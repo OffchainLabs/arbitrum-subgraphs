@@ -86,6 +86,8 @@ type TokenDeposit @entity(immutable: true) {
   sequenceNumber: BigInt! # uint256
   "amount being deposited on L1"
   amount: BigInt! # uint256
+  "true -> classic; false -> nitro"
+  isClassic: Boolean!
   "L1 block timestamp"
   timestamp: BigInt!
   "L1 deposit tx"
@@ -159,10 +161,10 @@ type GatewaySet @entity {
   id: ID!
   l1Token: Bytes! # address
   gateway: Bytes! # address
-  transactionHash: Bytes!
   timestamp: BigInt!
   transactionHash: Bytes!
-  blockNumber: BigInt!}
+  blockNumber: BigInt!
+}
 
 type TransferRouted @entity {
   id: ID!

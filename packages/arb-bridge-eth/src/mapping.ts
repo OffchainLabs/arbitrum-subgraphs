@@ -38,6 +38,12 @@ import { DepositInitiated } from "../generated/templates/L1ArbitrumGateway/L1Arb
 import { getOrCreateGateway, getOrCreateToken } from "./bridgeUtils";
 import { bigIntToId, getL2RetryableTicketId, RetryableTx } from "./utils";
 
+/**
+ * Last token deposit prior to Nitro was in TX 0xbc4324b4fe584f573e82b8b5b458f8303be318bf2bf46b0fc71087146bea4e37.
+ * Used to distinguish between classic and nitro token deposits.
+ */
+const BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT = 15446977;
+
 export function handleOutBoxTransactionExecuted(event: OutBoxTransactionExecutedEvent): void {
   // this ID is not the same as the outputId used on chain
   const id = event.transaction.hash.toHex() + "-" + event.logIndex.toString();
@@ -286,6 +292,9 @@ export function handleDepositInitiated(event: DepositInitiated): void {
   tokenDeposit.to = event.params._to;
   tokenDeposit.sequenceNumber = event.params._sequenceNumber;
   tokenDeposit.l1Token = getOrCreateToken(event.params.l1Token, event.block.number).id;
+  tokenDeposit.isClassic = event.block.number.le(
+    BigInt.fromI32(BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT)
+  );
   tokenDeposit.timestamp = event.block.timestamp;
   tokenDeposit.transactionHash = event.transaction.hash;
   tokenDeposit.blockCreatedAt = event.block.number;
