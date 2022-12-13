@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen": "yarn prepare:codegen && yarn prepare:mainnet && graph codegen",
+    "codegen": "yarn prepare:codegen && yarn prepare:nitro-mainnet && graph codegen",
     "build": "yarn prepare:build && yarn prepare:mainnet && graph build",
     "postinstall": "yarn codegen",
     "create-local": "graph create --node http://localhost:8020/ arbitrum/arb-bridge-eth-nitro",

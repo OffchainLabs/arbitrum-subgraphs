@@ -36,6 +36,8 @@ type RawMessage @entity {
 type Retryable @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
+  "account that created retryable ticket, aliased"
+  senderAliased: Bytes! # address
   "is the current retryable a deposit of eth"
   isEthDeposit: Boolean!
   "value sent with message"

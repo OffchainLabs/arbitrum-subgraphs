@@ -7,50 +7,6 @@ import { Retryable, RawMessage, EthDeposit } from "../generated/schema";
 import { Bytes, BigInt, ethereum, Address, log, store } from "@graphprotocol/graph-ts";
 import { bigIntToId, getL2RetryableTicketId, RetryableTx } from "./utils";
 
-export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): void {
-  // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
-  const id = bigIntToId(event.params.messageNum);
-
-  let prevEntity = RawMessage.load(id);
-
-  // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
-  if (!prevEntity) {
-    log.critical("Wrong order in entity!!", []);
-    throw new Error("Oh damn no entity wrong order");
-  }
-
-  if (prevEntity.kind == "EthDeposit") {
-    handleEthDeposit(event, prevEntity);
-    return;
-  }
-
-  if (prevEntity.kind != "Retryable") {
-    log.info("Prev entity not a retryable nor ETH deposit, skipping. messageNum: {}", [
-      event.params.messageNum.toHexString(),
-    ]);
-    return;
-  }
-  log.info("Processing retryable before", []);
-  const retryable = RetryableTx.parseRetryable(event.params.data);
-  log.info("Processing retryable after", []);
-  if (retryable) {
-    let entity = new Retryable(id);
-    entity.value = event.transaction.value;
-    entity.isEthDeposit = retryable.dataLength == BigInt.zero();
-    entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
-    entity.destAddr = retryable.destAddress;
-    entity.l2Calldata = retryable.data;
-    entity.timestamp = event.block.timestamp;
-    entity.transactionHash = event.transaction.hash;
-    entity.blockCreatedAt = event.block.number;
-    entity.save();
-    // we delete the old raw message since now we saved the retryable
-    store.remove("RawMessage", id);
-  } else {
-    log.error("Not able to parse tx with id {}", [id.toString()]);
-  }
-}
-
 export function handleClassicMessageDelivered(event: MessageDeliveredEvent): void {
   handleMessageDelivered(event.params.messageIndex, event.params.kind, event.params.sender);
 }
@@ -73,6 +29,33 @@ function handleMessageDelivered(messageIndex: BigInt, messageKind: i32, sender: 
 
   entity.sender = sender;
   entity.save();
+}
+
+export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): void {
+  // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
+  const id = bigIntToId(event.params.messageNum);
+
+  let prevEntity = RawMessage.load(id);
+
+  // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
+  if (!prevEntity) {
+    log.critical("Wrong order in entity!!", []);
+    throw new Error("Oh damn no entity wrong order");
+  }
+
+  if (prevEntity.kind == "EthDeposit") {
+    handleEthDeposit(event, prevEntity);
+    return;
+  }
+
+  if (prevEntity.kind == "EthDeposit") {
+    handleRetryable(event, prevEntity);
+    return;
+  }
+
+  log.info("Prev entity not a retryable nor ETH deposit, skipping. messageNum: {}", [
+    event.params.messageNum.toHexString(),
+  ]);
 }
 
 function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
@@ -113,4 +96,27 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
 
   // delete the old raw message
   store.remove("RawMessage", id);
+}
+
+function handleRetryable(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
+  const id = bigIntToId(event.params.messageNum);
+  const retryable = RetryableTx.parseRetryable(event.params.data);
+  if (retryable) {
+    let entity = new Retryable(id);
+    // get sender from preceding MessageDelivered event
+    entity.senderAliased = rawMessage.sender;
+    entity.value = event.transaction.value;
+    entity.isEthDeposit = retryable.dataLength == BigInt.zero();
+    entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
+    entity.destAddr = retryable.destAddress;
+    entity.l2Calldata = retryable.data;
+    entity.timestamp = event.block.timestamp;
+    entity.transactionHash = event.transaction.hash;
+    entity.blockCreatedAt = event.block.number;
+    entity.save();
+    // we delete the old raw message since now we saved the retryable
+    store.remove("RawMessage", id);
+  } else {
+    log.error("Not able to parse tx with id {}", [id.toString()]);
+  }
 }
