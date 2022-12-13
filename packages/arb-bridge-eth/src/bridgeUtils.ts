@@ -19,7 +19,7 @@ export function getOrCreateGateway(gatewayAddress: Address, blockNumber: BigInt)
   return gateway;
 }
 
-export function getOrCreateToken(tokenAddress: Address): Token {
+export function getOrCreateToken(tokenAddress: Address, blockNumber: BigInt): Token {
   let token = Token.load(tokenAddress.toHexString());
   if (token != null) {
     return token;
@@ -27,6 +27,7 @@ export function getOrCreateToken(tokenAddress: Address): Token {
 
   // create new Token entity
   token = new Token(tokenAddress.toHexString());
+  token.registeredAtBlock = blockNumber;
   token.save();
 
   return token;

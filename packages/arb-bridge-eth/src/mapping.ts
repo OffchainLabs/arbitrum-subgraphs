@@ -92,6 +92,7 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
     entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
     entity.destAddr = retryable.destAddress;
     entity.l2Calldata = retryable.data;
+    entity.timestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
     entity.blockCreatedAt = event.block.number;
     entity.save();
@@ -157,6 +158,7 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
     entity.destAddr = decodedTuple[0].toAddress();
     entity.value = decodedTuple[1].toBigInt();
   }
+  entity.timestamp = event.block.number;
   entity.transactionHash = event.transaction.hash;
   entity.blockCreatedAt = event.block.number;
   entity.save();
@@ -220,6 +222,9 @@ export function handleDefaultGatewayUpdated(event: DefaultGatewayUpdatedEvent): 
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
   );
   entity.newDefaultGateway = event.params.newDefaultGateway;
+  entity.timestamp = event.block.number;
+  entity.transactionHash = event.transaction.hash;
+  entity.blockNumber = event.block.number;
   entity.save();
 }
 
@@ -227,11 +232,14 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
   let entity = new GatewaySet(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
   entity.l1Token = event.params.l1Token;
   entity.gateway = event.params.gateway;
+  entity.timestamp = event.block.number;
+  entity.transactionHash = event.transaction.hash;
+  entity.blockNumber = event.block.number;
   entity.save();
 
   // create entities if needed and set gateway ref
   let gateway = getOrCreateGateway(event.params.gateway, event.block.number);
-  let token = getOrCreateToken(event.params.l1Token);
+  let token = getOrCreateToken(event.params.l1Token, event.block.number);
   token.gateway = gateway.id;
   token.save();
 }
@@ -242,6 +250,9 @@ export function handleTransferRouted(event: TransferRoutedEvent): void {
   entity._userFrom = event.params._userFrom;
   entity._userTo = event.params._userTo;
   entity.gateway = event.params.gateway;
+  entity.timestamp = event.block.number;
+  entity.transactionHash = event.transaction.hash;
+  entity.blockNumber = event.block.number;
   entity.save();
 }
 
@@ -259,6 +270,9 @@ export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent)
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
   );
   entity.newSource = event.params.newSource;
+  entity.timestamp = event.block.number;
+  entity.transactionHash = event.transaction.hash;
+  entity.blockNumber = event.block.number;
   entity.save();
 }
 
@@ -271,7 +285,8 @@ export function handleDepositInitiated(event: DepositInitiated): void {
   tokenDeposit.from = event.params._from;
   tokenDeposit.to = event.params._to;
   tokenDeposit.sequenceNumber = event.params._sequenceNumber;
-  tokenDeposit.l1Token = getOrCreateToken(event.params.l1Token).id;
+  tokenDeposit.l1Token = getOrCreateToken(event.params.l1Token, event.block.number).id;
+  tokenDeposit.timestamp = event.block.timestamp;
   tokenDeposit.transactionHash = event.transaction.hash;
   tokenDeposit.blockCreatedAt = event.block.number;
   tokenDeposit.save();

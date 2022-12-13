@@ -46,6 +46,8 @@ type Retryable @entity(immutable: true) {
   retryableTicketID: Bytes! # bytes32
   "calldata used in L2 call"
   l2Calldata: Bytes!
+  "L1 block timestamp"
+  timestamp: BigInt!
   "L1 tx retryable is created at"
   transactionHash: Bytes!
   "L1 block retryable is created at"
@@ -63,6 +65,8 @@ type EthDeposit @entity(immutable: true) {
   value: BigInt! # uint256
   "abi encoding of dest address + deposit value"
   msgData: Bytes! # bytes
+  "L1 block timestamp"
+  timestamp: BigInt!
   "L1 deposit tx"
   transactionHash: Bytes!
   "L1 block in which Eth is deposited"
@@ -82,6 +86,8 @@ type TokenDeposit @entity(immutable: true) {
   sequenceNumber: BigInt! # uint256
   "amount being deposited on L1"
   amount: BigInt! # uint256
+  "L1 block timestamp"
+  timestamp: BigInt!
   "L1 deposit tx"
   transactionHash: Bytes!
   "L1 block in which token is deposited"
@@ -102,6 +108,8 @@ type Token @entity {
   id: ID!
   "gateway that supports this token"
   gateway: Gateway
+  "L1 block number in which this token was first registered in router/gateway"
+  registeredAtBlock: BigInt!
 }
 
 enum NodeStatus {
@@ -142,13 +150,19 @@ type Node @entity {
 type DefaultGatewayUpdated @entity {
   id: ID!
   newDefaultGateway: Bytes! # address
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
 }
 
 type GatewaySet @entity {
   id: ID!
   l1Token: Bytes! # address
   gateway: Bytes! # address
-}
+  transactionHash: Bytes!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!}
 
 type TransferRouted @entity {
   id: ID!
@@ -156,6 +170,9 @@ type TransferRouted @entity {
   _userFrom: Bytes! # address
   _userTo: Bytes! # address
   gateway: Bytes! # address
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
 }
 
 type TxToL2 @entity {
@@ -169,4 +186,7 @@ type TxToL2 @entity {
 type WhitelistSourceUpdated @entity {
   id: ID!
   newSource: Bytes! # address
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
 }
