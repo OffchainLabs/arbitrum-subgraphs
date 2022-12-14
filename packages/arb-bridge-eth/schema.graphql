@@ -27,13 +27,45 @@ enum MessageKind {
 type RawMessage @entity {
   "the inbox sequence number of the current message"
   id: ID!
-  "is this inbox message a regular eth deposit or a retryable"
+  "Nitro message type"
+  kind: MessageKind!
+  "message sender, aliased"
+  sender: Bytes! # address
+}
+
+type ClassicRawMessage @entity {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "classic message type"
   kind: MessageKind!
   "message sender, aliased"
   sender: Bytes! # address
 }
 
 type Retryable @entity(immutable: true) {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "account that created retryable ticket, aliased"
+  senderAliased: Bytes! # address
+  "is the current retryable a deposit of eth"
+  isEthDeposit: Boolean!
+  "value sent with message"
+  value: BigInt!
+  "indicates the L2 address destination"
+  destAddr: Bytes! # bytes32
+  "ticket id of retryable"
+  retryableTicketID: Bytes! # bytes32
+  "calldata used in L2 call"
+  l2Calldata: Bytes!
+  "L1 block timestamp"
+  timestamp: BigInt!
+  "L1 tx retryable is created at"
+  transactionHash: Bytes!
+  "L1 block retryable is created at"
+  blockCreatedAt: BigInt!
+}
+
+type ClassicRetryable @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
   "account that created retryable ticket, aliased"
@@ -67,6 +99,8 @@ type EthDeposit @entity(immutable: true) {
   value: BigInt! # uint256
   "abi encoding of dest address + deposit value"
   msgData: Bytes! # bytes
+  "true -> classic; false -> nitro"
+  isClassic: Boolean!
   "L1 block timestamp"
   timestamp: BigInt!
   "L1 deposit tx"

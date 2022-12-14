@@ -3,53 +3,95 @@ import {
   MessageDelivered as MessageDeliveredEvent,
   MessageDelivered1 as NitroMessageDeliveredEvent,
 } from "../generated/Bridge/Bridge";
-import { Retryable, RawMessage, EthDeposit } from "../generated/schema";
+import {
+  Retryable,
+  RawMessage,
+  EthDeposit,
+  ClassicRawMessage,
+  ClassicRetryable,
+} from "../generated/schema";
 import { Bytes, BigInt, ethereum, Address, log, store } from "@graphprotocol/graph-ts";
 import { bigIntToId, getL2RetryableTicketId, RetryableTx } from "./utils";
 
+const INBOX_FIRST_NITRO_BLOCK = 15447158;
+
+////////////////////// Bridge events
+
 export function handleClassicMessageDelivered(event: MessageDeliveredEvent): void {
-  handleMessageDelivered(event.params.messageIndex, event.params.kind, event.params.sender);
+  handleMessageDelivered(event.params.messageIndex, event.params.kind, event.params.sender, true);
 }
 
 export function handleNitroMessageDelivered(event: NitroMessageDeliveredEvent): void {
-  handleMessageDelivered(event.params.messageIndex, event.params.kind, event.params.sender);
+  handleMessageDelivered(event.params.messageIndex, event.params.kind, event.params.sender, false);
 }
 
-function handleMessageDelivered(messageIndex: BigInt, messageKind: i32, sender: Address): void {
+function handleMessageDelivered(
+  messageIndex: BigInt,
+  messageKind: i32,
+  sender: Address,
+  isClassic: boolean
+): void {
   const id = bigIntToId(messageIndex);
-  let entity = new RawMessage(id);
 
+  let kind = "";
   if (messageKind == 9) {
-    entity.kind = "Retryable";
+    kind = "Retryable";
   } else if (messageKind == 12) {
-    entity.kind = "EthDeposit";
+    kind = "EthDeposit";
   } else {
-    entity.kind = "NotSupported";
+    kind = "NotSupported";
   }
 
-  entity.sender = sender;
-  entity.save();
+  if (isClassic) {
+    let entity = new ClassicRawMessage(id);
+    entity.kind = kind;
+    entity.sender = sender;
+    entity.save();
+  } else {
+    let entity = new RawMessage(id);
+    entity.kind = kind;
+    entity.sender = sender;
+    entity.save();
+  }
 }
+
+////////////////////// Inbox events
 
 export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): void {
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
   const id = bigIntToId(event.params.messageNum);
 
-  let prevEntity = RawMessage.load(id);
+  /// handle Nitro
+  if (event.block.number.ge(BigInt.fromI32(INBOX_FIRST_NITRO_BLOCK))) {
+    let prevEntity = RawMessage.load(id);
 
-  // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
-  if (!prevEntity) {
-    log.critical("Wrong order in entity!!", []);
-    throw new Error("Oh damn no entity wrong order");
-  }
+    // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
+    if (!prevEntity) {
+      log.critical("Wrong order in entity!!", []);
+      throw new Error("Oh damn no entity wrong order");
+    }
 
-  if (prevEntity.kind == "EthDeposit") {
-    handleEthDeposit(event, prevEntity);
-    return;
-  }
+    ///in Nitro Eth deposit is different message type from retrayable
+    if (prevEntity.kind == "EthDeposit") {
+      handleNitroEthDeposit(event, prevEntity);
+      return;
+    }
+    if (prevEntity.kind == "Retryable") {
+      handleNitroRetryable(event, prevEntity);
+      return;
+    }
+  } else {
+    /// handle Classic
+    let prevEntity = ClassicRawMessage.load(id);
 
-  if (prevEntity.kind == "EthDeposit") {
-    handleRetryable(event, prevEntity);
+    // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
+    if (!prevEntity) {
+      log.critical("Wrong order in entity!!", []);
+      throw new Error("Oh damn no entity wrong order");
+    }
+
+    //// in classic Eth deposit is retryable
+    handleClassicRetryable(event, prevEntity);
     return;
   }
 
@@ -58,7 +100,7 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
   ]);
 }
 
-function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
+function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
   const id = bigIntToId(event.params.messageNum);
 
   // we track deposits with EthDeposit entities
@@ -89,6 +131,7 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
     entity.destAddr = decodedTuple[0].toAddress();
     entity.value = decodedTuple[1].toBigInt();
   }
+  entity.isClassic = false;
   entity.timestamp = event.block.number;
   entity.transactionHash = event.transaction.hash;
   entity.blockCreatedAt = event.block.number;
@@ -98,11 +141,53 @@ function handleEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMess
   store.remove("RawMessage", id);
 }
 
-function handleRetryable(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
+function handleNitroRetryable(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
   const id = bigIntToId(event.params.messageNum);
   const retryable = RetryableTx.parseRetryable(event.params.data);
   if (retryable) {
     let entity = new Retryable(id);
+    // get sender from preceding MessageDelivered event
+    entity.senderAliased = rawMessage.sender;
+    entity.value = event.transaction.value;
+    entity.isEthDeposit = retryable.dataLength == BigInt.zero();
+    entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
+    entity.destAddr = retryable.destAddress;
+    entity.l2Calldata = retryable.data;
+    entity.timestamp = event.block.timestamp;
+    entity.transactionHash = event.transaction.hash;
+    entity.blockCreatedAt = event.block.number;
+    entity.save();
+    // we delete the old raw message since now we saved the retryable
+    store.remove("RawMessage", id);
+  } else {
+    log.error("Not able to parse tx with id {}", [id.toString()]);
+  }
+}
+
+function handleClassicRetryable(
+  event: InboxMessageDeliveredEvent,
+  rawMessage: ClassicRawMessage
+): void {
+  const id = bigIntToId(event.params.messageNum);
+  const retryable = RetryableTx.parseRetryable(event.params.data);
+  if (retryable) {
+    // if there is no calldata, this is Eth deposit
+    if (retryable.dataLength == BigInt.zero()) {
+      // we track deposits with EthDeposit entities
+      let deposit = new EthDeposit(id);
+      // get sender from preceding MessageDelivered event
+      deposit.senderAliased = rawMessage.sender;
+      deposit.msgData = event.params.data;
+      deposit.destAddr = retryable.destAddress;
+      deposit.value = event.transaction.value;
+      deposit.isClassic = true;
+      deposit.timestamp = event.block.number;
+      deposit.transactionHash = event.transaction.hash;
+      deposit.blockCreatedAt = event.block.number;
+      deposit.save();
+    }
+
+    let entity = new ClassicRetryable(id);
     // get sender from preceding MessageDelivered event
     entity.senderAliased = rawMessage.sender;
     entity.value = event.transaction.value;

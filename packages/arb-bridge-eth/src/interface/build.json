@@ -8,6 +8,8 @@
   "inboxAddress": "{{ inboxAddress }}",
   "bridgeDeploymentBlock": "{{ bridgeDeploymentBlock }}",
   "bridgeAddress": "{{ bridgeAddress }}",
+  "classicBridgeDeploymentBlock": "{{ classicBridgeDeploymentBlock }}",
+  "classicBridgeAddress": "{{ classicBridgeAddress }}",
   "l1GatewayRouter": "{{ l1GatewayRouter }}",
   "l1GatewayRouterDeployBlock": "{{ l1GatewayRouterDeployBlock }}",
   "rollupAddress": "{{ rollupAddress }}",

@@ -82,10 +82,28 @@ dataSources:
         - name: Bridge
           file: ./abis/Bridge.json
       eventHandlers:
-        - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32)
-          handler: handleClassicMessageDelivered
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32,uint256,uint64)
           handler: handleNitroMessageDelivered
+      file: ./src/bridge.ts
+  - kind: ethereum/contract
+    name: ClassicBridge
+    network: {{ l1Network }}
+    source:
+      address: '{{ classicBridgeAddress }}'
+      abi: Bridge
+      startBlock: {{ classicBridgeDeploymentBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - MessageDelivered
+      abis:
+        - name: Bridge
+          file: ./abis/Bridge.json
+      eventHandlers:
+        - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32)
+          handler: handleClassicMessageDelivered
       file: ./src/bridge.ts
   - kind: ethereum/contract
     name: L1GatewayRouter
