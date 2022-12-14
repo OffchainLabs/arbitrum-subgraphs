@@ -85,6 +85,7 @@ dataSources:
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32,uint256,uint64)
           handler: handleNitroMessageDelivered
       file: ./src/bridge.ts
+  {{ classicBridgeStart }}
   - kind: ethereum/contract
     name: ClassicBridge
     network: {{ l1Network }}
@@ -105,9 +106,10 @@ dataSources:
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32)
           handler: handleClassicMessageDelivered
       file: ./src/bridge.ts
+  {{{ classicBridgeEnd }}}
   - kind: ethereum/contract
     name: L1GatewayRouter
-    network: mainnet
+    network: {{ l1Network }}
     source:
       address: "{{ l1GatewayRouter }}"
       abi: L1GatewayRouter
