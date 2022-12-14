@@ -175,8 +175,7 @@ function handleClassicRetryable(
     if (retryable.dataLength == BigInt.zero()) {
       // we track deposits with EthDeposit entities
       let deposit = new EthDeposit(id);
-      // get sender from preceding MessageDelivered event
-      deposit.senderAliased = rawMessage.sender;
+      deposit.senderAliased = retryable.destAddress;
       deposit.msgData = event.params.data;
       deposit.destAddr = retryable.destAddress;
       deposit.value = event.transaction.value;
