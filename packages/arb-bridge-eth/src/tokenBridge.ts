@@ -6,7 +6,7 @@ import {
   WhitelistSourceUpdated,
   TokenDeposit,
 } from "../generated/schema";
-import { BigInt } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 import {
   DefaultGatewayUpdated as DefaultGatewayUpdatedEvent,
   GatewaySet as GatewaySetEvent,
@@ -16,12 +16,13 @@ import {
 } from "../generated/L1GatewayRouter/L1GatewayRouter";
 import { DepositInitiated } from "../generated/templates/L1ArbitrumGateway/L1ArbitrumGateway";
 import { getOrCreateGateway, getOrCreateToken } from "./bridgeUtils";
+import { getL2ChainId, isArbOne } from "./utils";
 
 /**
  * Last token deposit prior to Nitro was in TX 0xbc4324b4fe584f573e82b8b5b458f8303be318bf2bf46b0fc71087146bea4e37.
  * Used to distinguish between classic and nitro token deposits.
  */
-const BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT = 15446977;
+const ARB_ONE_BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT = 15446977;
 
 /**
  * Create TokenDeposit entities when deposit is initiated on L1 side.
@@ -37,9 +38,12 @@ export function handleDepositInitiated(event: DepositInitiated): void {
   tokenDeposit.to = event.params._to;
   tokenDeposit.sequenceNumber = event.params._sequenceNumber;
   tokenDeposit.l1Token = getOrCreateToken(event.params.l1Token, event.block.number).id;
-  tokenDeposit.isClassic = event.block.number.le(
-    BigInt.fromI32(BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT)
-  );
+
+  let firstNitroBlock = 0;
+  if (isArbOne()) {
+    firstNitroBlock = ARB_ONE_BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT + 1;
+  }
+  tokenDeposit.isClassic = event.block.number.lt(BigInt.fromI32(firstNitroBlock));
   tokenDeposit.timestamp = event.block.timestamp;
   tokenDeposit.transactionHash = event.transaction.hash;
   tokenDeposit.blockCreatedAt = event.block.number;

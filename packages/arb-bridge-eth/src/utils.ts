@@ -10,9 +10,26 @@ import {
 } from "@graphprotocol/graph-ts";
 import { encodePadded, padBytes } from "@arbitrum/subgraph-common";
 
+const NOVA_INBOX_ADDRESS = "0xc4448b71118c9071bcb9734a0eac55d18a153949";
+
+export function isArbOne(): boolean {
+  const l2ChainId = getL2ChainId();
+  const arbId = Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
+  return l2ChainId == arbId;
+};
+
 export const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
-  if (network == "mainnet") return Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
+  if (network == "mainnet") {
+    // determine if L2 is Nova
+    if (dataSource.address().toHexString() == NOVA_INBOX_ADDRESS) {
+      return Bytes.fromByteArray(Bytes.fromHexString("0xa4ba"));
+    } else {
+      // Arb One
+      return Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
+    }
+  }
+
   if (network == "rinkeby") return Bytes.fromByteArray(Bytes.fromHexString("0x066EEB"));
   if (network == "goerli") return Bytes.fromByteArray(Bytes.fromHexString("0x066eed"));
 

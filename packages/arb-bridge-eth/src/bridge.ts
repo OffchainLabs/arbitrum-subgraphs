@@ -11,9 +11,9 @@ import {
   ClassicRetryable,
 } from "../generated/schema";
 import { Bytes, BigInt, ethereum, Address, log, store } from "@graphprotocol/graph-ts";
-import { bigIntToId, getL2RetryableTicketId, RetryableTx } from "./utils";
+import { bigIntToId, getL2ChainId, getL2RetryableTicketId, isArbOne, RetryableTx } from "./utils";
 
-const INBOX_FIRST_NITRO_BLOCK = 15447158;
+const ARB_ONE_INBOX_FIRST_NITRO_BLOCK = 15447158;
 
 ////////////////////// Bridge events
 
@@ -61,8 +61,13 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
   const id = bigIntToId(event.params.messageNum);
 
+  let firstNitroBlock = 0;
+  if (isArbOne()) {
+    firstNitroBlock = ARB_ONE_INBOX_FIRST_NITRO_BLOCK;
+  }
+
   /// handle Nitro
-  if (event.block.number.ge(BigInt.fromI32(INBOX_FIRST_NITRO_BLOCK))) {
+  if (event.block.number.ge(BigInt.fromI32(firstNitroBlock))) {
     let prevEntity = RawMessage.load(id);
 
     // this assumes that an entity was previously created since the MessageDelivered event is emitted before the inbox event
@@ -104,7 +109,8 @@ function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: Ra
   const id = bigIntToId(event.params.messageNum);
 
   // we track deposits with EthDeposit entities
-  let entity = new EthDeposit(id);
+  let depositId = event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
+  let entity = new EthDeposit(depositId);
 
   // get sender from preceding MessageDelivered event
   entity.senderAliased = rawMessage.sender;
@@ -174,8 +180,10 @@ function handleClassicRetryable(
     // if there is no calldata, this is Eth deposit
     if (retryable.dataLength == BigInt.zero()) {
       // we track deposits with EthDeposit entities
-      let deposit = new EthDeposit(id);
-      deposit.senderAliased = retryable.destAddress;
+      let depositId =
+        event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
+      let deposit = new EthDeposit(depositId);
+      deposit.senderAliased = rawMessage.sender;
       deposit.msgData = event.params.data;
       deposit.destAddr = retryable.destAddress;
       deposit.value = event.transaction.value;

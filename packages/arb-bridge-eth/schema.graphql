@@ -89,7 +89,7 @@ type ClassicRetryable @entity(immutable: true) {
 }
 
 type EthDeposit @entity(immutable: true) {
-  "the inbox sequence number of the current message"
+  "txHash-logIndex"
   id: ID!
   "account that deposited Eth on L1, aliased"
   senderAliased: Bytes! # address
