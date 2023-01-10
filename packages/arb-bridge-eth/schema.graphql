@@ -29,7 +29,7 @@ type RawMessage @entity {
   id: ID!
   "Nitro message type"
   kind: MessageKind!
-  "message sender, aliased"
+  "message sender"
   sender: Bytes! # address
 }
 
@@ -38,15 +38,15 @@ type ClassicRawMessage @entity {
   id: ID!
   "classic message type"
   kind: MessageKind!
-  "message sender, aliased"
+  "message sender"
   sender: Bytes! # address
 }
 
 type Retryable @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
-  "account that created retryable ticket, aliased"
-  senderAliased: Bytes! # address
+  "account that created retryable ticket, original address"
+  sender: Bytes! # address
   "is the current retryable a deposit of eth"
   isEthDeposit: Boolean!
   "value sent with message"
@@ -68,8 +68,8 @@ type Retryable @entity(immutable: true) {
 type ClassicRetryable @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
-  "account that created retryable ticket, aliased"
-  senderAliased: Bytes! # address
+  "account that created retryable ticket, original address"
+  sender: Bytes! # address
   "is the current retryable a deposit of eth"
   isEthDeposit: Boolean!
   "value sent with message"
@@ -91,8 +91,8 @@ type ClassicRetryable @entity(immutable: true) {
 type EthDeposit @entity(immutable: true) {
   "txHash-logIndex"
   id: ID!
-  "account that deposited Eth on L1, aliased"
-  senderAliased: Bytes! # address
+  "account that deposited Eth on L1, original address"
+  sender: Bytes! # address
   "indicates the L2 address destination"
   destAddr: Bytes! # address
   "value being deposited to L2 in wei"

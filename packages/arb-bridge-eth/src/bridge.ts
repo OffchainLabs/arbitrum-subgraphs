@@ -11,7 +11,7 @@ import {
   ClassicRetryable,
 } from "../generated/schema";
 import { Bytes, BigInt, ethereum, Address, log, store } from "@graphprotocol/graph-ts";
-import { bigIntToId, getL2ChainId, getL2RetryableTicketId, isArbOne, RetryableTx } from "./utils";
+import { applyAlias, bigIntToId, getL2RetryableTicketId, isArbOne, RetryableTx } from "./utils";
 
 const ARB_ONE_INBOX_FIRST_NITRO_BLOCK = 15447158;
 
@@ -106,14 +106,15 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
 }
 
 function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
-  const id = bigIntToId(event.params.messageNum);
-
   // we track deposits with EthDeposit entities
   let depositId = event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
   let entity = new EthDeposit(depositId);
 
-  // get sender from preceding MessageDelivered event
-  entity.senderAliased = rawMessage.sender;
+  // get sender from preceding MessageDelivered event. Sender is aliased so undo alias before storing address
+  const address = Address.fromBytes(rawMessage.sender);
+  const undoAliasAddress = applyAlias(address, true);
+  entity.sender = undoAliasAddress;
+
   entity.msgData = event.params.data;
 
   //// get destination address and eth value by parsing the data field
@@ -144,7 +145,8 @@ function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: Ra
   entity.save();
 
   // delete the old raw message
-  store.remove("RawMessage", id);
+  const msgId = bigIntToId(event.params.messageNum);
+  store.remove("RawMessage", msgId);
 }
 
 function handleNitroRetryable(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
@@ -152,8 +154,11 @@ function handleNitroRetryable(event: InboxMessageDeliveredEvent, rawMessage: Raw
   const retryable = RetryableTx.parseRetryable(event.params.data);
   if (retryable) {
     let entity = new Retryable(id);
-    // get sender from preceding MessageDelivered event
-    entity.senderAliased = rawMessage.sender;
+    // get sender from preceding MessageDelivered event. Sender is aliased so undo alias before storing address
+    const address = Address.fromBytes(rawMessage.sender);
+    const undoAliasAddress = applyAlias(address, true);
+    entity.sender = undoAliasAddress;
+
     entity.value = event.transaction.value;
     entity.isEthDeposit = retryable.dataLength == BigInt.zero();
     entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
@@ -176,6 +181,7 @@ function handleClassicRetryable(
 ): void {
   const id = bigIntToId(event.params.messageNum);
   const retryable = RetryableTx.parseRetryable(event.params.data);
+
   if (retryable) {
     // if there is no calldata, this is Eth deposit
     if (retryable.dataLength == BigInt.zero()) {
@@ -183,7 +189,12 @@ function handleClassicRetryable(
       let depositId =
         event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
       let deposit = new EthDeposit(depositId);
-      deposit.senderAliased = rawMessage.sender;
+
+      // get sender from preceding MessageDelivered event. Sender is unaliased so apply alias to get original address before storing it
+      const address = Address.fromBytes(rawMessage.sender);
+      const applyAliasAddress = applyAlias(address, false);
+      deposit.sender = applyAliasAddress;
+
       deposit.msgData = event.params.data;
       deposit.destAddr = retryable.destAddress;
       deposit.value = event.transaction.value;
@@ -195,8 +206,12 @@ function handleClassicRetryable(
     }
 
     let entity = new ClassicRetryable(id);
-    // get sender from preceding MessageDelivered event
-    entity.senderAliased = rawMessage.sender;
+
+    // get sender from preceding MessageDelivered event. Sender is unaliased so apply alias to get original address before storing it
+    const address = Address.fromBytes(rawMessage.sender);
+    const applyAliasAddress = applyAlias(address, false);
+    entity.sender = applyAliasAddress;
+
     entity.value = event.transaction.value;
     entity.isEthDeposit = retryable.dataLength == BigInt.zero();
     entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
@@ -207,7 +222,7 @@ function handleClassicRetryable(
     entity.blockCreatedAt = event.block.number;
     entity.save();
     // we delete the old raw message since now we saved the retryable
-    store.remove("RawMessage", id);
+    store.remove("ClassicRawMessage", id);
   } else {
     log.error("Not able to parse tx with id {}", [id.toString()]);
   }

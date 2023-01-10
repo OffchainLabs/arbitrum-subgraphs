@@ -11,12 +11,13 @@ import {
 import { encodePadded, padBytes } from "@arbitrum/subgraph-common";
 
 const NOVA_INBOX_ADDRESS = "0xc4448b71118c9071bcb9734a0eac55d18a153949";
+const ADDRESS_ALIAS_OFFSET = "0x1111000000000000000000000000000000001111";
 
 export function isArbOne(): boolean {
   const l2ChainId = getL2ChainId();
   const arbId = Bytes.fromByteArray(Bytes.fromHexString("0xa4b1"));
   return l2ChainId == arbId;
-};
+}
 
 export const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
@@ -82,6 +83,57 @@ export const bigIntToAddress = (input: BigInt): Address => {
   // build hexstring again
   const addressString = "0x" + missingZeroes + hexString;
   return Address.fromString(addressString);
+};
+
+export const addressToBigInt = (input: Address): BigInt => {
+  const addressBytes = Bytes.fromHexString(input.toHexString());
+  // reverse it in order to use big-endian instead of little-endian
+  const addressBytesRev = addressBytes.reverse() as Bytes;
+  const bigInt = BigInt.fromUnsignedBytes(addressBytesRev);
+  return bigInt;
+};
+
+/**
+ * Apply or undo alias based on Arbitrum smart contract aliasing implementation.
+ * @param input address to which alias is applied
+ * @param reverse if true undo alias
+ * @returns
+ */
+export const applyAlias = (input: Address, reverse: boolean): Address => {
+  let inputBigInt = addressToBigInt(input);
+
+  const offset = Address.fromBytes(Bytes.fromHexString(ADDRESS_ALIAS_OFFSET));
+  let offsetAddressBigInt = addressToBigInt(offset);
+
+  // 2^160 - 1
+  let maxUint160 = BigInt.fromI32(2)
+    .pow(160)
+    .minus(BigInt.fromI32(1));
+
+  let result: Address;
+  if (reverse) {
+    // reverse -> undo alias
+    if (inputBigInt.ge(offsetAddressBigInt)) {
+      result = bigIntToAddress(inputBigInt.minus(offsetAddressBigInt));
+    } else {
+      // handle underflow
+      let diff = offsetAddressBigInt.minus(inputBigInt);
+      let underflowAddress = maxUint160.minus(diff).plus(BigInt.fromI32(1));
+      result = bigIntToAddress(underflowAddress);
+    }
+  } else {
+    // apply alias
+    if (inputBigInt.plus(offsetAddressBigInt).le(maxUint160)) {
+      result = bigIntToAddress(inputBigInt.plus(offsetAddressBigInt));
+    } else {
+      // handle overflow
+      let diff = inputBigInt.plus(offsetAddressBigInt).minus(maxUint160);
+      let overflowAddress = diff.minus(BigInt.fromI32(1));
+      result = bigIntToAddress(overflowAddress);
+    }
+  }
+
+  return result;
 };
 
 export class RetryableTx {
