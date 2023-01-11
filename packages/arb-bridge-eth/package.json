@@ -3,29 +3,23 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen": "yarn prepare:codegen && yarn prepare:mainnet && graph codegen",
-    "build": "yarn prepare:build && yarn prepare:mainnet && graph build",
+    "codegen": "yarn prepare:codegen && yarn prepare:nitro-mainnet && graph codegen",
+    "build": "yarn prepare:build && yarn prepare:nitro-mainnet && graph build",
     "postinstall": "yarn codegen",
-
     "create-local": "graph create --node http://localhost:8020/ arbitrum/arb-bridge-eth-nitro",
     "remove-local": "graph remove --node http://localhost:8020/ arbitrum/arb-bridge-eth-nitro",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 arbitrum/arb-bridge-eth-nitro",
-
+    
     "prepare:codegen": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/src/interface/codegen.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.preprocessed.yaml",
     "prepare:build": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/src/interface/build.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.preprocessed.yaml",
     
-    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:nitro-mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nitro-mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:nova-mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova-mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:nova": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova-mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:nitro-goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:rinkeby": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     
-    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth",
-    "deploy:nitro-mainnet": "yarn build && yarn prepare:nitro-mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nitro",
-    "deploy:nova-mainnet": "yarn build && yarn prepare:nova-mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nova",
-    "deploy:nitro-goerli": "yarn build && yarn prepare:nitro-goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-goerli",
-    "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/arb-bridge-eth-rinkeby",
-
+    "deploy:nitro-mainnet": "yarn prepare:build && yarn prepare:nitro-mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nitro",
+    "deploy:nova": "yarn prepare:build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nova",
+    "deploy:nitro-goerli": "yarn prepare:build && yarn prepare:nitro-goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-goerli",
     "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"
   },
   "dependencies": {

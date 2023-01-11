@@ -7,5 +7,7 @@
     "bridgeAddress": "0xc1ebd02f738644983b6c4b2d440b8e77dde276bd",
     "bridgeDeploymentBlock": 15016829,
     "rollupAddress": "0xfb209827c58283535b744575e11953dcc4bead88",
-    "rollupDeploymentBlock": 15016829
+    "rollupDeploymentBlock": 15016829,
+    "l1GatewayRouter": "0xC840838Bc438d73C16c2f8b22D2Ce3669963cD48",
+    "l1GatewayRouterDeployBlock": 15033094
 }

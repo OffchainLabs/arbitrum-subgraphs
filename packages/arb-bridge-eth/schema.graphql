@@ -27,15 +27,26 @@ enum MessageKind {
 type RawMessage @entity {
   "the inbox sequence number of the current message"
   id: ID!
-  "is this inbox message a regular eth deposit or a retryable"
+  "Nitro message type"
   kind: MessageKind!
-  "message sender, aliased"
+  "message sender"
+  sender: Bytes! # address
+}
+
+type ClassicRawMessage @entity {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "classic message type"
+  kind: MessageKind!
+  "message sender"
   sender: Bytes! # address
 }
 
 type Retryable @entity(immutable: true) {
   "the inbox sequence number of the current message"
   id: ID!
+  "account that created retryable ticket, original address"
+  sender: Bytes! # address
   "is the current retryable a deposit of eth"
   isEthDeposit: Boolean!
   "value sent with message"
@@ -46,6 +57,31 @@ type Retryable @entity(immutable: true) {
   retryableTicketID: Bytes! # bytes32
   "calldata used in L2 call"
   l2Calldata: Bytes!
+  "L1 block timestamp"
+  timestamp: BigInt!
+  "L1 tx retryable is created at"
+  transactionHash: Bytes!
+  "L1 block retryable is created at"
+  blockCreatedAt: BigInt!
+}
+
+type ClassicRetryable @entity(immutable: true) {
+  "the inbox sequence number of the current message"
+  id: ID!
+  "account that created retryable ticket, original address"
+  sender: Bytes! # address
+  "is the current retryable a deposit of eth"
+  isEthDeposit: Boolean!
+  "value sent with message"
+  value: BigInt!
+  "indicates the L2 address destination"
+  destAddr: Bytes! # bytes32
+  "ticket id of retryable"
+  retryableTicketID: Bytes! # bytes32
+  "calldata used in L2 call"
+  l2Calldata: Bytes!
+  "L1 block timestamp"
+  timestamp: BigInt!
   "L1 tx retryable is created at"
   transactionHash: Bytes!
   "L1 block retryable is created at"
@@ -53,20 +89,65 @@ type Retryable @entity(immutable: true) {
 }
 
 type EthDeposit @entity(immutable: true) {
-  "the inbox sequence number of the current message"
+  "txHash-logIndex"
   id: ID!
-  "account that deposited Eth on L1, aliased"
-  senderAliased: Bytes! # address
+  "account that deposited Eth on L1, original address"
+  sender: Bytes! # address
   "indicates the L2 address destination"
   destAddr: Bytes! # address
   "value being deposited to L2 in wei"
   value: BigInt! # uint256
   "abi encoding of dest address + deposit value"
   msgData: Bytes! # bytes
+  "true -> classic; false -> nitro"
+  isClassic: Boolean!
+  "L1 block timestamp"
+  timestamp: BigInt!
   "L1 deposit tx"
   transactionHash: Bytes!
   "L1 block in which Eth is deposited"
   blockCreatedAt: BigInt!
+}
+
+type TokenDeposit @entity(immutable: true) {
+  "txHash-txIndex"
+  id: ID!
+  "token being deposited"
+  l1Token: Token!
+  "account that deposited tokens on L1"
+  from: Bytes! # address
+  "account that receives tokens on L2"
+  to: Bytes! # address
+  "unique id for retryable transaction"
+  sequenceNumber: BigInt! # uint256
+  "amount being deposited on L1"
+  amount: BigInt! # uint256
+  "true -> classic; false -> nitro"
+  isClassic: Boolean!
+  "L1 block timestamp"
+  timestamp: BigInt!
+  "L1 deposit tx"
+  transactionHash: Bytes!
+  "L1 block in which token is deposited"
+  blockCreatedAt: BigInt!
+}
+
+type Gateway @entity {
+  "gateway address"
+  id: ID!
+  "L1 block number in which this gateway was first registered in router"
+  registeredAtBlock: BigInt!
+  "tokens this gateway supports"
+  tokens: [Token!] @derivedFrom(field: "gateway")
+}
+
+type Token @entity {
+  "L1 token address"
+  id: ID!
+  "gateway that supports this token"
+  gateway: Gateway
+  "L1 block number in which this token was first registered in router/gateway"
+  registeredAtBlock: BigInt!
 }
 
 enum NodeStatus {
@@ -78,13 +159,13 @@ enum NodeStatus {
 type Node @entity {
   "node number in hex"
   id: ID!
-  
+
   "hash of information contained in this node"
   nodeHash: Bytes!
-  
+
   "hash of parent node"
   parentHash: Bytes!
-  
+
   "block the node was created"
   blockCreatedAt: BigInt!
 
@@ -99,7 +180,51 @@ type Node @entity {
 
   "A node is created as pending, this is the timestamp in which it was either confirmed or rejected"
   timestampStatusUpdate: BigInt
-  
+
   "confirmation status of node in the rollup"
   status: NodeStatus!
+}
+
+type DefaultGatewayUpdated @entity {
+  id: ID!
+  newDefaultGateway: Bytes! # address
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
+}
+
+type GatewaySet @entity {
+  id: ID!
+  l1Token: Bytes! # address
+  gateway: Bytes! # address
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
+}
+
+type TransferRouted @entity {
+  id: ID!
+  token: Bytes! # address
+  _userFrom: Bytes! # address
+  _userTo: Bytes! # address
+  gateway: Bytes! # address
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
+}
+
+type TxToL2 @entity {
+  id: ID!
+  _from: Bytes! # address
+  _to: Bytes! # address
+  _seqNum: BigInt! # uint256
+  _data: Bytes! # bytes
+}
+
+type WhitelistSourceUpdated @entity {
+  id: ID!
+  newSource: Bytes! # address
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
 }

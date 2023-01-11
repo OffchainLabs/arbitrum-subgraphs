@@ -1,13 +1,19 @@
 {
-    "rollupPreprocessor": "",
+  "rollupPreprocessor": "",
 
-    "l1Network": "{{ l1Network }}",
-    "outboxDeploymentBlock": "{{ outboxDeploymentBlock }}",
-    "outboxAddress": "{{ outboxAddress }}",
-    "inboxDeploymentBlock": "{{ inboxDeploymentBlock }}",
-    "inboxAddress": "{{ inboxAddress }}",
-    "bridgeDeploymentBlock": "{{ bridgeDeploymentBlock }}",
-    "bridgeAddress": "{{ bridgeAddress }}",
-    "rollupAddress": "{{ rollupAddress }}",
-    "rollupDeploymentBlock": "{{ rollupDeploymentBlock }}"
+  "l1Network": "{{ l1Network }}",
+  "outboxDeploymentBlock": "{{ outboxDeploymentBlock }}",
+  "outboxAddress": "{{ outboxAddress }}",
+  "inboxDeploymentBlock": "{{ inboxDeploymentBlock }}",
+  "inboxAddress": "{{ inboxAddress }}",
+  "bridgeDeploymentBlock": "{{ bridgeDeploymentBlock }}",
+  "bridgeAddress": "{{ bridgeAddress }}",
+  "classicBridgeDeploymentBlock": "{{ classicBridgeDeploymentBlock }}",
+  "classicBridgeAddress": "{{ classicBridgeAddress }}",
+  "classicBridgeStart": "{{#classicBridgeAddress}}",
+  "classicBridgeEnd": "{{/classicBridgeAddress}}",
+  "l1GatewayRouter": "{{ l1GatewayRouter }}",
+  "l1GatewayRouterDeployBlock": "{{ l1GatewayRouterDeployBlock }}",
+  "rollupAddress": "{{ rollupAddress }}",
+  "rollupDeploymentBlock": "{{ rollupDeploymentBlock }}"
 }

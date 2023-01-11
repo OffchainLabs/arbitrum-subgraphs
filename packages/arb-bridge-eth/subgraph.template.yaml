@@ -2,6 +2,25 @@ specVersion: 0.0.2
 description: Subgraph that indexes Arbitrum eth-bridge contracts
 schema:
   file: ./schema.graphql
+templates:
+  - name: L1ArbitrumGateway
+    kind: ethereum/contract
+    network: {{ l1Network }}
+    source:
+      abi: L1ArbitrumGateway
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/tokenBridge.ts
+      entities:
+        - L1ArbitrumGateway
+      abis:
+        - name: L1ArbitrumGateway
+          file: ./abis/L1ArbitrumGateway.json
+      eventHandlers:
+        - event: DepositInitiated(address,indexed address,indexed address,indexed uint256,uint256)
+          handler: handleDepositInitiated
 dataSources:
   - kind: ethereum/contract
     name: Outbox
@@ -25,7 +44,7 @@ dataSources:
           handler: handleOutBoxTransactionExecuted
         - event: OutboxEntryCreated(indexed uint256,uint256,bytes32,uint256)
           handler: handleOutboxEntryCreated
-      file: ./src/mapping.ts
+      file: ./src/outbox.ts
   - kind: ethereum/contract
     name: Inbox
     network: {{ l1Network }}
@@ -45,7 +64,7 @@ dataSources:
       eventHandlers:
         - event: InboxMessageDelivered(indexed uint256,bytes)
           handler: handleInboxMessageDelivered
-      file: ./src/mapping.ts
+      file: ./src/bridge.ts
   - kind: ethereum/contract
     name: Bridge
     network: {{ l1Network }}
@@ -63,9 +82,61 @@ dataSources:
         - name: Bridge
           file: ./abis/Bridge.json
       eventHandlers:
-        - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32)
-          handler: handleClassicMessageDelivered
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32,uint256,uint64)
           handler: handleNitroMessageDelivered
-      file: ./src/mapping.ts
+      file: ./src/bridge.ts
+  {{ classicBridgeStart }}
+  - kind: ethereum/contract
+    name: ClassicBridge
+    network: {{ l1Network }}
+    source:
+      address: '{{ classicBridgeAddress }}'
+      abi: Bridge
+      startBlock: {{ classicBridgeDeploymentBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - MessageDelivered
+      abis:
+        - name: Bridge
+          file: ./abis/Bridge.json
+      eventHandlers:
+        - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32)
+          handler: handleClassicMessageDelivered
+      file: ./src/bridge.ts
+  {{{ classicBridgeEnd }}}
+  - kind: ethereum/contract
+    name: L1GatewayRouter
+    network: {{ l1Network }}
+    source:
+      address: "{{ l1GatewayRouter }}"
+      abi: L1GatewayRouter
+      startBlock: {{ l1GatewayRouterDeployBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - DefaultGatewayUpdated
+        - GatewaySet
+        - TransferRouted
+        - TxToL2
+        - WhitelistSourceUpdated
+      abis:
+        - name: L1GatewayRouter
+          file: ./abis/L1GatewayRouter.json
+      eventHandlers:
+        - event: DefaultGatewayUpdated(address)
+          handler: handleDefaultGatewayUpdated
+        - event: GatewaySet(indexed address,indexed address)
+          handler: handleGatewaySet
+        - event: TransferRouted(indexed address,indexed address,indexed address,address)
+          handler: handleTransferRouted
+        - event: TxToL2(indexed address,indexed address,indexed uint256,bytes)
+          handler: handleTxToL2
+        - event: WhitelistSourceUpdated(address)
+          handler: handleWhitelistSourceUpdated
+      file: ./src/tokenBridge.ts
 {{{ rollupPreprocessor }}}
