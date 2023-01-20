@@ -64,7 +64,7 @@ export function handleDefaultGatewayUpdated(event: DefaultGatewayUpdatedEvent): 
   entity.blockNumber = event.block.number;
   entity.save();
 
-  // create deafult gateway and starting indexing it
+  // create deafult gateway entity and start indexing contract
   getOrCreateGateway(event.params.newDefaultGateway, event.block.number);
 }
 
