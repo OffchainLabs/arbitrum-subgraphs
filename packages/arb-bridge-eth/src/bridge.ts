@@ -139,7 +139,7 @@ function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: Ra
     entity.value = decodedTuple[1].toBigInt();
   }
   entity.isClassic = false;
-  entity.timestamp = event.block.number;
+  entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.blockCreatedAt = event.block.number;
   entity.save();
@@ -199,7 +199,7 @@ function handleClassicRetryable(
       deposit.destAddr = retryable.destAddress;
       deposit.value = event.transaction.value;
       deposit.isClassic = true;
-      deposit.timestamp = event.block.number;
+      deposit.timestamp = event.block.timestamp;
       deposit.transactionHash = event.transaction.hash;
       deposit.blockCreatedAt = event.block.number;
       deposit.save();

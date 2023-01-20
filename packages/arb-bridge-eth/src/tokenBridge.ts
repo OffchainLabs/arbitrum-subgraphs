@@ -6,7 +6,7 @@ import {
   WhitelistSourceUpdated,
   TokenDeposit,
 } from "../generated/schema";
-import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { BigInt } from "@graphprotocol/graph-ts";
 import {
   DefaultGatewayUpdated as DefaultGatewayUpdatedEvent,
   GatewaySet as GatewaySetEvent,
@@ -16,7 +16,7 @@ import {
 } from "../generated/L1GatewayRouter/L1GatewayRouter";
 import { DepositInitiated } from "../generated/templates/L1ArbitrumGateway/L1ArbitrumGateway";
 import { getOrCreateGateway, getOrCreateToken } from "./bridgeUtils";
-import { getL2ChainId, isArbOne } from "./utils";
+import { isArbOne } from "./utils";
 
 /**
  * Last token deposit prior to Nitro was in TX 0xbc4324b4fe584f573e82b8b5b458f8303be318bf2bf46b0fc71087146bea4e37.
@@ -59,10 +59,13 @@ export function handleDefaultGatewayUpdated(event: DefaultGatewayUpdatedEvent): 
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
   );
   entity.newDefaultGateway = event.params.newDefaultGateway;
-  entity.timestamp = event.block.number;
+  entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.blockNumber = event.block.number;
   entity.save();
+
+  // create deafult gateway and starting indexing it
+  getOrCreateGateway(event.params.newDefaultGateway, event.block.number);
 }
 
 /**
@@ -73,7 +76,7 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
   let entity = new GatewaySet(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
   entity.l1Token = event.params.l1Token;
   entity.gateway = event.params.gateway;
-  entity.timestamp = event.block.number;
+  entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.blockNumber = event.block.number;
   entity.save();
@@ -95,7 +98,7 @@ export function handleTransferRouted(event: TransferRoutedEvent): void {
   entity._userFrom = event.params._userFrom;
   entity._userTo = event.params._userTo;
   entity.gateway = event.params.gateway;
-  entity.timestamp = event.block.number;
+  entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.blockNumber = event.block.number;
   entity.save();
@@ -123,7 +126,7 @@ export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent)
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
   );
   entity.newSource = event.params.newSource;
-  entity.timestamp = event.block.number;
+  entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.blockNumber = event.block.number;
   entity.save();
