@@ -10,6 +10,7 @@ import { BigInt } from "@graphprotocol/graph-ts";
 import {
   DefaultGatewayUpdated as DefaultGatewayUpdatedEvent,
   GatewaySet as GatewaySetEvent,
+  InitializeCall,
   TransferRouted as TransferRoutedEvent,
   TxToL2 as TxToL2Event,
   WhitelistSourceUpdated as WhitelistSourceUpdatedEvent,
@@ -130,4 +131,13 @@ export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent)
   entity.transactionHash = event.transaction.hash;
   entity.blockNumber = event.block.number;
   entity.save();
+}
+
+/**
+ * Handle one-time call to `initialize` in order to pick up defaultGateway (no event emitted there)
+ * @param call
+ */
+export function handleInitialize(call: InitializeCall): void {
+  // create deafult gateway entity and start indexing contract
+  getOrCreateGateway(call.inputs._defaultGateway, call.block.number);
 }
