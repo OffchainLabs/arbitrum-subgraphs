@@ -138,5 +138,8 @@ dataSources:
           handler: handleTxToL2
         - event: WhitelistSourceUpdated(address)
           handler: handleWhitelistSourceUpdated
+      callHandlers:
+        - function: initialize(address,address,address,address,address)
+          handler: handleInitialize
       file: ./src/tokenBridge.ts
 {{{ rollupPreprocessor }}}
