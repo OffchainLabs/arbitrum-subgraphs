@@ -88,47 +88,35 @@ type ClassicRetryable @entity(immutable: true) {
   blockCreatedAt: BigInt!
 }
 
-type EthDeposit @entity(immutable: true) {
-  "txHash-logIndex"
-  id: ID!
-  "account that deposited Eth on L1, original address"
-  sender: Bytes! # address
-  "indicates the L2 address destination"
-  destAddr: Bytes! # address
-  "value being deposited to L2 in wei"
-  value: BigInt! # uint256
-  "abi encoding of dest address + deposit value"
-  msgData: Bytes! # bytes
-  "true -> classic; false -> nitro"
-  isClassic: Boolean!
-  "L1 block timestamp"
-  timestamp: BigInt!
-  "L1 deposit tx"
-  transactionHash: Bytes!
-  "L1 block in which Eth is deposited"
-  blockCreatedAt: BigInt!
+enum DepositType {
+  EthDeposit
+  TokenDeposit
 }
 
-type TokenDeposit @entity(immutable: true) {
+type Deposit @entity(immutable: true) {
   "txHash-txIndex"
   id: ID!
+  "EthDeposit or TokenDeposit"
+  type: DepositType!
+  "account that deposited funds on L1, original address"
+  sender: Bytes! # address
+  "receiver L2 account"
+  receiver: Bytes! # address
+  "Eth value being deposited in wei"
+  ethValue: BigInt! # uint256
   "token being deposited"
-  l1Token: Token!
-  "account that deposited tokens on L1"
-  from: Bytes! # address
-  "account that receives tokens on L2"
-  to: Bytes! # address
+  l1Token: Token
   "unique id for retryable transaction"
-  sequenceNumber: BigInt! # uint256
-  "amount being deposited on L1"
-  amount: BigInt! # uint256
+  sequenceNumber: BigInt # uint256
+  "token amount being deposited on L1"
+  tokenAmount: BigInt # uint256
   "true -> classic; false -> nitro"
   isClassic: Boolean!
   "L1 block timestamp"
   timestamp: BigInt!
   "L1 deposit tx"
   transactionHash: Bytes!
-  "L1 block in which token is deposited"
+  "L1 block in which deposit is made"
   blockCreatedAt: BigInt!
 }
 
