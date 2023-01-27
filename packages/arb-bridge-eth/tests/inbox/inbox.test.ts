@@ -10,7 +10,7 @@ const RAW_ENTITY_TYPE = "RawMessage";
 const RETRYABLE_ENTITY_TYPE = "Retryable";
 const CLASSIC_RETRYABLE_ENTITY_TYPE = "ClassicRetryable";
 
-const ETH_DEPOSIT_ENTITY_TYPE = "EthDeposit";
+const ETH_DEPOSIT_ENTITY_TYPE = "Deposit";
 const FIRST_NITRO_BLOCK = 15447158;
 
 const TEST_ADDRESS = Address.fromString("ffffffffffffffffffffffffffffffffffffff00");
@@ -190,11 +190,10 @@ test("Can properly decode Eth deposit message data", () => {
     "sender",
     applyAlias(TEST_ADDRESS, true).toHexString()
   );
-  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "msgData", msgData.toHexString());
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
     id,
-    "destAddr",
+    "receiver",
     "0x7AC5E909E4DDDCE3B9ECB7D332F991AC037CB6DD".toLowerCase()
   );
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "value", "400000000000000000");
@@ -228,13 +227,7 @@ test("Can properly decode Eth deposit message data", () => {
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
     id,
-    "msgData",
-    msgDataAddrOneLeadingZero.toHexString()
-  );
-  assert.fieldEquals(
-    ETH_DEPOSIT_ENTITY_TYPE,
-    id,
-    "destAddr",
+    "receiver",
     "0x08A9626DB08E83D2AFEC24523B727F50E362E4B8".toLowerCase()
   );
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "value", "1480000000000000000");
@@ -268,13 +261,7 @@ test("Can properly decode Eth deposit message data", () => {
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
     id,
-    "msgData",
-    msgDataAddrMultipleLeadingZero.toHexString()
-  );
-  assert.fieldEquals(
-    ETH_DEPOSIT_ENTITY_TYPE,
-    id,
-    "destAddr",
+    "receiver",
     "0x000206732258D7511FA624127228E6A032718E62".toLowerCase()
   );
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "value", "18000000000000000000");
@@ -305,11 +292,10 @@ test("Can properly decode Eth deposit message data", () => {
     "sender",
     applyAlias(TEST_ADDRESS, false).toHexString()
   );
-  assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "msgData", msgDataStartEndZeros.toHexString());
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
     id,
-    "destAddr",
+    "receiver",
     "0xf27208f05048cc80388c4edfaa36be458eb1e73f".toLowerCase()
   );
 });

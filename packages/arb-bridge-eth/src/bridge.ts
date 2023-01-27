@@ -6,7 +6,7 @@ import {
 import {
   Retryable,
   RawMessage,
-  EthDeposit,
+  Deposit,
   ClassicRawMessage,
   ClassicRetryable,
 } from "../generated/schema";
@@ -108,14 +108,13 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
 function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
   // we track deposits with EthDeposit entities
   let depositId = event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
-  let entity = new EthDeposit(depositId);
+  let entity = new Deposit(depositId);
+  entity.type = "EthDeposit";
 
   // get sender from preceding MessageDelivered event. Sender is aliased so undo alias before storing address
   const address = Address.fromBytes(rawMessage.sender);
   const undoAliasAddress = applyAlias(address, true);
   entity.sender = undoAliasAddress;
-
-  entity.msgData = event.params.data;
 
   //// get destination address and eth value by parsing the data field
 
@@ -135,9 +134,10 @@ function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: Ra
   const decodedData = ethereum.decode("(address,uint256)", completeData);
   if (decodedData) {
     const decodedTuple = decodedData.toTuple();
-    entity.destAddr = decodedTuple[0].toAddress();
-    entity.value = decodedTuple[1].toBigInt();
+    entity.receiver = decodedTuple[0].toAddress();
+    entity.ethValue = decodedTuple[1].toBigInt();
   }
+  entity.sequenceNumber = event.params.messageNum;
   entity.isClassic = false;
   entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
@@ -188,16 +188,16 @@ function handleClassicRetryable(
       // we track deposits with EthDeposit entities
       let depositId =
         event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
-      let deposit = new EthDeposit(depositId);
+      let deposit = new Deposit(depositId);
+      deposit.type = "EthDeposit";
 
       // get sender from preceding MessageDelivered event. Sender is unaliased so apply alias to get original address before storing it
       const address = Address.fromBytes(rawMessage.sender);
       const applyAliasAddress = applyAlias(address, false);
       deposit.sender = applyAliasAddress;
-
-      deposit.msgData = event.params.data;
-      deposit.destAddr = retryable.destAddress;
-      deposit.value = event.transaction.value;
+      deposit.receiver = retryable.destAddress;
+      deposit.ethValue = event.transaction.value;
+      deposit.sequenceNumber = event.params.messageNum;
       deposit.isClassic = true;
       deposit.timestamp = event.block.timestamp;
       deposit.transactionHash = event.transaction.hash;

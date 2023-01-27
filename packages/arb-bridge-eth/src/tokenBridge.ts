@@ -4,7 +4,7 @@ import {
   TransferRouted,
   TxToL2,
   WhitelistSourceUpdated,
-  TokenDeposit,
+  Deposit,
 } from "../generated/schema";
 import { BigInt } from "@graphprotocol/graph-ts";
 import {
@@ -33,10 +33,12 @@ export function handleDepositInitiated(event: DepositInitiated): void {
   let tokenDepositId =
     event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
 
-  let tokenDeposit = new TokenDeposit(tokenDepositId);
-  tokenDeposit.amount = event.params._amount;
-  tokenDeposit.from = event.params._from;
-  tokenDeposit.to = event.params._to;
+  let tokenDeposit = new Deposit(tokenDepositId);
+  tokenDeposit.type = "TokenDeposit";
+  tokenDeposit.tokenAmount = event.params._amount;
+  tokenDeposit.sender = event.params._from;
+  tokenDeposit.receiver = event.params._to;
+  tokenDeposit.ethValue = BigInt.fromI32(0);
   tokenDeposit.sequenceNumber = event.params._sequenceNumber;
   tokenDeposit.l1Token = getOrCreateToken(event.params.l1Token, event.block.number).id;
 
