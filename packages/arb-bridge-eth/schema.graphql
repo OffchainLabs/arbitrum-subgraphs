@@ -132,6 +132,12 @@ type Gateway @entity {
 type Token @entity {
   "L1 token address"
   id: ID!
+  "token name"
+  name: String
+  "token symbol"
+  symbol: String
+  "number of decimals"
+  decimals: Int
   "gateway that supports this token"
   gateway: Gateway
   "L1 block number in which this token was first registered in router/gateway"
