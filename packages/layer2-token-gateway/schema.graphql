@@ -141,3 +141,33 @@ type L2ToL1Transaction @entity {
   # disabled to keep consistent with L1ToL2 flow
   # gatewayWithdrawalData: [GatewayWithdrawalData!] @derivedFrom(field: "l2ToL1Event")
 }
+
+enum WithdrawalType {
+  EthWithdrawal
+  TokenWithdrawal
+}
+
+type Withdrawal @entity(immutable: true) {
+  "txHash-txIndex"
+  id: ID!
+  "EthWithdrawal or TokenWithdrawal"
+  type: WithdrawalType!
+  "account withdrawing funds to L1, original address"
+  sender: Bytes! # address
+  "receiver L1 account"
+  receiver: Bytes! # address
+  "Eth value being withdrawn in wei"
+  ethValue: BigInt! # uint256
+  "token being withdrawn"
+  l1Token: Token
+  "token amount being withdrawn to L1"
+  tokenAmount: BigInt # uint256
+  "true -> classic; false -> nitro"
+  isClassic: Boolean!
+  "L2 block timestamp"
+  l2BlockTimestamp: BigInt!
+  "L2 withdrawal tx"
+  l2TxHash: Bytes!
+  "block in which the event was emitted"
+  l2BlockNum: BigInt!
+}
