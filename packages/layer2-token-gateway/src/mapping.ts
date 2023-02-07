@@ -1,7 +1,4 @@
-import {
-  GatewaySet as GatewaySetEvent,
-  TxToL1,
-} from "../generated/L2GatewayRouter/L2GatewayRouter";
+import { GatewaySet as GatewaySetEvent } from "../generated/L2GatewayRouter/L2GatewayRouter";
 import { L2ToL1Transaction as ClassicL2ToL1TransactionEvent } from "../generated/ClassicArbSys/ClassicArbSys";
 import { L2ToL1Tx as NitroL2ToL1TxEvent } from "../generated/NitroArbSys/NitroArbSys";
 import { TicketCreated as NitroTicketCreatedEvent } from "../generated/NitroArbRetryableTx/NitroArbRetryableTx";
@@ -18,10 +15,13 @@ import {
   GatewayWithdrawalData,
   L1ToL2Transaction,
   GatewayDepositData,
+  Withdrawal,
 } from "../generated/schema";
-import { Address, BigInt, ethereum, Bytes, log } from "@graphprotocol/graph-ts";
+import { Address, BigInt, ethereum, log } from "@graphprotocol/graph-ts";
 import { addressToId, bigIntToId, getJoinId, isNitro, L2_STD_GATEWAY } from "./util";
 import { parseRetryableInput } from "./abi";
+
+const NITRO_GENESIS_BLOCK = 22207817;
 
 const processTokenGatewayPair = (
   l2Gateway: Address,
@@ -87,19 +87,34 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
 
   const join = processTokenGatewayPair(gatewayAddr, event.params.l1Token, event.block);
 
+  /// create GatewayWithdrawalData entity
   const withdrawalId = bigIntToId(event.params._l2ToL1Id);
-  const withdrawal = new GatewayWithdrawalData(withdrawalId);
-
-  withdrawal.from = event.params._from;
-  withdrawal.to = event.params._to;
-  withdrawal.amount = event.params._amount;
-  withdrawal.exitNum = event.params._exitNum;
-  withdrawal.l2TxHash = event.transaction.hash;
-  withdrawal.l2BlockNum = event.block.number;
+  const gatewayWithdrawalData = new GatewayWithdrawalData(withdrawalId);
+  gatewayWithdrawalData.from = event.params._from;
+  gatewayWithdrawalData.to = event.params._to;
+  gatewayWithdrawalData.amount = event.params._amount;
+  gatewayWithdrawalData.exitNum = event.params._exitNum;
+  gatewayWithdrawalData.l2TxHash = event.transaction.hash;
+  gatewayWithdrawalData.l2BlockNum = event.block.number;
   // disabled for consistency with deposit
   // withdrawal.l2ToL1Event = withdrawalId
-  withdrawal.tokenGatewayJoin = join.id;
+  gatewayWithdrawalData.tokenGatewayJoin = join.id;
+  gatewayWithdrawalData.save();
 
+  /// additionally create Withdrawal entity which tracks both Eth and token withdrawals
+  const withdrawal = new Withdrawal(
+    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString()
+  );
+  withdrawal.type = "TokenWithdrawal";
+  withdrawal.sender = event.params._from;
+  withdrawal.receiver = event.params._to;
+  withdrawal.ethValue = BigInt.fromI32(0);
+  withdrawal.l1Token = join.token;
+  withdrawal.tokenAmount = event.params._amount;
+  withdrawal.isClassic = isClassic(event.block.number);
+  withdrawal.l2TxHash = event.transaction.hash;
+  withdrawal.l2BlockNum = event.block.number;
+  withdrawal.l2BlockTimestamp = event.block.timestamp;
   withdrawal.save();
 }
 
@@ -209,8 +224,21 @@ export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
   entity.l1Calldata = event.params.data;
   entity.isClassic = false;
   entity.l2TxHash = event.transaction.hash;
-
   entity.save();
+
+  /// additionally create Withdrawal entity which tracks both Eth and token withdrawals
+  const withdrawal = new Withdrawal(
+    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString()
+  );
+  withdrawal.type = "EthWithdrawal";
+  withdrawal.sender = event.params.caller;
+  withdrawal.receiver = event.params.destination;
+  withdrawal.ethValue = event.params.callvalue;
+  withdrawal.isClassic = false;
+  withdrawal.l2TxHash = event.transaction.hash;
+  withdrawal.l2BlockNum = event.block.number;
+  withdrawal.l2BlockTimestamp = event.block.timestamp;
+  withdrawal.save();
 }
 
 export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEvent): void {
@@ -242,6 +270,23 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
   entity.l1Calldata = event.params.data;
   entity.isClassic = true;
   entity.l2TxHash = event.transaction.hash;
-
   entity.save();
+
+  /// additionally create Withdrawal entity which tracks both Eth and token withdrawals
+  const withdrawal = new Withdrawal(
+    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString()
+  );
+  withdrawal.type = "EthWithdrawal";
+  withdrawal.sender = event.params.caller;
+  withdrawal.receiver = event.params.destination;
+  withdrawal.ethValue = event.params.callvalue;
+  withdrawal.isClassic = true;
+  withdrawal.l2TxHash = event.transaction.hash;
+  withdrawal.l2BlockNum = event.block.number;
+  withdrawal.l2BlockTimestamp = event.block.timestamp;
+  withdrawal.save();
+}
+
+function isClassic(blockNumber: BigInt): boolean {
+  return blockNumber.lt(BigInt.fromI32(NITRO_GENESIS_BLOCK));
 }
