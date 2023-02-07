@@ -18,6 +18,8 @@ templates:
       abis:
         - name: L1ArbitrumGateway
           file: ./abis/L1ArbitrumGateway.json
+        - name: IERC20
+          file: ./abis/IERC20.json
       eventHandlers:
         - event: DepositInitiated(address,indexed address,indexed address,indexed uint256,uint256)
           handler: handleDepositInitiated
@@ -61,6 +63,8 @@ dataSources:
       abis:
         - name: Inbox
           file: ./abis/Inbox.json
+        - name: IERC20
+          file: ./abis/IERC20.json
       eventHandlers:
         - event: InboxMessageDelivered(indexed uint256,bytes)
           handler: handleInboxMessageDelivered
@@ -81,6 +85,8 @@ dataSources:
       abis:
         - name: Bridge
           file: ./abis/Bridge.json
+        - name: IERC20
+          file: ./abis/IERC20.json
       eventHandlers:
         - event: MessageDelivered(indexed uint256,indexed bytes32,address,uint8,address,bytes32,uint256,uint64)
           handler: handleNitroMessageDelivered
@@ -127,6 +133,8 @@ dataSources:
       abis:
         - name: L1GatewayRouter
           file: ./abis/L1GatewayRouter.json
+        - name: IERC20
+          file: ./abis/IERC20.json
       eventHandlers:
         - event: DefaultGatewayUpdated(address)
           handler: handleDefaultGatewayUpdated

@@ -1,6 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { Gateway, Token } from "../generated/schema";
 import { L1ArbitrumGateway } from "../generated/templates";
+import { IERC20 } from "../generated/Bridge/IERC20";
 
 export function getOrCreateGateway(gatewayAddress: Address, blockNumber: BigInt): Gateway {
   let gateway = Gateway.load(gatewayAddress.toHexString());
@@ -27,6 +28,22 @@ export function getOrCreateToken(tokenAddress: Address, blockNumber: BigInt): To
 
   // create new Token entity
   token = new Token(tokenAddress.toHexString());
+
+  // fetch data doing one time contract calls
+  let tokenInstance = IERC20.bind(tokenAddress);
+  let tryName = tokenInstance.try_name();
+  if (!tryName.reverted) {
+    token.name = tryName.value;
+  }
+  let trySymbol = tokenInstance.try_symbol();
+  if (!trySymbol.reverted) {
+    token.symbol = trySymbol.value;
+  }
+  let tryDecimals = tokenInstance.try_decimals();
+  if (!tryDecimals.reverted) {
+    token.decimals = tryDecimals.value;
+  }
+
   token.registeredAtBlock = blockNumber;
   token.save();
 
