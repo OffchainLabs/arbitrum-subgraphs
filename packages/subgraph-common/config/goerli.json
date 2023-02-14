@@ -16,5 +16,6 @@
   "rollupAddress": "0x45e5caea8768f42b385a366d3551ad1e0cbfab17",
   "rollupDeploymentBlock": 7217526,
   "l1GatewayRouter": "0x4c7708168395aEa569453Fc36862D2ffcDaC588c",
-  "l1GatewayRouterDeployBlock": 7223070
+  "l1GatewayRouterDeployBlock": 7223070,
+  "nitroGenesisBlockNum": 0
 }
