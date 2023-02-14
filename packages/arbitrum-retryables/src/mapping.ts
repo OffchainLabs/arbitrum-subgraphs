@@ -1,4 +1,4 @@
-import { Retryable } from "../generated/schema";
+import { Retryable, TotalRetryableStats } from "../generated/schema";
 import {
   Canceled,
   LifetimeExtended,
@@ -6,7 +6,7 @@ import {
   TicketCreated,
   ArbRetryableTx as ArbRetryableTxContract,
 } from "../generated/ArbRetryableTx/ArbRetryableTx";
-import { Address, Bytes, log } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts";
 import { RETRYABLE_LIFETIME_SECONDS } from "@arbitrum/subgraph-common/src/helpers";
 
 /**
@@ -22,6 +22,10 @@ export function handleTicketCreated(event: TicketCreated): void {
   entity.createdAtBlockNumber = event.block.number;
   entity.createdAtTxHash = event.transaction.hash;
   entity.save();
+
+  const stats = getOrCreateTotalRetryableStats();
+  stats.totalCreated = stats.totalCreated.plus(BigInt.fromI32(1));
+  stats.save();
 }
 
 /**
@@ -37,6 +41,10 @@ export function handleCanceled(event: Canceled): void {
   }
   entity.status = "Canceled";
   entity.save();
+
+  const stats = getOrCreateTotalRetryableStats();
+  stats.canceled = stats.canceled.plus(BigInt.fromI32(1));
+  stats.save();
 }
 
 /**
@@ -66,20 +74,31 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
     log.critical("Missed a retryable ticket somewhere!", []);
     throw new Error("No retryable ticket");
   }
-  entity.retryTxHash = event.params.retryTxHash;
 
+  const stats = getOrCreateTotalRetryableStats();
+
+  const prevStatus = entity.status;
   const redeemSuccessful = isRedeemSuccessful(ArbRetryableTxContract.bind(event.address), ticketId);
   if (redeemSuccessful) {
-    if (entity.status == "Created") {
+    if (prevStatus == "Created") {
       entity.isAutoRedeemed = true;
+      stats.autoRedeemed = stats.autoRedeemed.plus(BigInt.fromI32(1));
+    }
+    if (prevStatus == "RedeemFailed") {
+      stats.failedToRedeem = stats.failedToRedeem.minus(BigInt.fromI32(1));
     }
     entity.status = "Redeemed";
     entity.redeemedAtTimestamp = event.block.timestamp;
+    stats.successfullyRedeemed = stats.successfullyRedeemed.plus(BigInt.fromI32(1));
   } else {
+    if (prevStatus != "RedeemFailed") {
+      stats.failedToRedeem = stats.failedToRedeem.plus(BigInt.fromI32(1));
+    }
     entity.isAutoRedeemed = false;
     entity.status = "RedeemFailed";
   }
 
+  entity.retryTxHash = event.params.retryTxHash;
   entity.sequenceNum = event.params.sequenceNum;
   entity.donatedGas = event.params.donatedGas;
   entity.gasDonor = event.params.gasDonor;
@@ -87,9 +106,27 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
   entity.submissionFeeRefund = event.params.submissionFeeRefund;
 
   entity.save();
+  stats.save();
 }
 
 function isRedeemSuccessful(contract: ArbRetryableTxContract, ticketId: Bytes): boolean {
   const beneficiaryCall = contract.try_getBeneficiary(ticketId);
   return beneficiaryCall.reverted;
+}
+
+function getOrCreateTotalRetryableStats(): TotalRetryableStats {
+  let stats = TotalRetryableStats.load("NitroStats");
+  if (stats != null) {
+    return stats as TotalRetryableStats;
+  }
+
+  stats = new TotalRetryableStats("NitroStats");
+  stats.totalCreated = BigInt.fromI32(0);
+  stats.autoRedeemed = BigInt.fromI32(0);
+  stats.successfullyRedeemed = BigInt.fromI32(0);
+  stats.failedToRedeem = BigInt.fromI32(0);
+  stats.canceled = BigInt.fromI32(0);
+  stats.save();
+
+  return stats;
 }
