@@ -27,12 +27,25 @@ type Retryable @entity {
   "true if 1st reedem was successful"
   isAutoRedeemed: Boolean
 
-  "retryable execution params"
+  "retryable execution params from event"
   sequenceNum: BigInt
   donatedGas: BigInt
   gasDonor: Bytes #Address
   maxRefund: BigInt
   submissionFeeRefund: BigInt
+
+  "retryable submission params from tx input"
+  requestId: Bytes
+  l1BaseFee: BigInt
+  deposit: BigInt
+  callvalue: BigInt
+  gasFeeCap: BigInt
+  gasLimit: BigInt
+  maxSubmissionFee: BigInt
+  feeRefundAddress: String
+  beneficiary: String
+  retryTo: String
+  retryData: Bytes
 }
 
 type TotalRetryableStats @entity {

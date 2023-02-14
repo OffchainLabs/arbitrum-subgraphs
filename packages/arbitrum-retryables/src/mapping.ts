@@ -6,7 +6,7 @@ import {
   TicketCreated,
   ArbRetryableTx as ArbRetryableTxContract,
 } from "../generated/ArbRetryableTx/ArbRetryableTx";
-import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 import { RETRYABLE_LIFETIME_SECONDS } from "@arbitrum/subgraph-common/src/helpers";
 
 /**
@@ -104,9 +104,11 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
   entity.gasDonor = event.params.gasDonor;
   entity.maxRefund = event.params.maxRefund;
   entity.submissionFeeRefund = event.params.submissionFeeRefund;
-
   entity.save();
   stats.save();
+
+  // decode and save retyrable submission param
+  decodeRetryableParamsFromTxInput(entity, event.transaction.input);
 }
 
 function isRedeemSuccessful(contract: ArbRetryableTxContract, ticketId: Bytes): boolean {
@@ -129,4 +131,34 @@ function getOrCreateTotalRetryableStats(): TotalRetryableStats {
   stats.save();
 
   return stats;
+}
+
+function decodeRetryableParamsFromTxInput(entity: Retryable, calldata: Bytes): void {
+  // take out function sig and add tuple offset as prefix
+  const noSigCalldataStr = calldata.toHexString().slice(10);
+  const prefixNoSigCalldataStr =
+    "0x0000000000000000000000000000000000000000000000000000000000000020" + noSigCalldataStr;
+  const toDecode = Bytes.fromByteArray(Bytes.fromHexString(prefixNoSigCalldataStr));
+
+  const decoded = ethereum.decode(
+    "(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)",
+    toDecode
+  );
+
+  if (decoded) {
+    const parsedArray = decoded.toTuple();
+
+    entity.requestId = parsedArray[0].toBytes();
+    entity.l1BaseFee = parsedArray[1].toBigInt();
+    entity.deposit = parsedArray[2].toBigInt();
+    entity.callvalue = parsedArray[3].toBigInt();
+    entity.gasFeeCap = parsedArray[4].toBigInt();
+    entity.gasLimit = parsedArray[5].toBigInt();
+    entity.maxSubmissionFee = parsedArray[6].toBigInt();
+    entity.feeRefundAddress = parsedArray[7].toAddress().toHexString();
+    entity.beneficiary = parsedArray[8].toAddress().toHexString();
+    entity.retryTo = parsedArray[9].toAddress().toHexString();
+    entity.retryData = parsedArray[10].toBytes();
+    entity.save();
+  }
 }
