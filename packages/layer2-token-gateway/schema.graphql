@@ -167,7 +167,7 @@ type Withdrawal @entity(immutable: true) {
   "L2 block timestamp"
   l2BlockTimestamp: BigInt!
   "L2 withdrawal tx"
-  l2TxHash: Bytes!
+  l2TxHash: String!
   "block in which the event was emitted"
   l2BlockNum: BigInt!
 }

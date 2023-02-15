@@ -48,7 +48,7 @@ export function handleDepositInitiated(event: DepositInitiated): void {
   }
   tokenDeposit.isClassic = event.block.number.lt(BigInt.fromI32(firstNitroBlock));
   tokenDeposit.timestamp = event.block.timestamp;
-  tokenDeposit.transactionHash = event.transaction.hash;
+  tokenDeposit.transactionHash = event.transaction.hash.toHexString();
   tokenDeposit.blockCreatedAt = event.block.number;
   tokenDeposit.save();
 }

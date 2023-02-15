@@ -112,7 +112,7 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
   withdrawal.l1Token = join.token;
   withdrawal.tokenAmount = event.params._amount;
   withdrawal.isClassic = isClassic(event.block.number);
-  withdrawal.l2TxHash = event.transaction.hash;
+  withdrawal.l2TxHash = event.transaction.hash.toHexString();
   withdrawal.l2BlockNum = event.block.number;
   withdrawal.l2BlockTimestamp = event.block.timestamp;
   withdrawal.save();
@@ -235,7 +235,7 @@ export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
   withdrawal.receiver = event.params.destination;
   withdrawal.ethValue = event.params.callvalue;
   withdrawal.isClassic = false;
-  withdrawal.l2TxHash = event.transaction.hash;
+  withdrawal.l2TxHash = event.transaction.hash.toHexString();
   withdrawal.l2BlockNum = event.block.number;
   withdrawal.l2BlockTimestamp = event.block.timestamp;
   withdrawal.save();
@@ -281,7 +281,7 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
   withdrawal.receiver = event.params.destination;
   withdrawal.ethValue = event.params.callvalue;
   withdrawal.isClassic = true;
-  withdrawal.l2TxHash = event.transaction.hash;
+  withdrawal.l2TxHash = event.transaction.hash.toHexString();
   withdrawal.l2BlockNum = event.block.number;
   withdrawal.l2BlockTimestamp = event.block.timestamp;
   withdrawal.save();
