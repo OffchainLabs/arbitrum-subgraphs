@@ -140,7 +140,7 @@ function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: Ra
   entity.sequenceNumber = event.params.messageNum;
   entity.isClassic = false;
   entity.timestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
+  entity.transactionHash = event.transaction.hash.toHexString();
   entity.blockCreatedAt = event.block.number;
   entity.save();
 
@@ -200,7 +200,7 @@ function handleClassicRetryable(
       deposit.sequenceNumber = event.params.messageNum;
       deposit.isClassic = true;
       deposit.timestamp = event.block.timestamp;
-      deposit.transactionHash = event.transaction.hash;
+      deposit.transactionHash = event.transaction.hash.toHexString();
       deposit.blockCreatedAt = event.block.number;
       deposit.save();
     }

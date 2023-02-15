@@ -115,7 +115,7 @@ type Deposit @entity(immutable: true) {
   "L1 block timestamp"
   timestamp: BigInt!
   "L1 deposit tx"
-  transactionHash: Bytes!
+  transactionHash: String!
   "L1 block in which deposit is made"
   blockCreatedAt: BigInt!
 }
