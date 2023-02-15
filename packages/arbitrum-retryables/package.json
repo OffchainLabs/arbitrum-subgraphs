@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen": "graph codegen",
-    "build": "graph build",
+    "codegen": "yarn prepare:arb && graph codegen",
+    "build": "yarn prepare:arb && graph build",
     "postinstall": "yarn codegen",
 
     "prepare:arb": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nitro-mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
