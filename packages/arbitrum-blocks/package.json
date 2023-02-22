@@ -1,0 +1,23 @@
+{
+  "name": "arbitrum-blocks",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "postinstall": "yarn codegen",
+
+    "prepare:arb": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nitro-mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:nova": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+
+    "deploy:arb": "yarn build && yarn prepare:arb && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arbitrum-blocks",
+    "deploy:nova": "yarn build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arbitrum-blocks-nova",
+    "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arbitrum-blocks-goerli"
+  },
+  "dependencies": {
+    "@arbitrum/subgraph-common": "0.0.1",
+    "@graphprotocol/graph-cli": "0.30.3",
+    "@graphprotocol/graph-ts": "0.27.0"
+  }
+}
