@@ -11,7 +11,14 @@ import {
   ClassicRetryable,
 } from "../generated/schema";
 import { Bytes, BigInt, ethereum, Address, log, store } from "@graphprotocol/graph-ts";
-import { applyAlias, bigIntToId, getL2RetryableTicketId, isArbOne, RetryableTx } from "./utils";
+import {
+  applyAlias,
+  bigIntToId,
+  getL2NitroRetryableTicketId,
+  getL2RetryableTicketId,
+  isArbOne,
+  RetryableTx,
+} from "./utils";
 
 const ARB_ONE_INBOX_FIRST_NITRO_BLOCK = 15447158;
 
@@ -155,13 +162,14 @@ function handleNitroRetryable(event: InboxMessageDeliveredEvent, rawMessage: Raw
   if (retryable) {
     let entity = new Retryable(id);
     // get sender from preceding MessageDelivered event. Sender is aliased so undo alias before storing address
-    const address = Address.fromBytes(rawMessage.sender);
-    const undoAliasAddress = applyAlias(address, true);
+    const messageSenderAddress = Address.fromBytes(rawMessage.sender);
+    const undoAliasAddress = applyAlias(messageSenderAddress, true);
     entity.sender = undoAliasAddress;
 
     entity.value = event.transaction.value;
     entity.isEthDeposit = retryable.dataLength == BigInt.zero();
-    entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
+
+    entity.retryableTicketID = getL2NitroRetryableTicketId(event, retryable, messageSenderAddress);
     entity.destAddr = retryable.destAddress;
     entity.l2Calldata = retryable.data;
     entity.timestamp = event.block.timestamp;
