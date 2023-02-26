@@ -5,6 +5,8 @@ import {
   TxToL2,
   WhitelistSourceUpdated,
   Deposit,
+  Retryable,
+  ClassicRetryable,
 } from "../generated/schema";
 import { BigInt } from "@graphprotocol/graph-ts";
 import {
@@ -47,6 +49,7 @@ export function handleDepositInitiated(event: DepositInitiated): void {
     firstNitroBlock = ARB_ONE_BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT + 1;
   }
   tokenDeposit.isClassic = event.block.number.lt(BigInt.fromI32(firstNitroBlock));
+  tokenDeposit.retryable = getRetryableRef(event.params._sequenceNumber, tokenDeposit.isClassic);
   tokenDeposit.timestamp = event.block.timestamp;
   tokenDeposit.transactionHash = event.transaction.hash.toHexString();
   tokenDeposit.blockCreatedAt = event.block.number;
@@ -142,4 +145,20 @@ export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent)
 export function handleInitialize(call: InitializeCall): void {
   // create deafult gateway entity and start indexing contract
   getOrCreateGateway(call.inputs._defaultGateway, call.block.number);
+}
+
+function getRetryableRef(seqNumber: BigInt, isClassic: boolean): string | null {
+  if (isClassic) {
+    const ticket = ClassicRetryable.load(seqNumber.toHexString());
+    if (ticket) {
+      return ticket.id;
+    }
+  } else {
+    const ticket = Retryable.load(seqNumber.toHexString());
+    if (ticket) {
+      return ticket.id;
+    }
+  }
+
+  return null;
 }

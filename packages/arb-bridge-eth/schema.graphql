@@ -108,6 +108,8 @@ type Deposit @entity(immutable: true) {
   l1Token: Token
   "unique id for retryable transaction"
   sequenceNumber: BigInt # uint256
+  "retryable ref if deposit is made using retryable ticket"
+  retryable: Retryable
   "token amount being deposited on L1"
   tokenAmount: BigInt # uint256
   "true -> classic; false -> nitro"
