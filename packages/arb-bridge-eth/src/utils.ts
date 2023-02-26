@@ -11,6 +11,7 @@ import {
 import { encodePadded, padBytes } from "@arbitrum/subgraph-common";
 import { getBytes, rlpEncodeList } from "./rlp";
 import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
+import { Inbox } from "../generated/schema";
 
 const NOVA_INBOX_ADDRESS = "0xc4448b71118c9071bcb9734a0eac55d18a153949";
 const ADDRESS_ALIAS_OFFSET = "0x1111000000000000000000000000000000001111";
@@ -25,7 +26,7 @@ export const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
   if (network == "mainnet") {
     // determine if L2 is Nova
-    if (dataSource.address().toHexString() == NOVA_INBOX_ADDRESS) {
+    if (Inbox.load(NOVA_INBOX_ADDRESS) != null) {
       return Bytes.fromByteArray(Bytes.fromHexString("0xa4ba"));
     } else {
       // Arb One

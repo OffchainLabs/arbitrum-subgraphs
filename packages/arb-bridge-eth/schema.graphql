@@ -224,3 +224,7 @@ type WhitelistSourceUpdated @entity {
   transactionHash: Bytes!
   blockNumber: BigInt!
 }
+
+type Inbox @entity {
+  id: ID!
+}

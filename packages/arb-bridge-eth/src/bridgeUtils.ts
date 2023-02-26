@@ -1,5 +1,5 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
-import { Gateway, Token } from "../generated/schema";
+import { Gateway, Inbox, Token } from "../generated/schema";
 import { L1ArbitrumGateway } from "../generated/templates";
 import { IERC20 } from "../generated/Bridge/IERC20";
 
@@ -48,4 +48,14 @@ export function getOrCreateToken(tokenAddress: Address, blockNumber: BigInt): To
   token.save();
 
   return token;
+}
+
+export function getOrCreateInbox(inboxAddress: Address): Inbox {
+  let inbox = Inbox.load(inboxAddress.toHexString());
+  if (inbox != null) {
+    return inbox as Inbox;
+  }
+  inbox = new Inbox(inboxAddress.toHexString());
+  inbox.save();
+  return inbox;
 }

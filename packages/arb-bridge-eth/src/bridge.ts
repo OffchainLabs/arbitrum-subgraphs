@@ -19,6 +19,7 @@ import {
   isArbOne,
   RetryableTx,
 } from "./utils";
+import { getOrCreateInbox } from "./bridgeUtils";
 
 const ARB_ONE_INBOX_FIRST_NITRO_BLOCK = 15447158;
 
@@ -65,6 +66,8 @@ function handleMessageDelivered(
 ////////////////////// Inbox events
 
 export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): void {
+  getOrCreateInbox(event.address);
+
   // TODO: handle `InboxMessageDeliveredFromOrigin(indexed uint256)`. Same as this function, but use event.tx.input instead of event data
   const id = bigIntToId(event.params.messageNum);
 
