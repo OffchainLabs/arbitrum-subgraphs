@@ -62,7 +62,7 @@ export function rlpEncodeList(items: ByteArray[]): ByteArray {
     return concatBytes(prefix, encodedItems);
   } else {
     const lengthBytes = getLengthBytes(encodedItems.byteLength);
-    prefix[0] = 0xf7 + +lengthBytes.byteLength;
+    prefix[0] = 0xf7 + lengthBytes.byteLength;
     const strLength = getBytes(BigInt.fromU32(encodedItems.byteLength));
     return concatBytes(
       concatBytes(
