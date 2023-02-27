@@ -23,6 +23,9 @@ export function handleTicketCreated(event: TicketCreated): void {
   entity.createdAtTxHash = event.transaction.hash;
   entity.save();
 
+  // decode and save retyrable submission param
+  decodeRetryableParamsFromTxInput(entity, event.transaction.input);
+
   const stats = getOrCreateTotalRetryableStats();
   stats.totalCreated = stats.totalCreated.plus(BigInt.fromI32(1));
   stats.save();
@@ -106,9 +109,6 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
   entity.submissionFeeRefund = event.params.submissionFeeRefund;
   entity.save();
   stats.save();
-
-  // decode and save retyrable submission param
-  decodeRetryableParamsFromTxInput(entity, event.transaction.input);
 }
 
 function isRedeemSuccessful(contract: ArbRetryableTxContract, ticketId: Bytes): boolean {
