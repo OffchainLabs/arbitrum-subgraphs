@@ -91,7 +91,10 @@ export const getL2NitroRetryableTicketId = (
   const l1Value: ByteArray = getBytes(event.transaction.value);
   const maxFeePerGas: ByteArray = getBytes(retryable.gasPriceBid);
   const gasLimit: ByteArray = getBytes(retryable.maxGas);
-  const destAddress: ByteArray = ByteArray.fromHexString(retryable.destAddress.toHexString());
+  const destAddressString: string = retryable.destAddress.toHexString();
+  const destAddress: ByteArray = ByteArray.fromHexString(
+    destAddressString == "0x0000000000000000000000000000000000000000" ? "0x" : destAddressString
+  );
   const l2CallValue: ByteArray = getBytes(retryable.l2CallValue);
   const callValueRefundAddress: ByteArray = ByteArray.fromHexString(
     retryable.callValueRefundAddress.toHexString()
