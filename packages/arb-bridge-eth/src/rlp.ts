@@ -5,7 +5,30 @@ export function getBytes(num: BigInt): ByteArray {
     return new ByteArray(0);
   }
   const reverse = Bytes.fromUint8Array(Bytes.fromBigInt(num).reverse());
-  return reverse;
+  const stripped = stripZeros(reverse);
+
+  return stripped;
+}
+
+function stripZeros(bytes: Bytes): Bytes {
+  // Find the first non-zero byte
+  let firstNonZeroByteIndex = 0;
+  while (firstNonZeroByteIndex < bytes.byteLength && bytes[firstNonZeroByteIndex] == 0) {
+    firstNonZeroByteIndex++;
+  }
+
+  // If all bytes are zero, return a byte array with a single zero byte
+  if (firstNonZeroByteIndex == bytes.length) {
+    return new Bytes(1);
+  }
+
+  // Create a new byte array with only the non-zero bytes
+  let strippedBytes = new Bytes(bytes.length - firstNonZeroByteIndex);
+  for (let i = 0; i < strippedBytes.length; i++) {
+    strippedBytes[i] = bytes[firstNonZeroByteIndex + i];
+  }
+
+  return strippedBytes;
 }
 
 function encodeItem(item: ByteArray): ByteArray {
