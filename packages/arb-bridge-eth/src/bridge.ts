@@ -169,7 +169,7 @@ function handleNitroRetryable(event: InboxMessageDeliveredEvent, rawMessage: Raw
     const undoAliasAddress = applyAlias(messageSenderAddress, true);
     entity.sender = undoAliasAddress;
 
-    entity.value = event.transaction.value;
+    entity.value = retryable.l1CallValue;
     entity.isEthDeposit = retryable.dataLength == BigInt.zero();
 
     entity.retryableTicketID = getL2NitroRetryableTicketId(event, retryable, messageSenderAddress);
