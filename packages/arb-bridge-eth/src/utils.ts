@@ -9,6 +9,9 @@ import {
   ByteArray,
 } from "@graphprotocol/graph-ts";
 import { encodePadded, padBytes } from "@arbitrum/subgraph-common";
+import { getBytes, rlpEncodeList } from "./rlp";
+import { InboxMessageDelivered as InboxMessageDeliveredEvent } from "../generated/Inbox/Inbox";
+import { Inbox } from "../generated/schema";
 
 const NOVA_INBOX_ADDRESS = "0xc4448b71118c9071bcb9734a0eac55d18a153949";
 const ADDRESS_ALIAS_OFFSET = "0x1111000000000000000000000000000000001111";
@@ -23,7 +26,7 @@ export const getL2ChainId = (): Bytes => {
   const network = dataSource.network();
   if (network == "mainnet") {
     // determine if L2 is Nova
-    if (dataSource.address().toHexString() == NOVA_INBOX_ADDRESS) {
+    if (Inbox.load(NOVA_INBOX_ADDRESS) != null) {
       return Bytes.fromByteArray(Bytes.fromHexString("0xa4ba"));
     } else {
       // Arb One
@@ -71,6 +74,58 @@ export const getL2RetryableTicketId = (inboxSequenceNumber: BigInt): Bytes => {
   // );
 
   return res;
+};
+
+export const getL2NitroRetryableTicketId = (
+  event: InboxMessageDeliveredEvent,
+  retryable: RetryableTx,
+  messageSenderAddress: Address
+): Bytes => {
+  const l2ChainId: Bytes = getL2ChainId();
+  const msgNum = padBytes(getBytes(event.params.messageNum), 32);
+  const fromAddress: ByteArray = ByteArray.fromHexString(messageSenderAddress.toHexString());
+  let l1BaseFee: ByteArray = getBytes(BigInt.fromI32(0));
+  if (event.block.baseFeePerGas) {
+    l1BaseFee = getBytes(event.block.baseFeePerGas!);
+  }
+  const l1Value: ByteArray = getBytes(retryable.l1CallValue);
+  const maxFeePerGas: ByteArray = getBytes(retryable.gasPriceBid);
+  const gasLimit: ByteArray = getBytes(retryable.maxGas);
+  const destAddressString: string = retryable.destAddress.toHexString();
+  const destAddress: ByteArray = ByteArray.fromHexString(
+    destAddressString == "0x0000000000000000000000000000000000000000" ? "0x" : destAddressString
+  );
+  const l2CallValue: ByteArray = getBytes(retryable.l2CallValue);
+  const callValueRefundAddress: ByteArray = ByteArray.fromHexString(
+    retryable.callValueRefundAddress.toHexString()
+  );
+  const maxSubmissionFee: ByteArray = getBytes(retryable.maxSubmissionCost);
+  const excessFeeRefundAddress: ByteArray = ByteArray.fromHexString(
+    retryable.excessFeeRefundAddress.toHexString()
+  );
+  const data: ByteArray = ByteArray.fromHexString(retryable.data.toHexString());
+  const input: ByteArray[] = [
+    l2ChainId,
+    msgNum,
+    fromAddress,
+    l1BaseFee,
+    l1Value,
+    maxFeePerGas,
+    gasLimit,
+    destAddress,
+    l2CallValue,
+    callValueRefundAddress,
+    maxSubmissionFee,
+    excessFeeRefundAddress,
+    data,
+  ];
+
+  const rlpEncoded = rlpEncodeList(input);
+  const prefix = "0x69";
+  const rlpEncodedWithPrefix = ByteArray.fromHexString(prefix).concat(rlpEncoded);
+
+  const ticketId = Bytes.fromByteArray(crypto.keccak256(rlpEncodedWithPrefix));
+  return ticketId;
 };
 
 export const bigIntToId = (input: BigInt): string => input.toHexString();

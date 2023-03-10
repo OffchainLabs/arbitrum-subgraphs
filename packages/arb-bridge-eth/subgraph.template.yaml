@@ -10,7 +10,7 @@ templates:
       abi: L1ArbitrumGateway
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/tokenBridge.ts
       entities:
@@ -33,7 +33,7 @@ dataSources:
       startBlock: {{ outboxDeploymentBlock }}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - OutBoxTransactionExecuted
@@ -56,7 +56,7 @@ dataSources:
       startBlock: {{ inboxDeploymentBlock }}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - InboxMessageDelivered
@@ -78,7 +78,7 @@ dataSources:
       startBlock: {{ bridgeDeploymentBlock }}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - MessageDelivered
@@ -101,7 +101,7 @@ dataSources:
       startBlock: {{ classicBridgeDeploymentBlock }}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - MessageDelivered
@@ -122,7 +122,7 @@ dataSources:
       startBlock: {{ l1GatewayRouterDeployBlock }}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - DefaultGatewayUpdated
