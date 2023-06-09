@@ -117,7 +117,7 @@ export function handleInboxMessageDelivered(event: InboxMessageDeliveredEvent): 
 
 function handleNitroEthDeposit(event: InboxMessageDeliveredEvent, rawMessage: RawMessage): void {
   // we track deposits with EthDeposit entities
-  let depositId = event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
+  let depositId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
   let entity = new Deposit(depositId);
   entity.type = "EthDeposit";
 
@@ -198,7 +198,7 @@ function handleClassicRetryable(
     if (retryable.dataLength == BigInt.zero()) {
       // we track deposits with EthDeposit entities
       let depositId =
-        event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
+        event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
       let deposit = new Deposit(depositId);
       deposit.type = "EthDeposit";
 

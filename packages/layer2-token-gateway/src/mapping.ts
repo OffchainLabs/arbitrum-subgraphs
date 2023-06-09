@@ -103,7 +103,7 @@ export function handleWithdrawal(event: WithdrawalInitiatedEvent): void {
 
   /// additionally create Withdrawal entity which tracks both Eth and token withdrawals
   const withdrawal = new Withdrawal(
-    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString()
+    event.transaction.hash.toHexString() + "-" + event.logIndex.toString()
   );
   withdrawal.type = "TokenWithdrawal";
   withdrawal.sender = event.params._from;
@@ -228,7 +228,7 @@ export function handleNitroL2ToL1Transaction(event: NitroL2ToL1TxEvent): void {
 
   /// additionally create Withdrawal entity which tracks both Eth and token withdrawals
   const withdrawal = new Withdrawal(
-    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString()
+    event.transaction.hash.toHexString() + "-" + event.logIndex.toString()
   );
   withdrawal.type = "EthWithdrawal";
   withdrawal.sender = event.params.caller;
@@ -274,7 +274,7 @@ export function handleClassicL2ToL1Transaction(event: ClassicL2ToL1TransactionEv
 
   /// additionally create Withdrawal entity which tracks both Eth and token withdrawals
   const withdrawal = new Withdrawal(
-    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString()
+    event.transaction.hash.toHexString() + "-" + event.logIndex.toString()
   );
   withdrawal.type = "EthWithdrawal";
   withdrawal.sender = event.params.caller;

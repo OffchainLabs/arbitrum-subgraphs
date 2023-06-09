@@ -33,7 +33,7 @@ const ARB_ONE_BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT = 15446977;
  */
 export function handleDepositInitiated(event: DepositInitiated): void {
   let tokenDepositId =
-    event.transaction.hash.toHexString() + "-" + event.transaction.index.toString();
+    event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
 
   let tokenDeposit = new Deposit(tokenDepositId);
   tokenDeposit.type = "TokenDeposit";
