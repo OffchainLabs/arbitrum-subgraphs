@@ -182,7 +182,7 @@ test("Can properly decode Eth deposit message data", () => {
   // check EthDeposit entity is properly created
 
   let id =
-    newInboxEvent.transaction.hash.toHexString() + "-" + newInboxEvent.transaction.index.toString();
+    newInboxEvent.transaction.hash.toHexString() + "-" + newInboxEvent.logIndex.toString();
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "id", id);
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
@@ -216,7 +216,7 @@ test("Can properly decode Eth deposit message data", () => {
   id =
     eventAddrOneLeadingZero.transaction.hash.toHexString() +
     "-" +
-    eventAddrOneLeadingZero.transaction.index.toString();
+    eventAddrOneLeadingZero.logIndex.toString();
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "id", id);
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
@@ -250,7 +250,7 @@ test("Can properly decode Eth deposit message data", () => {
   id =
     eventAddrMultipleLeadingZero.transaction.hash.toHexString() +
     "-" +
-    eventAddrMultipleLeadingZero.transaction.index.toString();
+    eventAddrMultipleLeadingZero.logIndex.toString();
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "id", id);
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
@@ -284,7 +284,7 @@ test("Can properly decode Eth deposit message data", () => {
   id =
     eventAddrStartEndZeros.transaction.hash.toHexString() +
     "-" +
-    eventAddrStartEndZeros.transaction.index.toString();
+    eventAddrStartEndZeros.logIndex.toString();
   assert.fieldEquals(ETH_DEPOSIT_ENTITY_TYPE, id, "id", id);
   assert.fieldEquals(
     ETH_DEPOSIT_ENTITY_TYPE,
