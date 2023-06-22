@@ -1,0 +1,7 @@
+type Rollup @entity {
+  id: Bytes!
+  inbox: Bytes!
+  adminProxy: Bytes!
+  sequencerInbox: Bytes!
+  bridge: Bytes!
+}
