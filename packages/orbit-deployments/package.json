@@ -5,7 +5,7 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ gvladika/orbit-deployments"
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ gvladika/orbit-deployments-goerli"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.44.0",

@@ -1,3 +1,8 @@
+type RollupCreator @entity {
+  id: Bytes!
+  totalRollupsCreated: BigInt!
+}
+
 type Rollup @entity {
   id: Bytes!
   inbox: Bytes!
