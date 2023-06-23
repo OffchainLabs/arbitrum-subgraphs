@@ -9,4 +9,11 @@ type Rollup @entity {
   adminProxy: Bytes!
   sequencerInbox: Bytes!
   bridge: Bytes!
+  outbox: Bytes!
+  chainId: BigInt!
+  baseStake: BigInt!
+  latestConfirmed: BigInt!
+  rollupDeploymentBlock: BigInt!
+  stakeToken: Bytes!
+  owner: Bytes!
 }
