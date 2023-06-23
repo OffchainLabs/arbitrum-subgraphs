@@ -1,8 +1,8 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { RollupCreated as RollupCreatedEvent } from "../generated/RollupCreator/RollupCreator";
 import { Rollup as RollupContract } from "../generated/RollupCreator/Rollup";
-import { ProxyAdmin as ProxyAdminContract } from "../generated/RollupCreator/ProxyAdmin";
 import { Rollup, RollupCreator } from "../generated/schema";
+import { SequencerInbox } from "../generated/templates";
 
 export function handleRollupCreated(event: RollupCreatedEvent): void {
   const rollupCreator = getOrCreateRollupCreator(event.address);
@@ -24,8 +24,11 @@ export function handleRollupCreated(event: RollupCreatedEvent): void {
   rollup.rollupDeploymentBlock = rollupContract.rollupDeploymentBlock();
   rollup.stakeToken = rollupContract.stakeToken();
   rollup.owner = rollupContract.owner();
+  rollup.numOfBatches = BigInt.fromI32(0);
 
   rollup.save();
+
+  startIndexingSequencerInbox(Address.fromBytes(rollup.sequencerInbox));
 }
 
 function getOrCreateRollupCreator(rollupCreatorAddress: Address): RollupCreator {
@@ -36,5 +39,12 @@ function getOrCreateRollupCreator(rollupCreatorAddress: Address): RollupCreator 
 
   rollupCreator = new RollupCreator(rollupCreatorAddress);
   rollupCreator.totalRollupsCreated = BigInt.fromI32(0);
+  rollupCreator.totalRollupsWithPostedBatches = BigInt.fromI32(0);
+  rollupCreator.save();
+
   return rollupCreator;
+}
+
+function startIndexingSequencerInbox(seqInbox: Address): void {
+  SequencerInbox.create(seqInbox);
 }

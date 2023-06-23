@@ -1,6 +1,7 @@
 type RollupCreator @entity {
   id: Bytes!
   totalRollupsCreated: BigInt!
+  totalRollupsWithPostedBatches: BigInt!
 }
 
 type Rollup @entity {
@@ -16,4 +17,5 @@ type Rollup @entity {
   rollupDeploymentBlock: BigInt!
   stakeToken: Bytes!
   owner: Bytes!
+  numOfBatches: BigInt!
 }
