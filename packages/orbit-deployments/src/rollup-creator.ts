@@ -14,6 +14,7 @@ export function handleRollupCreated(event: RollupCreatedEvent): void {
   rollup.adminProxy = event.params.adminProxy;
   rollup.bridge = event.params.bridge;
   rollup.sequencerInbox = event.params.sequencerInbox;
+  rollup.deployer = event.transaction.from;
 
   // fetch remaining info from contract
   const rollupContract = RollupContract.bind(Address.fromBytes(rollup.id));

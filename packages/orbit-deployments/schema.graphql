@@ -17,5 +17,6 @@ type Rollup @entity {
   rollupDeploymentBlock: BigInt!
   stakeToken: Bytes!
   owner: Bytes!
+  deployer: Bytes!
   numOfBatches: BigInt!
 }
