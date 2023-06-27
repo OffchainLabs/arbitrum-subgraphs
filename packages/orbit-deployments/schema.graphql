@@ -1,0 +1,22 @@
+type RollupCreator @entity {
+  id: Bytes!
+  totalRollupsCreated: BigInt!
+  totalRollupsWithPostedBatches: BigInt!
+}
+
+type Rollup @entity {
+  id: Bytes!
+  inbox: Bytes!
+  adminProxy: Bytes!
+  sequencerInbox: Bytes!
+  bridge: Bytes!
+  outbox: Bytes!
+  chainId: BigInt!
+  baseStake: BigInt!
+  latestConfirmed: BigInt!
+  rollupDeploymentBlock: BigInt!
+  stakeToken: Bytes!
+  owner: Bytes!
+  deployer: Bytes!
+  numOfBatches: BigInt!
+}

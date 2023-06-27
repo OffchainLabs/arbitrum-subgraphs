@@ -1,0 +1,14 @@
+{
+  "name": "orbit-deployments",
+  "version": "0.0.1",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ gvladika/orbit-deployments-goerli"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.44.0",
+    "@graphprotocol/graph-ts": "0.29.1"
+  }
+}

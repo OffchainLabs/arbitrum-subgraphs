@@ -2,6 +2,7 @@ node_modules
 build
 subgraph.preprocessed.yaml
 subgraph.yaml
+!packages/orbit-deployments/subgraph.yaml
 .bin
 generated
 packages/layer2-token-gateway/metadata.ts
