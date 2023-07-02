@@ -1,0 +1,20 @@
+type MessageReceived @entity {
+  id: ID!
+  version: BigInt! # uint32
+  sourceDomain: BigInt! # uint32
+  destinationDomain: BigInt! # uint32
+  nonce: BigInt! # uint64
+  sender: Bytes! # bytes32 / Address
+  recipient: Bytes! # bytes32 / Address
+  destinationCaller: Bytes! # bytes32 / Address
+  messageBody: Bytes! # bytes dynamic
+}
+
+type BurnMessage @entity {
+  id: ID!
+  version: BigInt! # uint32
+  burnToken: Bytes! # bytes32
+  mintRecipient: Bytes! # bytes32
+  amount: BigInt! # uint256 
+  messageSender: Bytes! # bytes32
+}

@@ -1,0 +1,21 @@
+{
+  "name": "usdc-deposits",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "scripts": {
+    "codegen": "yarn prepare:mainnet && graph codegen",
+    "build": "yarn prepare:mainnet && graph build",
+    "postinstall": "yarn codegen",
+
+    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+
+    "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/usdc-deposits",
+    "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/usdc-deposits-goerli"
+  },
+  "dependencies": {
+    "@arbitrum/subgraph-common": "0.0.1",
+    "@graphprotocol/graph-cli": "0.30.3",
+    "@graphprotocol/graph-ts": "0.27.0"
+  }
+}
