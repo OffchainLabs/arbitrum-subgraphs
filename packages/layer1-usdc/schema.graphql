@@ -1,0 +1,35 @@
+type MessageReceived @entity(immutable: true) {
+  id: Bytes!
+  caller: Bytes! # address
+  sourceDomain: BigInt! # uint32
+  nonce: BigInt! # uint64
+  sender: Bytes! # bytes32
+  messageBody: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type MessageSent @entity(immutable: true) {
+  id: Bytes!
+  message: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  sender: Bytes! # address
+}
+
+type DepositForBurn @entity(immutable: true) {
+  id: Bytes!
+  nonce: BigInt! # uint64
+  burnToken: Bytes! # address
+  amount: BigInt! # uint256
+  depositor: Bytes! # address
+  mintRecipient: Bytes! # bytes32
+  destinationDomain: BigInt! # uint32
+  destinationTokenMessenger: Bytes! # bytes32
+  destinationCaller: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

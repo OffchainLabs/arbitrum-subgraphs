@@ -42,14 +42,22 @@ export function handleDepositInitiated(event: DepositInitiated): void {
   tokenDeposit.receiver = event.params._to;
   tokenDeposit.ethValue = BigInt.fromI32(0);
   tokenDeposit.sequenceNumber = event.params._sequenceNumber;
-  tokenDeposit.l1Token = getOrCreateToken(event.params.l1Token, event.block.number).id;
+  tokenDeposit.l1Token = getOrCreateToken(
+    event.params.l1Token,
+    event.block.number
+  ).id;
 
   let firstNitroBlock = 0;
   if (isArbOne()) {
     firstNitroBlock = ARB_ONE_BLOCK_OF_LAST_CLASSIC_TOKEN_DEPOSIT + 1;
   }
-  tokenDeposit.isClassic = event.block.number.lt(BigInt.fromI32(firstNitroBlock));
-  tokenDeposit.l2TicketId = getRetryablesID(event.params._sequenceNumber, tokenDeposit.isClassic);
+  tokenDeposit.isClassic = event.block.number.lt(
+    BigInt.fromI32(firstNitroBlock)
+  );
+  tokenDeposit.l2TicketId = getRetryablesID(
+    event.params._sequenceNumber,
+    tokenDeposit.isClassic
+  );
   tokenDeposit.timestamp = event.block.timestamp;
   tokenDeposit.transactionHash = event.transaction.hash.toHexString();
   tokenDeposit.blockCreatedAt = event.block.number;
@@ -60,7 +68,9 @@ export function handleDepositInitiated(event: DepositInitiated): void {
  * Keep track of default gateway updates
  * @param event
  */
-export function handleDefaultGatewayUpdated(event: DefaultGatewayUpdatedEvent): void {
+export function handleDefaultGatewayUpdated(
+  event: DefaultGatewayUpdatedEvent
+): void {
   let entity = new DefaultGatewayUpdated(
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
   );
@@ -79,7 +89,9 @@ export function handleDefaultGatewayUpdated(event: DefaultGatewayUpdatedEvent): 
  * @param event
  */
 export function handleGatewaySet(event: GatewaySetEvent): void {
-  let entity = new GatewaySet(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
+  let entity = new GatewaySet(
+    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+  );
   entity.l1Token = event.params.l1Token;
   entity.gateway = event.params.gateway;
   entity.timestamp = event.block.timestamp;
@@ -99,7 +111,9 @@ export function handleGatewaySet(event: GatewaySetEvent): void {
  * @param event
  */
 export function handleTransferRouted(event: TransferRoutedEvent): void {
-  let entity = new TransferRouted(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
+  let entity = new TransferRouted(
+    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+  );
   entity.token = event.params.token;
   entity._userFrom = event.params._userFrom;
   entity._userTo = event.params._userTo;
@@ -115,7 +129,9 @@ export function handleTransferRouted(event: TransferRoutedEvent): void {
  * @param event
  */
 export function handleTxToL2(event: TxToL2Event): void {
-  let entity = new TxToL2(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
+  let entity = new TxToL2(
+    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+  );
   entity._from = event.params._from;
   entity._to = event.params._to;
   entity._seqNum = event.params._seqNum;
@@ -127,7 +143,9 @@ export function handleTxToL2(event: TxToL2Event): void {
  * Keep track of Whitelist updates
  * @param event
  */
-export function handleWhitelistSourceUpdated(event: WhitelistSourceUpdatedEvent): void {
+export function handleWhitelistSourceUpdated(
+  event: WhitelistSourceUpdatedEvent
+): void {
   let entity = new WhitelistSourceUpdated(
     event.transaction.hash.toHex() + "-" + event.logIndex.toString()
   );
