@@ -7,11 +7,13 @@ import {
   MessageReceived,
   MessageSent,
 } from "../generated/schema"
+import { log } from "matchstick-as"
 
 export function handleMessageReceived(event: MessageReceivedEvent): void {
   let entity = new MessageReceived(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
+  
   entity.caller = event.params.caller
   entity.sourceDomain = event.params.sourceDomain
   entity.nonce = event.params.nonce
@@ -21,7 +23,7 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-
+  
   entity.save()
 }
 

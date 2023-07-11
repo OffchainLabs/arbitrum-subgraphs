@@ -4,6 +4,7 @@ import {
   MessageSent as MessageSentEvent,
 } from "../generated/L1USDCMessageTransmitter/L1USDCMessageTransmitter";
 import { MessageReceived, MessageSent } from "../generated/schema";
+import { logStore } from "matchstick-as";
 
 export function handleMessageReceived(event: MessageReceivedEvent): void {
   let entity = new MessageReceived(
@@ -20,7 +21,7 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   // Only index messages from Arbitrum
-  if (event.params.sourceDomain.at(3) === 3) {
+  if (event.params.sourceDomain.equals(BigInt.fromI32(3))) {
     entity.save()
   }
 }
@@ -36,11 +37,8 @@ export function handleMessageSent(event: MessageSentEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   // TODO: use decode
-  const sender = event.params.message.subarray(20, 52);
   const destination = event.params.message.subarray(8, 12).at(3);
   entity.sender = event.transaction.from.toHexString()
-
-  log.warning(`sending to ${destination}`, [])
   entity.attestationHash = crypto.keccak256(event.params.message).toHexString()
 
   // Only index messages to Arbitrum
