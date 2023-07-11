@@ -1,14 +1,13 @@
-import { Address, BigInt, Bytes, crypto, ethereum, log } from "@graphprotocol/graph-ts";
+import { BigInt, crypto } from "@graphprotocol/graph-ts";
 import {
   MessageReceived as MessageReceivedEvent,
   MessageSent as MessageSentEvent,
 } from "../generated/L1USDCMessageTransmitter/L1USDCMessageTransmitter";
 import { MessageReceived, MessageSent } from "../generated/schema";
-import { logStore } from "matchstick-as";
 
 export function handleMessageReceived(event: MessageReceivedEvent): void {
   let entity = new MessageReceived(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   );
   entity.caller = event.params.caller;
   entity.sourceDomain = event.params.sourceDomain;
@@ -22,13 +21,13 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
 
   // Only index messages from Arbitrum
   if (event.params.sourceDomain.equals(BigInt.fromI32(3))) {
-    entity.save()
+    entity.save();
   }
 }
 
 export function handleMessageSent(event: MessageSentEvent): void {
   let entity = new MessageSent(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   );
   entity.message = event.params.message;
 
@@ -38,11 +37,11 @@ export function handleMessageSent(event: MessageSentEvent): void {
 
   // TODO: use decode
   const destination = event.params.message.subarray(8, 12).at(3);
-  entity.sender = event.transaction.from.toHexString()
-  entity.attestationHash = crypto.keccak256(event.params.message).toHexString()
+  entity.sender = event.transaction.from.toHexString();
+  entity.attestationHash = crypto.keccak256(event.params.message).toHexString();
 
   // Only index messages to Arbitrum
   if (destination === 3) {
-    entity.save()
+    entity.save();
   }
 }
