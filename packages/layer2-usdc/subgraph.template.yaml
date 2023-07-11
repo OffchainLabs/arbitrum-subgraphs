@@ -3,12 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: L1USDCMessageTransmitter
-    network: "{{ l1Network }}"
+    name: L2USDCMessageTransmitter
+    network: "{{ l2Network }}"
     source:
-      address: "{{ L1USDCMessageTransmitter }}"
-      abi: L1USDCMessageTransmitter
-      startBlock: {{ L1USDCMessageTransmitterStartBlock }}
+      address: "{{ L2USDCMessageTransmitter }}"
+      abi: L2USDCMessageTransmitter
+      startBlock: {{ L2USDCMessageTransmitterStartBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -17,12 +17,12 @@ dataSources:
         - MessageSent
         - MessageReceived
       abis:
-        - name: L1USDCMessageTransmitter
-          file: ./abis/L1USDCMessageTransmitter.json
+        - name: L2USDCMessageTransmitter
+          file: ./abis/L2USDCMessageTransmitter.json
       eventHandlers:
         - event: MessageReceived(indexed address,uint32,indexed uint64,bytes32,bytes)
           handler: handleMessageReceived
         - event: MessageSent(bytes)
           handler: handleMessageSent
-      file: ./src/l-1-usdc-message-transmitter.ts
+      file: ./src/l-2-usdc-message-transmitter.ts
   

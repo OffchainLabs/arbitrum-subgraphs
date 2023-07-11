@@ -5,12 +5,12 @@ import {
   clearStore,
   beforeAll,
   afterAll
-} from "matchstick-as"
+} from "matchstick-as/assembly/index"
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import { AttesterDisabled } from "../generated/schema"
-import { AttesterDisabled as AttesterDisabledEvent } from "../generated/L1USDCMessageTransmitter/L1USDCMessageTransmitter"
-import { handleAttesterDisabled } from "../src/l-1-usdc-message-transmitter"
-import { createAttesterDisabledEvent } from "./l-1-usdc-message-transmitter-utils"
+import { AttesterDisabled as AttesterDisabledEvent } from "../generated/L2USDCMessageTransmitter/L2USDCMessageTransmitter"
+import { handleAttesterDisabled } from "../src/l-2-usdc-message-transmitter"
+import { createAttesterDisabledEvent } from "./l-2-usdc-message-transmitter-utils"
 
 // Tests structure (matchstick-as >=0.5.0)
 // https://thegraph.com/docs/en/developer/matchstick/#tests-structure-0-5-0

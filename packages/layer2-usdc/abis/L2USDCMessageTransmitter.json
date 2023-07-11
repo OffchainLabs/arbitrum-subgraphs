@@ -1,26 +1,14 @@
 [
   {
     "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "_localDomain",
-        "type": "uint32"
-      },
-      {
-        "internalType": "address",
-        "name": "_attester",
-        "type": "address"
-      },
+      { "internalType": "uint32", "name": "_localDomain", "type": "uint32" },
+      { "internalType": "address", "name": "_attester", "type": "address" },
       {
         "internalType": "uint32",
         "name": "_maxMessageBodySize",
         "type": "uint32"
       },
-      {
-        "internalType": "uint32",
-        "name": "_version",
-        "type": "uint32"
-      }
+      { "internalType": "uint32", "name": "_version", "type": "uint32" }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -171,12 +159,7 @@
     "name": "OwnershipTransferred",
     "type": "event"
   },
-  {
-    "anonymous": false,
-    "inputs": [],
-    "name": "Pause",
-    "type": "event"
-  },
+  { "anonymous": false, "inputs": [], "name": "Pause", "type": "event" },
   {
     "anonymous": false,
     "inputs": [
@@ -222,12 +205,7 @@
     "name": "SignatureThresholdUpdated",
     "type": "event"
   },
-  {
-    "anonymous": false,
-    "inputs": [],
-    "name": "Unpause",
-    "type": "event"
-  },
+  { "anonymous": false, "inputs": [], "name": "Unpause", "type": "event" },
   {
     "inputs": [],
     "name": "acceptOwnership",
@@ -238,23 +216,13 @@
   {
     "inputs": [],
     "name": "attesterManager",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "attester",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "attester", "type": "address" }
     ],
     "name": "disableAttester",
     "outputs": [],
@@ -263,11 +231,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "newAttester",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "newAttester", "type": "address" }
     ],
     "name": "enableAttester",
     "outputs": [],
@@ -276,104 +240,54 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "index", "type": "uint256" }
     ],
     "name": "getEnabledAttester",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getNumEnabledAttesters",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "attester",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "attester", "type": "address" }
     ],
     "name": "isEnabledAttester",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "localDomain",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      }
-    ],
+    "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "maxMessageBodySize",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "nextAvailableNonce",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -387,83 +301,43 @@
   {
     "inputs": [],
     "name": "paused",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "pauser",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "pendingOwner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "message",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "attestation",
-        "type": "bytes"
-      }
+      { "internalType": "bytes", "name": "message", "type": "bytes" },
+      { "internalType": "bytes", "name": "attestation", "type": "bytes" }
     ],
     "name": "receiveMessage",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "success",
-        "type": "bool"
-      }
-    ],
+    "outputs": [{ "internalType": "bool", "name": "success", "type": "bool" }],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "originalMessage",
-        "type": "bytes"
-      },
+      { "internalType": "bytes", "name": "originalMessage", "type": "bytes" },
       {
         "internalType": "bytes",
         "name": "originalAttestation",
         "type": "bytes"
       },
-      {
-        "internalType": "bytes",
-        "name": "newMessageBody",
-        "type": "bytes"
-      },
+      { "internalType": "bytes", "name": "newMessageBody", "type": "bytes" },
       {
         "internalType": "bytes32",
         "name": "newDestinationCaller",
@@ -482,16 +356,8 @@
         "name": "tokenContract",
         "type": "address"
       },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
     ],
     "name": "rescueERC20",
     "outputs": [],
@@ -501,13 +367,7 @@
   {
     "inputs": [],
     "name": "rescuer",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -518,25 +378,11 @@
         "name": "destinationDomain",
         "type": "uint32"
       },
-      {
-        "internalType": "bytes32",
-        "name": "recipient",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "messageBody",
-        "type": "bytes"
-      }
+      { "internalType": "bytes32", "name": "recipient", "type": "bytes32" },
+      { "internalType": "bytes", "name": "messageBody", "type": "bytes" }
     ],
     "name": "sendMessage",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -547,30 +393,16 @@
         "name": "destinationDomain",
         "type": "uint32"
       },
-      {
-        "internalType": "bytes32",
-        "name": "recipient",
-        "type": "bytes32"
-      },
+      { "internalType": "bytes32", "name": "recipient", "type": "bytes32" },
       {
         "internalType": "bytes32",
         "name": "destinationCaller",
         "type": "bytes32"
       },
-      {
-        "internalType": "bytes",
-        "name": "messageBody",
-        "type": "bytes"
-      }
+      { "internalType": "bytes", "name": "messageBody", "type": "bytes" }
     ],
     "name": "sendMessageWithCaller",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -603,23 +435,13 @@
   {
     "inputs": [],
     "name": "signatureThreshold",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "newOwner", "type": "address" }
     ],
     "name": "transferOwnership",
     "outputs": [],
@@ -648,11 +470,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "_newPauser",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "_newPauser", "type": "address" }
     ],
     "name": "updatePauser",
     "outputs": [],
@@ -661,11 +479,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "newRescuer",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "newRescuer", "type": "address" }
     ],
     "name": "updateRescuer",
     "outputs": [],
@@ -673,34 +487,16 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
     "name": "usedNonces",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "version",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      }
-    ],
+    "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
     "stateMutability": "view",
     "type": "function"
   }

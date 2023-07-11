@@ -1,4 +1,4 @@
-import { Bytes, ethereum, log } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, crypto, ethereum, log } from "@graphprotocol/graph-ts";
 import {
   MessageReceived as MessageReceivedEvent,
   MessageSent as MessageSentEvent,
@@ -19,7 +19,10 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
 
-  entity.save();
+  // Only index messages from Arbitrum
+  if (event.params.sourceDomain.at(3) === 3) {
+    entity.save()
+  }
 }
 
 export function handleMessageSent(event: MessageSentEvent): void {
@@ -31,37 +34,17 @@ export function handleMessageSent(event: MessageSentEvent): void {
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
-  //   const decodedData = ethereum.decode(
-  //     "(uint32,uint32,uint32,uint64,bytes32,bytes32,bytes32,bytes)",
-  //     Bytes.fromByteArray(event.params.message)
-  //   );
 
-  //   if (decodedData) {
-  //     const parsedArray = decodedData.toTuple();
+  // TODO: use decode
+  const sender = event.params.message.subarray(20, 52);
+  const destination = event.params.message.subarray(8, 12).at(3);
+  entity.sender = event.transaction.from.toHexString()
 
-  //     log.info("version", parsedArray[0].toStringArray());
-  //     log.info("sourceDomain", [parsedArray[1].toBigInt().toString()]);
-  //     log.info("destinationDomain", [parsedArray[2].toBigInt().toString()]);
-  //     log.info("nonce", parsedArray[3].toStringArray());
-  //     log.info("sender", [parsedArray[4].toAddress().toHexString()]);
-  //     log.info("recipient", [parsedArray[5].toAddress().toHexString()]);
-  //     log.info("destinationCaller", [parsedArray[6].toAddress().toHexString()]);
-  //     log.info("messageBody", [parsedArray[7].toBytes().toHexString()]);
+  log.warning(`sending to ${destination}`, [])
+  entity.attestationHash = crypto.keccak256(event.params.message).toHexString()
 
-  //     entity.sender = parsedArray[4].toAddress();
-  //     entity.save();
-  //   } else {
-  //     log.debug("No decoded data", []);
-  //   }
-  const decodedData = ethereum.decode(
-    "MessageSent(bytes)",
-    event.params.message
-  );
-  log.info("MESSAGE TO STRING", [event.params.message.toHexString()]);
-
-  log.info("DECODED DATA", [
-    ethereum.decode("MessageSent(bytes)", event.params.message),
-  ]);
-
-  entity.save();
+  // Only index messages to Arbitrum
+  if (destination === 3) {
+    entity.save()
+  }
 }
