@@ -17,9 +17,7 @@ export function handleTicketCreated(event: TicketCreated): void {
   let ticketId = event.params.ticketId;
   let entity = new Retryable(ticketId.toHexString());
   entity.status = "Created";
-  entity.timeoutTimestamp = event.block.timestamp.plus(
-    RETRYABLE_LIFETIME_SECONDS
-  );
+  entity.timeoutTimestamp = event.block.timestamp.plus(RETRYABLE_LIFETIME_SECONDS);
   entity.createdAtTimestamp = event.block.timestamp;
   entity.createdAtBlockNumber = event.block.number;
   entity.createdAtTxHash = event.transaction.hash;
@@ -63,9 +61,7 @@ export function handleLifetimeExtended(event: LifetimeExtended): void {
     log.critical("Missed a retryable ticket somewhere!", []);
     throw new Error("No retryable ticket");
   }
-  entity.timeoutTimestamp = entity.timeoutTimestamp.plus(
-    event.params.newTimeout
-  );
+  entity.timeoutTimestamp = entity.timeoutTimestamp.plus(event.params.newTimeout);
   entity.save();
 }
 
@@ -85,10 +81,7 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
   const stats = getOrCreateTotalRetryableStats();
 
   const prevStatus = entity.status;
-  const redeemSuccessful = isRedeemSuccessful(
-    ArbRetryableTxContract.bind(event.address),
-    ticketId
-  );
+  const redeemSuccessful = isRedeemSuccessful(ArbRetryableTxContract.bind(event.address), ticketId);
   if (redeemSuccessful) {
     if (prevStatus == "Created") {
       entity.isAutoRedeemed = true;
@@ -99,9 +92,7 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
     }
     entity.status = "Redeemed";
     entity.redeemedAtTimestamp = event.block.timestamp;
-    stats.successfullyRedeemed = stats.successfullyRedeemed.plus(
-      BigInt.fromI32(1)
-    );
+    stats.successfullyRedeemed = stats.successfullyRedeemed.plus(BigInt.fromI32(1));
   } else {
     if (prevStatus != "RedeemFailed") {
       stats.failedToRedeem = stats.failedToRedeem.plus(BigInt.fromI32(1));
@@ -120,10 +111,7 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
   stats.save();
 }
 
-function isRedeemSuccessful(
-  contract: ArbRetryableTxContract,
-  ticketId: Bytes
-): boolean {
+function isRedeemSuccessful(contract: ArbRetryableTxContract, ticketId: Bytes): boolean {
   const beneficiaryCall = contract.try_getBeneficiary(ticketId);
   return beneficiaryCall.reverted;
 }
@@ -145,18 +133,12 @@ function getOrCreateTotalRetryableStats(): TotalRetryableStats {
   return stats;
 }
 
-function decodeRetryableParamsFromTxInput(
-  entity: Retryable,
-  calldata: Bytes
-): void {
+function decodeRetryableParamsFromTxInput(entity: Retryable, calldata: Bytes): void {
   // take out function sig and add tuple offset as prefix
   const noSigCalldataStr = calldata.toHexString().slice(10);
   const prefixNoSigCalldataStr =
-    "0x0000000000000000000000000000000000000000000000000000000000000020" +
-    noSigCalldataStr;
-  const toDecode = Bytes.fromByteArray(
-    Bytes.fromHexString(prefixNoSigCalldataStr)
-  );
+    "0x0000000000000000000000000000000000000000000000000000000000000020" + noSigCalldataStr;
+  const toDecode = Bytes.fromByteArray(Bytes.fromHexString(prefixNoSigCalldataStr));
 
   const decoded = ethereum.decode(
     "(bytes32,uint256,uint256,uint256,uint256,uint64,uint256,address,address,address,bytes)",
