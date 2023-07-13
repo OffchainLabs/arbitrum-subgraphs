@@ -4,7 +4,6 @@ import {
   MessageSent as MessageSentEvent,
 } from "../generated/L1USDCMessageTransmitter/L1USDCMessageTransmitter";
 import { MessageReceived, MessageSent } from "../generated/schema";
-import { log } from "matchstick-as";
 
 function leftPadBytes(data: Bytes, length: number): Bytes {
   const completeData = new Bytes(length as i32);
