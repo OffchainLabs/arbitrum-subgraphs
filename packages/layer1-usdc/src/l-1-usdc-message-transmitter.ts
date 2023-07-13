@@ -1,9 +1,23 @@
-import { BigInt, crypto } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, crypto, ethereum } from "@graphprotocol/graph-ts";
 import {
   MessageReceived as MessageReceivedEvent,
   MessageSent as MessageSentEvent,
 } from "../generated/L1USDCMessageTransmitter/L1USDCMessageTransmitter";
 import { MessageReceived, MessageSent } from "../generated/schema";
+import { log } from "matchstick-as";
+
+function leftPadBytes(data: Bytes, length: number): Bytes {
+  const completeData = new Bytes(length as i32);
+  const zeroBytesToFillPrefix = completeData.length - data.length;
+  for (let i = 0; i < completeData.length; i++) {
+    if (i < zeroBytesToFillPrefix) {
+      completeData[i] = 0;
+    } else {
+      completeData[i] = data[i - zeroBytesToFillPrefix];
+    }
+  }
+  return completeData
+}
 
 export function handleMessageReceived(event: MessageReceivedEvent): void {
   let entity = new MessageReceived(
@@ -34,14 +48,21 @@ export function handleMessageSent(event: MessageSentEvent): void {
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
-
-  // TODO: use decode
-  const destination = event.params.message.subarray(8, 12).at(3);
   entity.sender = event.transaction.from.toHexString();
   entity.attestationHash = crypto.keccak256(event.params.message).toHexString();
 
-  // Only index messages to Arbitrum
-  if (destination === 3) {
-    entity.save();
+  const message = event.params.message
+  const destinationDomainSlice = message.slice(8, 12)
+  const destinationDomainPadded = leftPadBytes(Bytes.fromHexString(destinationDomainSlice.join('')), 32) // 32 bytes = 256 characters
+  const decodedData = ethereum.decode("(uint256)", destinationDomainPadded)
+
+  if (!decodedData) {
+    return;
+  }
+  const tuple = decodedData.toTuple()
+  const destinationDomain = tuple[0].toBigInt()
+
+  if (destinationDomain.equals(BigInt.fromI32(3))) {
+    entity.save()
   }
 }

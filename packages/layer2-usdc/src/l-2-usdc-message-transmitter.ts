@@ -34,7 +34,6 @@ export function handleMessageSent(event: MessageSentEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   entity.sender = event.transaction.from.toHexString();
-
   entity.attestationHash = crypto.keccak256(event.params.message).toHexString();
 
   entity.save();
