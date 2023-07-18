@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "{{ L2USDCMessageTransmitter }}"
       abi: L2USDCMessageTransmitter
-      startBlock: {{ L2USDCMessageTransmitterStartBlock }}
+      startBlock: { { L2USDCMessageTransmitterStartBlock } }
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -25,4 +25,3 @@ dataSources:
         - event: MessageSent(bytes)
           handler: handleMessageSent
       file: ./src/l-2-usdc-message-transmitter.ts
-  
