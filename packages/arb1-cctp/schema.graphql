@@ -16,6 +16,8 @@ type MessageSent @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  sender: String! # address
-  attestationHash: String!
+  sender: Bytes! # address
+  attestationHash: Bytes!
+  nonce: BigInt! # uint64
+  sourceDomain: BigInt! # uint32
 }

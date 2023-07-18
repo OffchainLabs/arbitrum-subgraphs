@@ -1,5 +1,5 @@
 {
-  "name": "layer1-usdc",
+  "name": "arb1-cctp",
   "license": "Apache-2.0",
   "version": "0.0.1",
   "scripts": {
@@ -10,8 +10,8 @@
     "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
 
-    "deploy:mainnet": "graph build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/layer1-usdc",
-    "deploy:goerli": "graph build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/layer1-usdc-goerli",
+    "deploy:mainnet": "graph build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/arb1-cctp",
+    "deploy:goerli": "graph build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/arb1-cctp-goerli",
   
     "test": "graph test"
   },
