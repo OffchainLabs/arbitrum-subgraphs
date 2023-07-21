@@ -17,8 +17,8 @@ describe("Message events", () => {
     const caller = Address.fromString(
       "0x0000000000000000000000000000000000000001",
     );
-    const sender = Address.fromString(
-      "0x0000000000000000000000000000000000000002",
+    const sender = Bytes.fromHexString(
+      "0x0004000400030004000500060007000800090001000200030000000000000002",
     );
     const newMessageReceivedFromMainnet = createMessageReceivedEvent(
       caller,
@@ -63,7 +63,7 @@ describe("Message events", () => {
       "MessageReceived",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a01000000",
       "sender",
-      sender.toHexString(),
+      "0x0007000800090001000200030000000000000002",
     );
 
     // Message from avalanche
@@ -83,7 +83,7 @@ describe("Message events", () => {
       "MessageReceived",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2b01000000",
       "sender",
-      sender.toHexString(),
+      "0x0007000800090001000200030000000000000002",
     );
 
     clearStore();

@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "{{ L1USDCMessageTransmitter }}"
       abi: L1USDCMessageTransmitter
-      startBlock: { { L1USDCMessageTransmitterStartBlock } }
+      startBlock: {{ L1USDCMessageTransmitterStartBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
