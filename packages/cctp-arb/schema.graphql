@@ -21,7 +21,7 @@ type MessageSent @entity(immutable: false) {
   attestationHash: Bytes!
   nonce: BigInt! # uint64
   sourceDomain: BigInt! # uint32
-  amount: BigInt! # uint256
+  amount: BigInt # uint256
 }
 
 type Burn @entity(immutable: true) {

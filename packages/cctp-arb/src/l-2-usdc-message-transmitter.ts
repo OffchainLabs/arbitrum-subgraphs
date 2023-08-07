@@ -141,15 +141,10 @@ export function handleMessageSent(event: MessageSentEvent): void {
   // this assumes that an entity was previously created since the Burn event is emitted before the MessageSent event
   // In case of `replaceDepositForBurn`, only MessageSent and DepositForBurn events are sent
   // https://arbiscan.io/tx/0x932339d47c002cf0bb3a5948a20612d01eca98a48213dfc342697196e6bc4a68#eventlog
-  if (!burnEvent) {
-    if (!entityFromStore) {
-      log.critical("No Burn event created before MessageSent", []);
-      throw new Error("Oh damn no entity wrong order");
-    }
-  }
-
   if (burnEvent) {
-    entity.amount = burnEvent.amount
+    entity.amount = burnEvent.amount;
+  } else {
+    log.warning("No Burn event created before MessageSent", []);
   }
   entity.sourceDomain = sourceDomain;
   entity.nonce = nonce;
