@@ -144,6 +144,8 @@ export function handleMessageSent(event: MessageSentEvent): void {
   if (burnEvent) {
     entity.amount = burnEvent.amount;
   } else {
+    // Some transactions have no other events in the logs, only display a warning
+    // https://goerli.arbiscan.io/tx/0x51c4eb64d92bdb7939590ba4234e288a790a8fabd42c2f69270f75f758089419#eventlog
     log.warning("No Burn event created before MessageSent", []);
   }
   entity.sourceDomain = sourceDomain;
