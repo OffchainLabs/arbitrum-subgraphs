@@ -1,6 +1,7 @@
-import { assert, describe, test, clearStore } from "matchstick-as";
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { assert, describe, test, clearStore, afterAll, log } from "matchstick-as";
+import { Address, BigInt, Bytes, store } from "@graphprotocol/graph-ts";
 import {
+  handleBurn,
   handleMessageReceived,
   handleMessageSent,
 } from "../src/l-1-usdc-message-transmitter";
@@ -8,8 +9,13 @@ import {
   createMessageReceivedEvent,
   createMessageSentEvent,
 } from "./l-1-usdc-message-transmitter-utils";
+import { createBurnEvent } from "./l-1-fiat-token-utils";
 
 describe("Message events", () => {
+  afterAll(() => { 
+    clearStore()
+  })
+
   describe("MessageReceived", () => {
     test("MessageReceived created and stored", () => {
       const caller = Address.fromString(
@@ -60,8 +66,6 @@ describe("Message events", () => {
         "sender",
         "0x0007000800090001000200030000000000000002",
       );
-
-      clearStore();
     });
   });
 
@@ -77,6 +81,15 @@ describe("Message events", () => {
           "000000000000000000000001000000000003902D000000000000000000000000D0C3DA58F55358142B8D3E06C1C30C5C6114EFE8000000000000000000000000EB08F243E5D3FCFF26A9E38AE5520A669F4019D000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007865C6E87B9F70255377E024ACE6630C1EAA37F000000000000000000000000B28CB81B1C50539AE1E941573EBA241E47F6DE5A00000000000000000000000000000000000000000000000000000000000F42400000000000000000000000003A554156AEA1921ABB277F63D6109CA81B530A3E",
         ),
       );
+      const transactionHash = Bytes.fromHexString('65ade9a093d7d6149ef89187dc51cf22a18b45b3a80e9eb4899867f7bc5d9ffe'); 
+        
+      const owner = Address.fromString("0x0000000000000000000000000000000000000001");
+      const amount = BigInt.fromI32(234);
+      const newBurnEvent = createBurnEvent(owner, amount);
+
+      newMessageSentToArb.transaction.hash = transactionHash;
+      newBurnEvent.transaction.hash = transactionHash;
+      handleBurn(newBurnEvent)
 
       // MessageSent from Avalanche is ignored
       handleMessageSent(newMessageSentToArb);
@@ -107,45 +120,18 @@ describe("Message events", () => {
         "message",
         newMessageSentToArb.params.message.toHexString(),
       );
-
-      // ReplaceMessage with a more recent event
-      const newerEvent = createMessageSentEvent(
-        Bytes.fromHexString(
-          "000000000000000600000003000000000003902D000000000000000000000000D0C3DA58F55358142B8D3E06C1C30C5C6114EFE8000000000000000000000000C030A82665A8579488A09CAAF661B43EFD93A1B100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007865C6E87B9F70255377E024ACE6630C1EAA37F000000000000000000000000B28CB81B1C50539AE1E941573EBA241E47F6DE5A00000000000000000000000000000000000000000000000000000000000F42400000000000000000000000003A554156AEA1921ABB277F63D6109CA81B530A3E",
-        ),
-      );
-      newerEvent.block.timestamp = newMessageSentToArb.block.timestamp.plus(
-        BigInt.fromI32(1),
-      );
-      handleMessageSent(newerEvent);
-
-      assert.entityCount("MessageSent", 1);
       assert.fieldEquals(
         "MessageSent",
         "0x0600000000000000000000000000000000000000000000000000000000000003902d",
-        "sender",
-        "0xa16081f360e3847006db660bae1c6d1b2e17ec2a",
+        "recipient",
+        "0xeb08f243e5d3fcff26a9e38ae5520a669f4019d0",
       );
       assert.fieldEquals(
         "MessageSent",
         "0x0600000000000000000000000000000000000000000000000000000000000003902d",
-        "nonce",
-        "233517", // 3902D
+        "amount",
+        amount.toString()
       );
-      assert.fieldEquals(
-        "MessageSent",
-        "0x0600000000000000000000000000000000000000000000000000000000000003902d",
-        "sourceDomain",
-        "6", // It should be 0, but testing for 0 would always return true if we have wrong decoding
-      );
-      assert.fieldEquals(
-        "MessageSent",
-        "0x0600000000000000000000000000000000000000000000000000000000000003902d",
-        "message",
-        newerEvent.params.message.toHexString(),
-      );
-
-      clearStore();
     });
 
     test("Older MessageSent event with same (nonce, sourceDomain) is skipped", () => {
@@ -154,7 +140,16 @@ describe("Message events", () => {
           "000000000000000600000003000000000003902D000000000000000000000000D0C3DA58F55358142B8D3E06C1C30C5C6114EFE8000000000000000000000000EB08F243E5D3FCFF26A9E38AE5520A669F4019D000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007865C6E87B9F70255377E024ACE6630C1EAA37F000000000000000000000000B28CB81B1C50539AE1E941573EBA241E47F6DE5A00000000000000000000000000000000000000000000000000000000000F42400000000000000000000000003A554156AEA1921ABB277F63D6109CA81B530A3E",
         ),
       );
+      
+      const transactionHash = Bytes.fromHexString('65ade9a093d7d6149ef89187dc51cf22a18b45b3a80e9eb4899867f7bc5d9ffe'); 
+        
+      const owner = Address.fromString("0x0000000000000000000000000000000000000001");
+      const amount = BigInt.fromI32(234);
+      const newBurnEvent = createBurnEvent(owner, amount);
 
+      newMessageSentToArb.transaction.hash = transactionHash;
+      newBurnEvent.transaction.hash = transactionHash;
+      handleBurn(newBurnEvent);
       handleMessageSent(newMessageSentToArb);
 
       assert.entityCount("MessageSent", 1);
@@ -182,6 +177,12 @@ describe("Message events", () => {
         "message",
         newMessageSentToArb.params.message.toHexString(),
       );
+      assert.fieldEquals(
+        "MessageSent",
+        "0x0600000000000000000000000000000000000000000000000000000000000003902d",
+        "amount",
+        amount.toString(),
+      );
 
       // Older event is ignored
       const olderEvent = createMessageSentEvent(
@@ -192,6 +193,7 @@ describe("Message events", () => {
       olderEvent.block.timestamp = newMessageSentToArb.block.timestamp.minus(
         BigInt.fromI32(1),
       );
+      olderEvent.transaction.hash = transactionHash;
       handleMessageSent(olderEvent);
 
       // No events added
@@ -229,6 +231,15 @@ describe("Message events", () => {
         ),
       );
 
+      const transactionHash = Bytes.fromHexString('65ade9a093d7d6149ef89187dc51cf22a18b45b3a80e9eb4899867f7bc5d9ffe'); 
+        
+      const owner = Address.fromString("0x0000000000000000000000000000000000000001");
+      const amount = BigInt.fromI32(145);
+      const newBurnEvent = createBurnEvent(owner, amount);
+
+      newMessageSentToArb.transaction.hash = transactionHash;
+      newBurnEvent.transaction.hash = transactionHash;
+      handleBurn(newBurnEvent);
       handleMessageSent(newMessageSentToArb);
 
       assert.entityCount("MessageSent", 1);
@@ -256,6 +267,12 @@ describe("Message events", () => {
         "message",
         newMessageSentToArb.params.message.toHexString(),
       );
+      assert.fieldEquals(
+        "MessageSent",
+        "0x0600000000000000000000000000000000000000000000000000000000000003902d",
+        "amount",
+        amount.toString(),
+      );
 
       const newerEvent = createMessageSentEvent(
         Bytes.fromHexString(
@@ -265,6 +282,7 @@ describe("Message events", () => {
       newerEvent.block.timestamp = newMessageSentToArb.block.timestamp.plus(
         BigInt.fromI32(1),
       );
+      newerEvent.transaction.hash = transactionHash;
       handleMessageSent(newerEvent);
 
       assert.entityCount("MessageSent", 1);
@@ -292,7 +310,18 @@ describe("Message events", () => {
         "message",
         newerEvent.params.message.toHexString(),
       );
-      clearStore();
+      assert.fieldEquals(
+        "MessageSent",
+        "0x0600000000000000000000000000000000000000000000000000000000000003902d",
+        "amount",
+        amount.toString(),
+      );
+      assert.fieldEquals(
+        "MessageSent",
+        "0x0600000000000000000000000000000000000000000000000000000000000003902d",
+        "amount",
+        amount.toString(),
+      );
     });
   });
 });

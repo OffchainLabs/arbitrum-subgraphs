@@ -17,7 +17,18 @@ type MessageSent @entity(immutable: false) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
   sender: Bytes! # address
+  recipient: Bytes! # address
   attestationHash: Bytes!
   nonce: BigInt! # uint64
   sourceDomain: BigInt! # uint32
+  amount: BigInt! # uint256
+}
+
+type Burn @entity(immutable: true) {
+  id: Bytes!
+  burner: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
 }

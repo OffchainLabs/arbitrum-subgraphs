@@ -22,6 +22,28 @@ dataSources:
       eventHandlers:
         - event: MessageReceived(indexed address,uint32,indexed uint64,bytes32,bytes)
           handler: handleMessageReceived
+          receipt: true
         - event: MessageSent(bytes)
           handler: handleMessageSent
+          receipt: true
+      file: ./src/l-1-usdc-message-transmitter.ts
+  - kind: ethereum
+    name: L1FiatToken
+    network: "{{ l1Network }}"
+    source:
+      address: "{{ L1USDCContract }}"
+      abi: L1FiatToken
+      startBlock: {{ L1USDCMessageTransmitterStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Burn
+      abis:
+        - name: L1FiatToken
+          file: ./abis/L1FiatToken.json
+      eventHandlers:
+        - event: Burn(indexed address,uint256)
+          handler: handleBurn
       file: ./src/l-1-usdc-message-transmitter.ts

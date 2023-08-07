@@ -4,12 +4,19 @@ import {
   Bytes,
   crypto,
   ethereum,
+  log,
 } from "@graphprotocol/graph-ts";
 import {
   MessageReceived as MessageReceivedEvent,
   MessageSent as MessageSentEvent,
 } from "../generated/L2USDCMessageTransmitter/L2USDCMessageTransmitter";
 import { MessageReceived, MessageSent } from "../generated/schema";
+import {
+  Burn as BurnEvent,
+} from "../generated/L2FiatToken/L2FiatToken"
+import {
+  Burn,
+} from "../generated/schema"
 
 function leftPadBytes(data: Bytes, length: number): Bytes {
   const completeData = new Bytes(length as i32);
@@ -65,6 +72,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
   const sourceDomainSlice = message.slice(4, 8);
   const destinationDomainSlice = message.slice(8, 12);
   const nonceSlice = message.subarray(12, 20);
+  const recipientSlice = message.subarray(64, 84); // Skip the first 12 characters (We need 20 bytes addresses, but it's stored as 32 bytes)
 
   const versionPadded = leftPadBytes(Bytes.fromUint8Array(versionSlice), 32);
   const sourceDomainPadded = leftPadBytes(
@@ -96,7 +104,12 @@ export function handleMessageSent(event: MessageSentEvent): void {
   const decodedDataTuple = decodedData.toTuple();
 
   const sourceDomain = decodedDataTuple[1].toBigInt();
+  const destinationDomain = decodedDataTuple[2].toBigInt();
   const nonce = decodedDataTuple[3].toBigInt();
+  
+  if (destinationDomain.notEqual(BigInt.fromI32(0))) {
+    return;
+  }
 
   const id = getIdFromMessage(sourceDomain, noncePadded);
   const entityFromStore = MessageSent.load(id);
@@ -113,17 +126,48 @@ export function handleMessageSent(event: MessageSentEvent): void {
   }
 
   const entity = new MessageSent(id);
-
+  const recipient = Bytes.fromUint8Array(recipientSlice)
+  
   entity.message = event.params.message;
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.sender = Address.fromBytes(event.transaction.from);
+  entity.recipient = Address.fromBytes(recipient);
   entity.attestationHash = Bytes.fromByteArray(
     crypto.keccak256(event.params.message),
   );
+  const burnEvent = Burn.load(event.transaction.hash)
+  // this assumes that an entity was previously created since the Burn event is emitted before the MessageSent event
+  // In case of `replaceDepositForBurn`, only MessageSent and DepositForBurn events are sent
+  // https://arbiscan.io/tx/0x932339d47c002cf0bb3a5948a20612d01eca98a48213dfc342697196e6bc4a68#eventlog
+  if (!burnEvent) {
+    if (!entityFromStore) {
+      log.critical("No Burn event created before MessageSent", []);
+      throw new Error("Oh damn no entity wrong order");
+    }
+  }
+
+  if (burnEvent) {
+    entity.amount = burnEvent.amount
+  }
   entity.sourceDomain = sourceDomain;
   entity.nonce = nonce;
    
   entity.save();
+}
+
+
+export function handleBurn(event: BurnEvent): void {
+  let entity = new Burn(
+    event.transaction.hash
+  )
+  entity.burner = event.params.burner
+  entity.amount = event.params.amount
+
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+
+  entity.save()
 }
