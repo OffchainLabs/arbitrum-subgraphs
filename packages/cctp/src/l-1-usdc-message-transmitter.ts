@@ -4,19 +4,12 @@ import {
   Bytes,
   crypto,
   ethereum,
-  log,
 } from "@graphprotocol/graph-ts";
 import {
   MessageReceived as MessageReceivedEvent,
   MessageSent as MessageSentEvent,
 } from "../generated/L1USDCMessageTransmitter/L1USDCMessageTransmitter";
 import { MessageReceived, MessageSent } from "../generated/schema";
-import {
-  Burn as BurnEvent,
-} from "../generated/L1FiatToken/L1FiatToken"
-import {
-  Burn,
-} from "../generated/schema"
 
 function leftPadBytes(data: Bytes, length: number): Bytes {
   const completeData = new Bytes(length as i32);
@@ -68,6 +61,12 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
   }
 }
 
+function getAddressFromBytes32(bytes: Bytes): Bytes {
+  assert(bytes.length === 32, `getAddressFromBytes32: Address bytes length is incorrect (${bytes.length})`);
+  const slicedBytes = bytes.slice(12)
+  return Address.fromUint8Array(slicedBytes);
+}
+
 export function handleMessageSent(event: MessageSentEvent): void {
   // message is encoded with encodePacked, we need to pad non-bytes parameter (uint32, uint64) to 32 bytes (= 256 bits)
   const message = event.params.message;
@@ -75,7 +74,6 @@ export function handleMessageSent(event: MessageSentEvent): void {
   const sourceDomainSlice = message.slice(4, 8);
   const destinationDomainSlice = message.slice(8, 12);
   const nonceSlice = message.subarray(12, 20);
-  const recipientSlice = message.subarray(64, 84); // Skip the first 12 characters (We need 20 bytes addresses, but it's stored as 32 bytes)
 
   const versionPadded = leftPadBytes(Bytes.fromUint8Array(versionSlice), 32);
   const sourceDomainPadded = leftPadBytes(
@@ -92,27 +90,40 @@ export function handleMessageSent(event: MessageSentEvent): void {
     .concat(sourceDomainPadded)
     .concat(destinationDomainPadded)
     .concat(noncePadded)
-    .concat(Bytes.fromUint8Array(message.slice(20)));
+    .concat(Bytes.fromUint8Array(message.slice(24))); 
 
-  const decodedData = ethereum.decode(
-    "(uint32,uint32,uint32,uint64,bytes32,bytes32,bytes32)",
+  // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#message
+  const decodedMessageData = ethereum.decode(
+    // (version, sourceDomain, destinationDomain, nonce, sender, recipient, destinationcaller, messageBody)
+    "(uint32,uint32,uint32,uint64,bytes32,bytes32,bytes32,bytes128)",
     messagePadded,
   );
 
-  if (!decodedData) {
+  if (!decodedMessageData) {
     return;
   }
 
-  const decodedDataTuple = decodedData.toTuple();
-  const destinationDomain = decodedDataTuple[2].toBigInt();
-  const sourceDomain = decodedDataTuple[1].toBigInt();
-  const nonce = decodedDataTuple[3].toBigInt();
+  const decodedMessageDataTuple = decodedMessageData.toTuple();
+  const destinationDomain = decodedMessageDataTuple[2].toBigInt();
+  const sourceDomain = decodedMessageDataTuple[1].toBigInt();
+  const nonce = decodedMessageDataTuple[3].toBigInt();
+  const messageBody = decodedMessageDataTuple[7].toBytes();
 
   if (destinationDomain.notEqual(BigInt.fromI32(3))) {
     return;
   }
 
-  const id = getIdFromMessage(sourceDomain, noncePadded);
+  const decodedMessageBodyData = ethereum.decode(
+    // (usdcContract, recipient, amount, sender)
+    "(bytes32,bytes32,uint64,bytes32)",
+    messageBody,
+  );
+
+  if (!decodedMessageBodyData) {
+    return;
+  }
+
+  const id = getIdFromMessage(sourceDomain, noncePadded)
   const entityFromStore = MessageSent.load(id);
 
   // Multiple MessageSent might have the same id when replaced with `replaceMessage`
@@ -125,46 +136,23 @@ export function handleMessageSent(event: MessageSentEvent): void {
       return;
     }
   }
+  
+  const decodedMessageBodyDataTuple = decodedMessageBodyData.toTuple();
+  const recipient = decodedMessageBodyDataTuple[1].toBytes();
+  const amount = decodedMessageBodyDataTuple[2].toBigInt();
 
   const entity = new MessageSent(id);
-  const recipient = Bytes.fromUint8Array(recipientSlice);
-  
   entity.message = event.params.message;
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.sender = Address.fromBytes(event.transaction.from);
-  entity.recipient = Address.fromBytes(recipient);
+  entity.recipient = getAddressFromBytes32(recipient);
   entity.attestationHash = Bytes.fromByteArray(
     crypto.keccak256(event.params.message),
   );
-  const burnEvent = Burn.load(event.transaction.hash)
-  // this assumes that an entity was previously created since the Burn event is emitted before the MessageSent event
-  // In case of `replaceDepositForBurn`, only MessageSent and DepositForBurn events are sent
-  // https://arbiscan.io/tx/0x932339d47c002cf0bb3a5948a20612d01eca98a48213dfc342697196e6bc4a68#eventlog
-  if (burnEvent) {
-    entity.amount = burnEvent.amount;
-  } else {
-    // Some transactions have no other events in the logs, only display a warning
-    // https://goerli.arbiscan.io/tx/0x51c4eb64d92bdb7939590ba4234e288a790a8fabd42c2f69270f75f758089419#eventlog
-    log.warning("No Burn event created before MessageSent", []);
-  }
   entity.sourceDomain = sourceDomain;
   entity.nonce = nonce;
-
+  entity.amount = amount;
   entity.save();
-}
-
-export function handleBurn(event: BurnEvent): void {
-  let entity = new Burn(
-    event.transaction.hash
-  )
-  entity.burner = event.params.burner
-  entity.amount = event.params.amount
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
 }
