@@ -10,6 +10,7 @@ import {
   MessageSent as MessageSentEvent,
 } from "../generated/L1USDCMessageTransmitter/L1USDCMessageTransmitter";
 import { MessageReceived, MessageSent } from "../generated/schema";
+import { log } from "matchstick-as";
 
 function leftPadBytes(data: Bytes, length: number): Bytes {
   const completeData = new Bytes(length as i32);
@@ -30,7 +31,17 @@ function getIdFromMessage(sourceDomain: BigInt, noncePadded: Bytes): Bytes {
   );
 }
 
+enum ChainDomain {
+  Mainnet = 0,
+  Arbitrum = 3,
+}
+
 export function handleMessageReceived(event: MessageReceivedEvent): void {
+  // Only index messages from Arbitrum
+  if (event.params.sourceDomain.notEqual(BigInt.fromI32(ChainDomain.Arbitrum))) {
+    return
+  }
+
   const nonce = event.params.nonce;
   const sourceDomain = event.params.sourceDomain;
 
@@ -55,10 +66,7 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
 
-  // Only index messages from Arbitrum
-  if (event.params.sourceDomain.equals(BigInt.fromI32(3))) {
-    entity.save();
-  }
+  entity.save()
 }
 
 function getAddressFromBytes32(bytes: Bytes): Bytes {
@@ -100,6 +108,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
   );
 
   if (!decodedMessageData) {
+    log.error("decodedMessageData doesn't exist", []);
     return;
   }
 
@@ -109,7 +118,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
   const nonce = decodedMessageDataTuple[3].toBigInt();
   const messageBody = decodedMessageDataTuple[7].toBytes();
 
-  if (destinationDomain.notEqual(BigInt.fromI32(3))) {
+  if (destinationDomain.notEqual(BigInt.fromI32(ChainDomain.Arbitrum))) {
     return;
   }
 
@@ -120,6 +129,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
   );
 
   if (!decodedMessageBodyData) {
+    log.error("decodedMessageBodyData doesn't exist", []);
     return;
   }
 
@@ -140,13 +150,14 @@ export function handleMessageSent(event: MessageSentEvent): void {
   const decodedMessageBodyDataTuple = decodedMessageBodyData.toTuple();
   const recipient = decodedMessageBodyDataTuple[1].toBytes();
   const amount = decodedMessageBodyDataTuple[2].toBigInt();
+  const sender = decodedMessageBodyDataTuple[3].toBytes();
 
   const entity = new MessageSent(id);
   entity.message = event.params.message;
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
-  entity.sender = Address.fromBytes(event.transaction.from);
+  entity.sender = getAddressFromBytes32(sender);
   entity.recipient = getAddressFromBytes32(recipient);
   entity.attestationHash = Bytes.fromByteArray(
     crypto.keccak256(event.params.message),

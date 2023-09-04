@@ -37,6 +37,11 @@ function getAddressFromBytes32(bytes: Bytes): Bytes {
   return Address.fromUint8Array(slicedBytes);
 }
 
+enum ChainDomain {
+  Mainnet = 0,
+  Arbitrum = 3,
+}
+
 export function handleMessageReceived(event: MessageReceivedEvent): void {
   const nonce = event.params.nonce;
   const sourceDomain = event.params.sourceDomain;
@@ -97,6 +102,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
   );
 
   if (!decodedMessageData) {
+    log.error("decodedMessageData doesn't exist", []);
     return;
   }
 
@@ -106,8 +112,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
   const nonce = decodedMessageDataTuple[3].toBigInt();
   const messageBody = decodedMessageDataTuple[7].toBytes();
   
-  if (destinationDomain.notEqual(BigInt.fromI32(0))) {
-    log.warning(`NON 2`, [])
+  if (destinationDomain.notEqual(BigInt.fromI32(ChainDomain.Mainnet))) {
     return;
   }
 
@@ -118,6 +123,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
   );
 
   if (!decodedMessageBodyData) {
+    log.error("decodedMessageBodyData doesn't exist", []);
     return;
   }
 
@@ -138,13 +144,14 @@ export function handleMessageSent(event: MessageSentEvent): void {
   const decodedMessageBodyDataTuple = decodedMessageBodyData.toTuple();
   const recipient = decodedMessageBodyDataTuple[1].toBytes();
   const amount = decodedMessageBodyDataTuple[2].toBigInt();
+  const sender = decodedMessageBodyDataTuple[3].toBytes();
 
   const entity = new MessageSent(id);
   entity.message = event.params.message;
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
-  entity.sender = Address.fromBytes(event.transaction.from);
+  entity.sender = Address.fromBytes(sender);
   entity.recipient = getAddressFromBytes32(recipient);
   entity.attestationHash = Bytes.fromByteArray(
     crypto.keccak256(event.params.message),
