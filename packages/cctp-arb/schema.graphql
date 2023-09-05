@@ -3,7 +3,8 @@ type MessageReceived @entity(immutable: true) {
   caller: Bytes! # address
   sourceDomain: BigInt! # uint32
   nonce: BigInt! # uint64
-  sender: Bytes! # bytes32
+  sender: Bytes! # address
+  recipient: Bytes! # address
   messageBody: Bytes! # bytes
   blockNumber: BigInt!
   blockTimestamp: BigInt!

@@ -37,6 +37,31 @@ function getAddressFromBytes32(bytes: Bytes): Bytes {
   return Address.fromUint8Array(slicedBytes);
 }
 
+
+function decodeMessageBodyData(messageBody: Bytes): Array<Bytes> | null {
+  // Remove the first 8 characters
+  const messageBodyData = ethereum.decode(
+    // (usdcContract, recipient, amount, sender)
+    "(bytes32,bytes32,uint64,bytes32)",
+    messageBody,
+  );
+
+  if (!messageBodyData) {
+    return null
+  }
+  
+  const decodedMessageBodyDataTuple = messageBodyData.toTuple();
+  const recipient = decodedMessageBodyDataTuple[1].toBytes();
+  const amount = decodedMessageBodyDataTuple[2].toBigInt();
+  const sender = decodedMessageBodyDataTuple[3].toBytes();
+
+  return [
+    recipient,
+    Bytes.fromByteArray(Bytes.fromBigInt(amount)),
+    sender
+  ]
+}
+
 enum ChainDomain {
   Mainnet = 0,
   Arbitrum = 3,
@@ -53,14 +78,21 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
   const id = getIdFromMessage(sourceDomain, noncePadded);
 
   let entity = new MessageReceived(id);
-  // Addresses are stored in 32 bytes, we need to remove the first 8 bytes of 0 before using `Address.fromBytes`
-  // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#message
-  const parsedSender = event.params.sender.slice(12);
+  const messageBodyWithoutSignature = Bytes.fromUint8Array(event.params.messageBody.slice(4, event.params.messageBody.length));
+  const decodedMessageBodyData = decodeMessageBodyData(messageBodyWithoutSignature);
+  if (!decodedMessageBodyData) {
+    log.error("messageBodyData doesn't exist", []);
+    return;
+  }
+
+  const recipient = decodedMessageBodyData[0]
+  const sender = decodedMessageBodyData[2]
 
   entity.caller = event.params.caller;
   entity.sourceDomain = event.params.sourceDomain;
   entity.nonce = event.params.nonce;
-  entity.sender = Address.fromUint8Array(parsedSender);
+  entity.sender = getAddressFromBytes32(sender)
+  entity.recipient = getAddressFromBytes32(recipient)
   entity.messageBody = event.params.messageBody;
 
   entity.blockNumber = event.block.number;
@@ -93,7 +125,7 @@ export function handleMessageSent(event: MessageSentEvent): void {
     .concat(destinationDomainPadded)
     .concat(noncePadded)
     .concat(Bytes.fromUint8Array(message.slice(24)));
-
+  
   // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#message
   const decodedMessageData = ethereum.decode(
     // (version, sourceDomain, destinationDomain, nonce, sender, recipient, destinationcaller, messageBody)
@@ -116,16 +148,15 @@ export function handleMessageSent(event: MessageSentEvent): void {
     return;
   }
 
-  const decodedMessageBodyData = ethereum.decode(
-    // (usdcContract, recipient, amount, sender)
-    "(bytes32,bytes32,uint64,bytes32)",
-    messageBody,
-  );
-
+  const decodedMessageBodyData = decodeMessageBodyData(messageBody)
   if (!decodedMessageBodyData) {
-    log.error("decodedMessageBodyData doesn't exist", []);
-    return;
+    log.error("messageBodyData doesn't exist", []);
+    return
   }
+
+  const recipient = decodedMessageBodyData[0]
+  const amount = BigInt.fromUnsignedBytes(decodedMessageBodyData[1])
+  const sender = decodedMessageBodyData[2]
 
   const id = getIdFromMessage(sourceDomain, noncePadded)
   const entityFromStore = MessageSent.load(id);
@@ -141,17 +172,12 @@ export function handleMessageSent(event: MessageSentEvent): void {
     }
   }
 
-  const decodedMessageBodyDataTuple = decodedMessageBodyData.toTuple();
-  const recipient = decodedMessageBodyDataTuple[1].toBytes();
-  const amount = decodedMessageBodyDataTuple[2].toBigInt();
-  const sender = decodedMessageBodyDataTuple[3].toBytes();
-
   const entity = new MessageSent(id);
   entity.message = event.params.message;
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
-  entity.sender = Address.fromBytes(sender);
+  entity.sender = getAddressFromBytes32(sender);
   entity.recipient = getAddressFromBytes32(recipient);
   entity.attestationHash = Bytes.fromByteArray(
     crypto.keccak256(event.params.message),
