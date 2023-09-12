@@ -11,7 +11,7 @@ type MessageReceived @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type MessageSent @entity(immutable: true) {
+type MessageSent @entity(immutable: false) {
   id: Bytes!
   message: Bytes! # bytes
   blockNumber: BigInt!
