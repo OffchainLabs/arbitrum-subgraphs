@@ -1,0 +1,22 @@
+{
+  "name": "cctp",
+  "license": "Apache-2.0",
+  "version": "0.0.1",
+  "scripts": {
+    "codegen:mainnet": "yarn prepare:mainnet && graph codegen",
+    "codegen:goerli": "yarn prepare:goerli && graph codegen",
+    "postinstall": "yarn codegen:mainnet",
+    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "deploy:mainnet": "graph build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/cctp-mainnet",
+    "deploy:goerli": "graph build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/cctp-goerli",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.51.2",
+    "@graphprotocol/graph-ts": "0.30.0"
+  },
+  "devDependencies": {
+    "matchstick-as": "0.5.0"
+  }
+}

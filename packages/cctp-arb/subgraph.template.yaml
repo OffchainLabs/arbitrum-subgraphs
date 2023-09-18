@@ -1,0 +1,29 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: L2USDCMessageTransmitter
+    network: "{{ l2Network }}"
+    source:
+      address: "{{ L2USDCMessageTransmitter }}"
+      abi: L2USDCMessageTransmitter
+      startBlock: {{ L2USDCMessageTransmitterStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - MessageSent
+        - MessageReceived
+      abis:
+        - name: L2USDCMessageTransmitter
+          file: ./abis/L2USDCMessageTransmitter.json
+      eventHandlers:
+        - event: MessageReceived(indexed address,uint32,indexed uint64,bytes32,bytes)
+          handler: handleMessageReceived
+          receipt: true
+        - event: MessageSent(bytes)
+          handler: handleMessageSent
+          receipt: true
+      file: ./src/l-2-usdc-message-transmitter.ts
