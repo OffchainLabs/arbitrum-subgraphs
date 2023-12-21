@@ -18,6 +18,10 @@ Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arb-bridge-eth
 Query endpoint: https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-goerli  
 Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arb-bridge-eth-goerli
 
+`Sepolia`  
+Query endpoint: https://api.thegraph.com/subgraphs/name/fionnachan/arb-bridge-eth-sepolia  
+Playground: https://thegraph.com/hosted-service/subgraph/fionnachan/arb-bridge-eth-sepolia
+
 #### Query example - get first 3 deposits (including Eth deposits and token deposits)
 
 ```
@@ -110,8 +114,12 @@ Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arbitrum-retry
 To be added (Nova is not supported by Graph hosted service atm)
 
 `Goerli Nitro`  
-Query endpoint: https://api.thegraph.com/subgraphs/name/gvladika/arbitrum-retryables-goerli  
-Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arbitrum-retryables-goerli  
+Query endpoint: https://api.thegraph.com/subgraphs/name/gvladika/arbitrum-retryables-goerli
+Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arbitrum-retryables-goerli
+
+`Sepolia`  
+Query endpoint: https://api.thegraph.com/subgraphs/name/gvladika/arbitrum-retryables-sepolia
+Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arbitrum-retryables-sepolia
 
 #### Query example - get last 10 retryables tickets which failed to redeem
 
