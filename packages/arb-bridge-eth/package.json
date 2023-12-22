@@ -9,26 +9,25 @@
     "create-local": "graph create --node http://localhost:8020/ arbitrum/arb-bridge-eth-nitro",
     "remove-local": "graph remove --node http://localhost:8020/ arbitrum/arb-bridge-eth-nitro",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 arbitrum/arb-bridge-eth-nitro",
-    
+
     "prepare:codegen": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/src/interface/codegen.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.preprocessed.yaml",
     "prepare:build": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/src/interface/build.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.preprocessed.yaml",
-    
+
     "prepare:nitro-mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nitro-mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:nova": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova-mainnet.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:nitro-goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
-    
+
     "deploy:nitro-mainnet": "yarn prepare:build && yarn prepare:nitro-mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nitro",
     "deploy:nova": "yarn prepare:build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nova",
     "deploy:nitro-goerli": "yarn prepare:build && yarn prepare:nitro-goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-goerli",
     "deploy:sepolia": "yarn prepare:build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ fionnachan/arb-bridge-eth-sepolia",
-
+    
     "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"
   },
   "dependencies": {
     "@arbitrum/subgraph-common": "0.0.1",
-    "@graphprotocol/graph-cli": "0.30.3",
-    "@graphprotocol/graph-ts": "0.27.0",
+    "@graphprotocol/graph-ts": "^0.32.0",
     "matchstick-as": "^0.5.0"
   }
 }

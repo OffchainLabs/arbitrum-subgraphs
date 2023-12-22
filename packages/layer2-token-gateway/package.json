@@ -11,18 +11,16 @@
     "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
     "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
     "prepare:nova": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml && yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/metadata.template.ts | tail -n +2 > ./metadata.ts",
-
+    
     "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/layer2-token-gateway-arb1",
     "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/layer2-token-gateway-goerli",
     "deploy:sepolia": "yarn build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ fionnachan/layer2-token-gateway-sepolia",
     "deploy:nova": "yarn build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/ gvladika/layer2-token-gateway-nova",
-
     "test": "yarn codegen && yarn build && graph test -r --version 0.5.0"
   },
   "dependencies": {
-    "matchstick-as": "^0.5.0",
     "@arbitrum/subgraph-common": "0.0.1",
-    "@graphprotocol/graph-cli": "0.30.3",
-    "@graphprotocol/graph-ts": "0.27.0"
+    "@graphprotocol/graph-ts": "^0.32.0",
+    "matchstick-as": "^0.5.0"
   }
 }

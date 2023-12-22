@@ -8,7 +8,6 @@
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ gvladika/orbit-deployments-goerli"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.44.0",
     "@graphprotocol/graph-ts": "0.29.1"
   }
 }
