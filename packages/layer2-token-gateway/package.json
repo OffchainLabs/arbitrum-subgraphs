@@ -14,8 +14,9 @@
 
     "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/layer2-token-gateway-arb1",
     "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/layer2-token-gateway-goerli",
+    "deploy:sepolia": "yarn build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ fionnachan/layer2-token-gateway-sepolia",
     "deploy:nova": "yarn build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/ gvladika/layer2-token-gateway-nova",
-    
+
     "test": "yarn codegen && yarn build && graph test -r --version 0.5.0"
   },
   "dependencies": {

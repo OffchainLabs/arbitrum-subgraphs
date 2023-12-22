@@ -18,9 +18,9 @@
     "prepare:nitro-goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.preprocessed.yaml | tail -n +2 > subgraph.yaml",
     
-    "deploy:nitro-mainnet": "yarn prepare:build && yarn prepare:nitro-mainnet && graph deploy --node https://api.thegraph.com/deploy/gvladika/arb-bridge-eth-nitro",
-    "deploy:nova": "yarn prepare:build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/gvladika/arb-bridge-eth-nova",
-    "deploy:nitro-goerli": "yarn prepare:build && yarn prepare:nitro-goerli && graph deploy --node https://api.thegraph.com/deploy/gvladika/arb-bridge-eth-goerli",
+    "deploy:nitro-mainnet": "yarn prepare:build && yarn prepare:nitro-mainnet && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nitro",
+    "deploy:nova": "yarn prepare:build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-nova",
+    "deploy:nitro-goerli": "yarn prepare:build && yarn prepare:nitro-goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arb-bridge-eth-goerli",
     "deploy:sepolia": "yarn prepare:build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ fionnachan/arb-bridge-eth-sepolia",
 
     "test": "rm -rf tests/.bin && yarn codegen && yarn build && graph test --version 0.5.0"
