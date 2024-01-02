@@ -118,8 +118,8 @@ Query endpoint: https://api.thegraph.com/subgraphs/name/gvladika/arbitrum-retrya
 Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arbitrum-retryables-goerli
 
 `Sepolia`  
-Query endpoint: https://api.thegraph.com/subgraphs/name/gvladika/arbitrum-retryables-sepolia
-Playground: https://thegraph.com/hosted-service/subgraph/gvladika/arbitrum-retryables-sepolia
+Query endpoint: https://api.thegraph.com/subgraphs/name/fionnachan/arbitrum-retryables-sepolia
+Playground: https://thegraph.com/hosted-service/subgraph/fionnachan/arbitrum-retryables-sepolia
 
 #### Query example - get last 10 retryables tickets which failed to redeem
 
