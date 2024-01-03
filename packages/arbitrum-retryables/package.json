@@ -10,15 +10,15 @@
     "prepare:arb": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nitro-mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:nova": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/nova.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-
+    "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    
     "deploy:arb": "yarn build && yarn prepare:arb && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arbitrum-retryables",
     "deploy:nova": "yarn build && yarn prepare:nova && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arbitrum-retryables-nova",
-    "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arbitrum-retryables-goerli"
-
+    "deploy:goerli": "yarn build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ gvladika/arbitrum-retryables-goerli",
+    "deploy:sepolia": "yarn build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ fionnachan/arbitrum-retryables-sepolia"
   },
   "dependencies": {
     "@arbitrum/subgraph-common": "0.0.1",
-    "@graphprotocol/graph-cli": "0.30.3",
-    "@graphprotocol/graph-ts": "0.27.0"
+    "@graphprotocol/graph-ts": "^0.32.0"
   }
 }
