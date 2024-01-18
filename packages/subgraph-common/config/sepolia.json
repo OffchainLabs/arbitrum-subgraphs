@@ -17,5 +17,11 @@
   "rollupDeploymentBlock": 4139226,
   "l1GatewayRouter": "0xcE18836b233C83325Cc8848CA4487e94C6288264",
   "l1GatewayRouterDeployBlock": 4143154,
-  "nitroGenesisBlockNum": 0
+  "nitroGenesisBlockNum": 0,
+  "L1USDCMessageTransmitter": "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
+  "L2USDCMessageTransmitter": "0xaCF1ceeF35caAc005e15888dDb8A3515C41B4872",
+  "L1USDCMessageTransmitterStartBlock": 5015228,
+  "L2USDCMessageTransmitterStartBlock": 3250777,
+  "L1USDCContract": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+  "L2USDCContract": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"
 }
