@@ -4,12 +4,12 @@
   "version": "0.0.1",
   "scripts": {
     "codegen:mainnet": "yarn prepare:mainnet && graph codegen",
-    "codegen:goerli": "yarn prepare:goerli && graph codegen",
+    "codegen:sepolia": "yarn prepare:sepolia && graph codegen",
     "postinstall": "yarn codegen:mainnet",
     "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:goerli": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/goerli.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "deploy:mainnet": "graph build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/cctp-arb-one",
-    "deploy:goerli": "graph build && yarn prepare:goerli && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/cctp-arb-goerli",
+    "deploy:sepolia": "graph build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/cctp-arb-sepolia",
     "test": "graph test"
   },
   "dependencies": {
