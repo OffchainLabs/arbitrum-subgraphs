@@ -80,6 +80,8 @@ type ClassicRetryable @entity(immutable: true) {
   retryableTicketID: Bytes! # bytes32
   "calldata used in L2 call"
   l2Calldata: Bytes!
+  "L2 call value"
+  l2Callvalue: BigInt!
   "L1 block timestamp"
   timestamp: BigInt!
   "L1 tx retryable is created at"
