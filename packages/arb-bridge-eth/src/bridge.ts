@@ -175,6 +175,7 @@ function handleNitroRetryable(event: InboxMessageDeliveredEvent, rawMessage: Raw
     entity.retryableTicketID = getL2NitroRetryableTicketId(event, retryable, messageSenderAddress);
     entity.destAddr = retryable.destAddress;
     entity.l2Calldata = retryable.data;
+    entity.l2Callvalue = retryable.l2CallValue;
     entity.timestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
     entity.blockCreatedAt = event.block.number;
@@ -228,6 +229,7 @@ function handleClassicRetryable(
     entity.retryableTicketID = getL2RetryableTicketId(event.params.messageNum);
     entity.destAddr = retryable.destAddress;
     entity.l2Calldata = retryable.data;
+    entity.l2Callvalue = retryable.l2CallValue;
     entity.timestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
     entity.blockCreatedAt = event.block.number;
