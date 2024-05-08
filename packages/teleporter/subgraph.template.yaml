@@ -7,7 +7,7 @@ dataSources:
     network: sepolia
     source:
       address: "{{ l1Teleporter }}"
-      abi: L1Teleporter
+      abi: IL1Teleporter
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -15,7 +15,7 @@ dataSources:
       entities:
         - Teleported
       abis:
-        - name: L1Teleporter
+        - name: IL1Teleporter
           file: ./abis/IL1Teleporter.json
       eventHandlers:
         - event: Teleported(indexed address,address,address,address,address,address,uint256)
