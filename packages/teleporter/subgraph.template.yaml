@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: L1Teleporter
-    network: mainnet
+    network: sepolia
     source:
       address: "{{ l1Teleporter }}"
       abi: L1Teleporter

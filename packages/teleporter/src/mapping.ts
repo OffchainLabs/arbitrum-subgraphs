@@ -11,4 +11,5 @@ export function handleTeleported(event: TeleportedEvent): void {
   entity.l2l3RouterOrInbox = event.params.l2l3RouterOrInbox
   entity.to = event.params.to
   entity.amount = event.params.amount
+  entity.save()
 }

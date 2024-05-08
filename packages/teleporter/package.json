@@ -8,10 +8,10 @@
     "postinstall": "yarn codegen",
 
     "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:rinkeby": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/rinkeby.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     
     "deploy:mainnet": "yarn build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer1-token-gateway",
-    "deploy:rinkeby": "yarn build && yarn prepare:rinkeby && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer1-token-gateway-rinkeby"
+    "deploy:sepolia": "yarn build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ fredlacs/layer1-token-gateway-sepolia"
   },
   "dependencies": {
     "@arbitrum/subgraph-common": "^0.0.1",
