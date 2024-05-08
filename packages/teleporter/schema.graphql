@@ -1,0 +1,10 @@
+type Teleported @entity {
+  id: ID!
+  sender: Bytes! # address
+  l1Token: Bytes! # address
+  l3FeeTokenL1Addr: Bytes! # address
+  l1l2Router: Bytes! # address
+  l2l3RouterOrInbox: Bytes! # address
+  to: Bytes! # address
+  amount: BigInt! # uint256
+}
