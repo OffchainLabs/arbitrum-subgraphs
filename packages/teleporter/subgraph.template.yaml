@@ -4,10 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: L1Teleporter
-    network: sepolia
+    network: "{{ l1Network }}"
     source:
       address: "{{ l1Teleporter }}"
       abi: IL1Teleporter
+      startBlock: {{ l1TeleporterDeployBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
