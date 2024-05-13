@@ -4,14 +4,16 @@
   "license": "Apache-2.0",
   "scripts": {
     "codegen": "yarn prepare:mainnet && graph codegen",
-    "build": "yarn prepare:mainnet && graph build",
     "postinstall": "yarn codegen",
 
     "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
 
-    "studio:mainnet": "yarn build && graph deploy --studio",
-    "studio:sepolia": "yarn prepare:sepolia && graph build && graph deploy --studio"
+    "build:mainnet": "yarn prepare:mainnet && graph build",
+    "build:sepolia": "yarn prepare:sepolia && graph build",
+
+    "studio:mainnet": "yarn build:mainnet && graph deploy --studio",
+    "studio:sepolia": "yarn build:sepolia && graph deploy --studio"
   },
   "dependencies": {
     "@arbitrum/subgraph-common": "^0.0.1",
