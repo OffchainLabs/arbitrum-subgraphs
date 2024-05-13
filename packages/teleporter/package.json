@@ -11,7 +11,7 @@
     "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
 
     "studio:mainnet": "yarn build && graph deploy --studio",
-    "studio:sepolia": "yarn prepare:sepolia && yarn build && graph deploy --studio"
+    "studio:sepolia": "yarn prepare:sepolia && graph build && graph deploy --studio"
   },
   "dependencies": {
     "@arbitrum/subgraph-common": "^0.0.1",
