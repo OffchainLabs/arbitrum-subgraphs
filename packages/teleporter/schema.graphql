@@ -1,5 +1,6 @@
 type Teleported @entity {
   id: ID!
+  transactionHash: Bytes! # bytes32
   sender: Bytes! # address
   l1Token: Bytes! # address
   l3FeeTokenL1Addr: Bytes! # address

@@ -4,6 +4,7 @@ import { Teleported } from "../generated/schema";
 
 export function handleTeleported(event: TeleportedEvent): void {
   let entity = new Teleported(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
+  entity.transactionHash = event.transaction.hash
   entity.sender = event.params.sender
   entity.l1Token = event.params.l1Token
   entity.l3FeeTokenL1Addr = event.params.l3FeeTokenL1Addr

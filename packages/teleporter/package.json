@@ -12,8 +12,9 @@
     "build:mainnet": "yarn prepare:mainnet && graph build",
     "build:sepolia": "yarn prepare:sepolia && graph build",
 
-    "studio:mainnet": "yarn build:mainnet && graph deploy --studio",
-    "studio:sepolia": "yarn build:sepolia && graph deploy --studio"
+    "studio": "graph deploy --studio -l $(cat package.json | jq -r '.version')",
+    "studio:mainnet": "yarn build:mainnet && yarn studio",
+    "studio:sepolia": "yarn build:sepolia && yarn studio"
   },
   "dependencies": {
     "@arbitrum/subgraph-common": "^0.0.1",
