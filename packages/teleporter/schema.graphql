@@ -7,4 +7,6 @@ type Teleported @entity {
   l2l3RouterOrInbox: Bytes! # address
   to: Bytes! # address
   amount: BigInt! # uint256
+  blockNumber: BigInt! # uint256
+  timestamp: BigInt! # uint256
 }
