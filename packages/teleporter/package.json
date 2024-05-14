@@ -1,6 +1,6 @@
 {
   "name": "teleporter",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "license": "Apache-2.0",
   "scripts": {
     "codegen": "yarn prepare:mainnet && graph codegen",
