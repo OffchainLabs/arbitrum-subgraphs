@@ -1,0 +1,24 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: L1Teleporter
+    network: "{{ l1Network }}"
+    source:
+      address: "{{ l1Teleporter }}"
+      abi: IL1Teleporter
+      startBlock: {{ l1TeleporterDeployBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Teleported
+      abis:
+        - name: IL1Teleporter
+          file: ./abis/IL1Teleporter.json
+      eventHandlers:
+        - event: Teleported(indexed address,address,address,address,address,address,uint256)
+          handler: handleTeleported
+      file: ./src/mapping.ts

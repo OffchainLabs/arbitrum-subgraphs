@@ -23,5 +23,7 @@
   "L1USDCMessageTransmitterStartBlock": 5015228,
   "L2USDCMessageTransmitterStartBlock": 3250777,
   "L1USDCContract": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-  "L2USDCContract": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"
+  "L2USDCContract": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+  "l1Teleporter": "0x9E86BbF020594D7FFe05bF32EEDE5b973579A968",
+  "l1TeleporterDeployBlock": 5342153
 }

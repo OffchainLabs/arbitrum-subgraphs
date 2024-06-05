@@ -1,0 +1,23 @@
+{
+  "name": "teleporter",
+  "version": "0.0.3",
+  "license": "Apache-2.0",
+  "scripts": {
+    "codegen": "yarn prepare:mainnet && graph codegen",
+    "postinstall": "yarn codegen",
+
+    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+
+    "build:mainnet": "yarn prepare:mainnet && graph build",
+    "build:sepolia": "yarn prepare:sepolia && graph build",
+
+    "studio": "graph deploy --studio -l $(cat package.json | jq -r '.version')",
+    "studio:mainnet": "yarn build:mainnet && yarn studio",
+    "studio:sepolia": "yarn build:sepolia && yarn studio"
+  },
+  "dependencies": {
+    "@arbitrum/subgraph-common": "^0.0.1",
+    "@graphprotocol/graph-ts": "^0.32.0"
+  }
+}
