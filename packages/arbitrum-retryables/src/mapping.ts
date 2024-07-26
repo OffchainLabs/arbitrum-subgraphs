@@ -81,7 +81,17 @@ export function handleRedeemScheduled(event: RedeemScheduled): void {
   const stats = getOrCreateTotalRetryableStats();
 
   const prevStatus = entity.status;
-  const redeemSuccessful = isRedeemSuccessful(ArbRetryableTxContract.bind(event.address), ticketId);
+
+  // querying the retryables precompile in nova, in first 403 blocks, doesn't revert in expected way
+  // thus we just assume that redeem was successful
+  let redeemSuccessful: boolean;
+  if (event.block.number.lt(BigInt.fromI32(404))) {
+    redeemSuccessful = true;
+  } else {
+    // check if redeem was successful by doing eth_call - if redeem was successful call will revert (ticket is missing)
+    redeemSuccessful = isRedeemSuccessful(ArbRetryableTxContract.bind(event.address), ticketId);
+  }
+
   if (redeemSuccessful) {
     if (prevStatus == "Created") {
       entity.isAutoRedeemed = true;
