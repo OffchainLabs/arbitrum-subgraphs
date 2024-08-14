@@ -179,7 +179,6 @@ function handleNitroRetryable(event: InboxMessageDeliveredEvent, rawMessage: Raw
     entity.timestamp = event.block.timestamp;
     entity.transactionHash = event.transaction.hash;
     entity.blockCreatedAt = event.block.number;
-    entity.maxSubmissionCost = retryable.maxSubmissionCost;
     entity.save();
     // we delete the old raw message since now we saved the retryable
     store.remove("RawMessage", id);
