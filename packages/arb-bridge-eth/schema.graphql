@@ -124,6 +124,8 @@ type Deposit @entity(immutable: true) {
   transactionHash: String!
   "L1 block in which deposit is made"
   blockCreatedAt: BigInt!
+  "max submission cost"
+  maxSubmissionCost: BigInt # uint256
 }
 
 type Gateway @entity {
