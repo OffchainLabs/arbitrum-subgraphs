@@ -4,7 +4,10 @@ export function getBytes(num: BigInt): ByteArray {
   if (num == BigInt.fromI32(0)) {
     return new ByteArray(0);
   }
-  const reverse = Bytes.fromUint8Array(Bytes.fromBigInt(num).reverse());
+
+  // operate on a copy to avoid mutating the original
+  const numCopy = BigInt.fromString(num.toString());
+  const reverse = Bytes.fromUint8Array(Bytes.fromBigInt(numCopy).reverse());
   const stripped = stripZeros(reverse);
 
   return stripped;
