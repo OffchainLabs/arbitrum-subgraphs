@@ -71,6 +71,10 @@ export function handleMessageReceived(event: MessageReceivedEvent): void {
   const nonce = event.params.nonce;
   const sourceDomain = event.params.sourceDomain;
 
+  if (sourceDomain.notEqual(BigInt.fromI32(ChainDomain.Mainnet))) {
+    return;
+  }
+
   const noncePadded = leftPadBytes(
     Bytes.fromHexString("0x".concat(nonce.toHex().slice(2).padStart(8, "0"))),
     32,
