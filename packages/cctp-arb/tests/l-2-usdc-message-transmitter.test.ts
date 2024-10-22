@@ -1,4 +1,4 @@
-import { assert, describe, test, clearStore, afterAll } from "matchstick-as";
+import { assert, describe, test, clearStore, beforeEach } from "matchstick-as";
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import {
   handleMessageReceived,
@@ -10,7 +10,7 @@ import {
 } from "./l-2-usdc-message-transmitter-utils";
 
 describe("Message events", () => {
-  afterAll(() => { 
+  beforeEach(() => { 
     clearStore()
   })
 
@@ -36,19 +36,19 @@ describe("Message events", () => {
       // Message from mainnet
       assert.fieldEquals(
         "MessageReceived",
-        "0x0300000000000000000000000000000000000000000000000000000000000000000a",
+        "0x0000000000000000000000000000000000000000000000000000000000000000000a",
         "sourceDomain",
         "0",
       );
       assert.fieldEquals(
         "MessageReceived",
-        "0x0300000000000000000000000000000000000000000000000000000000000000000a",
+        "0x0000000000000000000000000000000000000000000000000000000000000000000a",
         "recipient",
         "0xf5d12029e6a6f2080a6fe7b1e748ae86fdce5bbc"
       );
       assert.fieldEquals(
         "MessageReceived",
-        "0x0300000000000000000000000000000000000000000000000000000000000000000a",
+        "0x0000000000000000000000000000000000000000000000000000000000000000000a",
         "sender",
         "0x9481ef9e2ca814fc94676dea3e8c3097b06b3a33",
       );
@@ -300,5 +300,21 @@ describe("Message events", () => {
         "1000000" // F4240
       );
     });
+  });
+
+  test("Skip event from other source domain than mainnet", () => {
+    const newMessageReceivedFromMainnet = createMessageReceivedEvent(
+      Address.fromString("0xEa7D9A6429b88F53A37296B83862C5381FF78f28"),
+      BigInt.fromI32(10),
+      BigInt.fromI32(1),
+      Bytes.fromHexString(
+        "0x0000000000000000000000008ED94B8DAD2DC5453862EA5E316A8E71AAED9782"
+      ),
+      Bytes.fromHexString(
+        "0000000000000000000000000000000031D0220469E10C4E71834A79B1F276D740D3768F000000000000000000000000EA7D9A6429B88F53A37296B83862C5381FF78F280000000000000000000000000000000000000000000000000000000000000001000000000000000000000000EA7D9A6429B88F53A37296B83862C5381FF78F28"
+      )
+    );
+    handleMessageReceived(newMessageReceivedFromMainnet);
+    assert.entityCount("MessageReceived", 0);
   });
 });
