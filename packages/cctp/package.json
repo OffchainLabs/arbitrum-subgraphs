@@ -5,11 +5,17 @@
   "scripts": {
     "codegen:mainnet": "yarn prepare:mainnet && graph codegen",
     "codegen:sepolia": "yarn prepare:sepolia && graph codegen",
+    "codegen:arbOne": "yarn prepare:arbOne && graph codegen",
+    "codegen:arbSepolia": "yarn prepare:arbSepolia && graph codegen",
     "postinstall": "yarn codegen:mainnet",
-    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-    "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/subgraph.template.yaml | tail -n +2 > subgraph.yaml",
-    "deploy:mainnet": "graph build && yarn prepare:mainnet && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/cctp-mainnet",
-    "deploy:sepolia": "graph build && yarn prepare:sepolia && graph deploy --node https://api.thegraph.com/deploy/ chrstph-dvx/cctp-sepolia",
+    "prepare:mainnet": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/l1Subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:sepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/l1Subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:arbOne": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/mainnet.json $(pwd)/l2Subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "prepare:arbSepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/l2Subgraph.template.yaml | tail -n +2 > subgraph.yaml",
+    "deploy:mainnet": "graph build && yarn prepare:mainnet && graph deploy --studio cctp-mainnet",
+    "deploy:sepolia": "graph build && yarn prepare:sepolia && graph deploy --studio cctp-sepolia",
+    "deploy:arbOne": "graph build && yarn prepare:arbOne && graph deploy --studio cctp-arb",
+    "deploy:arbSepolia": "graph build && yarn prepare:arbSepolia && graph deploy --studio cctp-arb-sepolia",
     "test": "graph test"
   },
   "dependencies": {
