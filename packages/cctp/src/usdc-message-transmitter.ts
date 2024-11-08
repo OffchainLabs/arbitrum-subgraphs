@@ -51,7 +51,6 @@ function decodeMessageBodyData(messageBody: Bytes): Array<Bytes> | null {
   if (!messageBodyData) {
     return null;
   }
-
   const decodedMessageBodyDataTuple = messageBodyData.toTuple();
   const recipient = decodedMessageBodyDataTuple[1].toBytes();
   const amount = decodedMessageBodyDataTuple[2].toBigInt();
@@ -60,7 +59,7 @@ function decodeMessageBodyData(messageBody: Bytes): Array<Bytes> | null {
   return [recipient, Bytes.fromByteArray(Bytes.fromBigInt(amount)), sender];
 }
 
-enum ChainDomain {
+export enum ChainDomain {
   Mainnet = 0,
   Arbitrum = 3,
 }
@@ -212,17 +211,17 @@ function handleMessageSent(
 }
 
 export function handleMessageReceivedL1(event: MessageReceivedEvent): void {
-  return handleMessageReceived(event, ChainDomain.Arbitrum);
+  handleMessageReceived(event, ChainDomain.Arbitrum);
 }
 
 export function handleMessageSentL1(event: MessageSentEvent): void {
-  return handleMessageSent(event, ChainDomain.Mainnet);
+  handleMessageSent(event, ChainDomain.Arbitrum);
 }
 
 export function handleMessageReceivedL2(event: MessageReceivedEvent): void {
-  return handleMessageReceived(event, ChainDomain.Mainnet);
+  handleMessageReceived(event, ChainDomain.Mainnet);
 }
 
 export function handleMessageSentL2(event: MessageSentEvent): void {
-  return handleMessageSent(event, ChainDomain.Arbitrum);
+  handleMessageSent(event, ChainDomain.Mainnet);
 }
