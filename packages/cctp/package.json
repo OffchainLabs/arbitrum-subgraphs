@@ -14,7 +14,7 @@
     "prepare:arbSepolia": "yarn workspace @arbitrum/subgraph-common mustache $(pwd)/../subgraph-common/config/sepolia.json $(pwd)/l2Subgraph.template.yaml | tail -n +2 > subgraph.yaml",
     "deploy:mainnet": "graph build && yarn prepare:mainnet && graph deploy --studio cctp-mainnet",
     "deploy:sepolia": "graph build && yarn prepare:sepolia && graph deploy --studio cctp-sepolia",
-    "deploy:arbOne": "graph build && yarn prepare:arbOne && graph deploy --studio cctp-arb",
+    "deploy:arbOne": "graph build && yarn prepare:arbOne && graph deploy --studio cctp-arb-one",
     "deploy:arbSepolia": "graph build && yarn prepare:arbSepolia && graph deploy --studio cctp-arb-sepolia",
     "test": "graph test"
   },
